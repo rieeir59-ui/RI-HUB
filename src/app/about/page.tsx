@@ -14,36 +14,43 @@ export default function AboutPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <div className="container mx-auto px-4 py-8">
-            <div className="relative h-64 md:h-80 w-full text-white rounded-lg overflow-hidden shadow-2xl">
-              <Image
-                src="https://www.isbahhassan.com/upload/about1.jpg"
-                alt="About Isbah Hassan & Associates"
-                layout="fill"
-                objectFit="cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-black/50" />
-              <div className="relative z-10 flex h-full flex-col items-center justify-center text-center p-4 animate-in fade-in-50 slide-in-from-bottom-10 duration-1000">
-                <h1 className="text-4xl md:text-5xl font-headline text-shadow-lg text-primary">About Us</h1>
-                <p className="mt-4 max-w-2xl text-base md:text-lg text-shadow">
-                  Isbah Hassan & Associates (Pvt.) Ltd. offers elegant and innovative architecture and interior design solutions to meet the most discerning requirements.
-                </p>
+        <div className="container mx-auto px-4 py-8 md:py-16">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div className="space-y-6 animate-in fade-in-50 slide-in-from-left-10 duration-1000">
+              <h1 className="text-4xl md:text-5xl font-headline text-primary">About Us</h1>
+              <div className="text-base md:text-lg text-muted-foreground space-y-4">
+                  <p>
+                    Isbah Hassan & Associates (Pvt.) Ltd. offers elegant and innovative architecture and interior design solutions to meet the most discerning requirements.
+                  </p>
+                  <p>
+                    Whether it’s a high-rise, a housing development, an amusement park or a campus, our holistic approach ensures that buildings are stylish, practical, comfortable and in perfect harmony with their indigenous surroundings.
+                  </p>
               </div>
             </div>
-            <Card className="w-full max-w-4xl mx-auto overflow-hidden shadow-2xl mt-[-4rem] z-20 relative">
+            <div className="relative h-80 md:h-[450px] w-full rounded-lg overflow-hidden shadow-2xl animate-in fade-in-50 slide-in-from-right-10 duration-1000">
+                <Image
+                  src="https://www.isbahhassan.com/upload/about1.jpg"
+                  alt="About Isbah Hassan & Associates"
+                  layout="fill"
+                  objectFit="cover"
+                  priority
+                />
+            </div>
+          </div>
+            
+          <Card className="w-full max-w-5xl mx-auto overflow-hidden shadow-2xl mt-12 md:mt-24 z-10 relative">
             <CardContent className="p-6">
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
                   <AccordionTrigger className="text-xl font-semibold">Our Philosophy</AccordionTrigger>
                   <AccordionContent className="text-base text-muted-foreground text-left">
-                    Whether it’s a high-rise, a housing development, an amusement park or a campus, our holistic approach ensures that buildings are stylish, practical, comfortable and in perfect harmony with their indigenous surroundings. With over 25 years of experience working on complex projects ranging from office buildings and interiors to industrial constructions and private residences, we have developed a sophisticated and thorough approach towards design, technical development, code analysis, and document production that seamlessly blends functionality with aesthetics.
+                    With over 25 years of experience working on complex projects ranging from office buildings and interiors to industrial constructions and private residences, we have developed a sophisticated and thorough approach towards design, technical development, code analysis, and document production that seamlessly blends functionality with aesthetics. Mindful of developments that influence 21st century architecture, we opt for stylised, space efficient and financially viable buildings fuelled by a unique vision using state of the art technological advancements and innovative materials while cultivating respect for the environment. 
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
                   <AccordionTrigger className="text-xl font-semibold">Our Approach</AccordionTrigger>
                   <AccordionContent className="text-base text-muted-foreground text-left">
-                    Mindful of developments that influence 21st century architecture, we opt for stylised, space efficient and financially viable buildings fuelled by a unique vision using state of the art technological advancements and innovative materials while cultivating respect for the environment. We believe in functional elegance and responsiveness to a site’s physical surroundings keeping the client’s needs and requirements in perspective within the approved budget. This formula has transpired into various successful developments that now line an emerging modern landscape in Pakistan, and we are proud to be part of this renaissance.
+                     We believe in functional elegance and responsiveness to a site’s physical surroundings keeping the client’s needs and requirements in perspective within the approved budget. This formula has transpired into various successful developments that now line an emerging modern landscape in Pakistan, and we are proud to be part of this renaissance.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-3">
@@ -58,7 +65,7 @@ export default function AboutPage() {
                   </AccordionContent>
                 </AccordionItem>
                  <AccordionItem value="item-4">
-                  <AccordionTrigger className="text-xl font-semibold">Our Founder</AccordionTrigger>
+                  <AccordionTrigger className="textxl font-semibold">Our Founder</AccordionTrigger>
                   <AccordionContent className="text-base text-muted-foreground text-left space-y-4">
                     <p>
                       Ms. Isbah Hassan is a veteran in the field of architecture and interior design and has been in practice since 1995. A leading architect in South Asia, she has designed projects in multiple spheres and on multiple scales, frequently earning her finalist status in countrywide competitions for government projects.
