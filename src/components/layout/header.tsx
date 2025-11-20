@@ -32,22 +32,22 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background shadow-md">
-       <div className="bg-gray-800 text-white text-sm py-2">
+       <div className="bg-gray-800 text-white text-sm py-1">
         <div className="container flex justify-between items-center">
           <span>Welcome to RI-HUB (Software Engineers)</span>
         </div>
       </div>
-      <div className="container flex h-24 items-center">
+      <div className="container flex h-20 items-center">
         <div className="mr-auto flex items-center">
           <Link href="/" className="flex items-center space-x-2">
            <div
               className="relative bg-primary"
               style={{
-                clipPath: 'polygon(0 0, 85% 0, 100% 100%, 0% 100%)',
+                clipPath: 'polygon(0 0, 90% 0, 100% 100%, 0% 100%)',
                 width: '250px',
               }}
             >
-              <div className="flex items-center p-4">
+              <div className="flex items-center p-2">
                 <RiLogo />
                 <span className="ml-2 font-headline text-2xl font-bold text-black">
                   RI-HUB
@@ -56,19 +56,19 @@ export default function Header() {
             </div>
           </Link>
         </div>
-        <nav className="hidden md:flex items-center space-x-2 text-sm font-medium">
+        <nav className="hidden md:flex items-center space-x-1 text-sm font-medium">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                'transition-colors hover:text-primary px-4 py-2 rounded-md font-semibold',
+                'transition-colors hover:text-primary px-3 py-2 rounded-md font-semibold',
                 pathname === link.href
-                  ? 'bg-gray-200 text-gray-900'
-                  : 'text-foreground/80'
+                  ? 'text-primary'
+                  : 'text-foreground/60'
               )}
             >
-              {link.label}
+              {link.label.toUpperCase()}
             </Link>
           ))}
         </nav>
