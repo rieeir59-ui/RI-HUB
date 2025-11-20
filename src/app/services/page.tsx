@@ -273,7 +273,7 @@ const ServiceCard = ({
         <Accordion type="single" collapsible className="w-full">
           {Object.entries(services).map(([subtitle, items]) => (
             <AccordionItem value={subtitle} key={subtitle}>
-              <AccordionTrigger className="text-lg font-semibold text-card-foreground hover:text-primary">
+              <AccordionTrigger className="text-lg font-semibold text-card-foreground hover:text-primary text-left">
                 {subtitle}
               </AccordionTrigger>
               <AccordionContent className="bg-muted/30 p-4 rounded-md">
@@ -302,10 +302,12 @@ export default function ServicesPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {serviceCategories.map((cat) => (
-            <ServiceCard key={cat.number} {...cat} />
-          ))}
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {serviceCategories.map((cat) => (
+              <ServiceCard key={cat.number} {...cat} />
+            ))}
+          </div>
         </div>
       </main>
     </div>
