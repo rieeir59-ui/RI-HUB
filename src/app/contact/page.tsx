@@ -25,24 +25,12 @@ export default function ContactPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <section className="relative w-full h-80 flex items-center justify-center text-center text-white">
-          <Image
-            src="https://picsum.photos/seed/contact-arch/1920/1080"
-            alt="Contact background"
-            fill
-            className="object-cover"
-            priority
-            data-ai-hint="modern office"
-          />
-          <div className="absolute inset-0 bg-black/60" />
-          <div className="relative z-10 animate-in fade-in slide-in-from-bottom-10 duration-1000 ease-out">
-            <h1 className="font-headline text-5xl md:text-7xl font-bold tracking-tight text-primary">
+        <div className="container mx-auto px-4 py-8 md:py-16">
+          <div className="text-center mb-12">
+             <h1 className="font-headline text-5xl md:text-7xl font-bold tracking-tight text-primary">
               Contact Us
             </h1>
           </div>
-        </section>
-
-        <div className="container mx-auto px-4 py-8 md:py-16">
            <Card className="w-full max-w-4xl mx-auto shadow-xl bg-accent/20">
              <CardContent className="p-6 md:p-8">
                 <div className="grid md:grid-cols-2 gap-8 md:gap-12">
