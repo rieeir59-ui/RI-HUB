@@ -36,8 +36,8 @@ export default function Header() {
           <div className="flex-1 text-center animate-in fade-in slide-in-from-top-2 duration-1000">Welcome to RI-HUB (Software Engineers)</div>
           <div className="flex items-center space-x-3">
              <Link href="#" className="text-white hover:text-primary"><MessageCircle size={18} /></Link>
-             <Link href="#" className="text-white hover:text-primary"><Facebook size={18} /></Link>
-             <Link href="#" className="text-white hover:text-primary"><Instagram size={18} /></Link>
+             <Link href="https://www.facebook.com/isbahhassanassociates101ydha/" target="_blank" rel="noopener noreferrer" className="text-white hover:text-primary"><Facebook size={18} /></Link>
+             <Link href="https://www.instagram.com/isbahhassanassociates/?hl=en" target="_blank" rel="noopener noreferrer" className="text-white hover:text-primary"><Instagram size={18} /></Link>
              <Link href="#" className="text-white hover:text-primary"><Phone size={18} /></Link>
           </div>
         </div>
