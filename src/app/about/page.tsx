@@ -15,24 +15,24 @@ export default function AboutPage() {
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="flex flex-col items-center justify-center py-12 md:py-24 space-y-8">
-          <Card className="w-full max-w-4xl overflow-hidden">
-            <div className="relative h-64 w-full">
+          <Card className="w-full max-w-4xl overflow-hidden shadow-2xl">
+            <div className="relative h-64 md:h-80 w-full text-white">
               <Image
                 src="https://www.isbahhassan.com/upload/about1.jpg"
                 alt="About Isbah Hassan & Associates"
                 layout="fill"
                 objectFit="cover"
+                priority
               />
-            </div>
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl md:text-4xl font-headline text-primary">About Us</CardTitle>
-              <CardContent className="text-base md:text-lg text-muted-foreground pt-4">
-                <p>
+              <div className="absolute inset-0 bg-black/50" />
+              <div className="relative z-10 flex h-full flex-col items-center justify-center text-center p-4 animate-in fade-in-50 slide-in-from-bottom-10 duration-1000">
+                <h1 className="text-4xl md:text-5xl font-headline text-shadow-lg text-primary">About Us</h1>
+                <p className="mt-4 max-w-2xl text-base md:text-lg text-shadow">
                   Isbah Hassan & Associates (Pvt.) Ltd. offers elegant and innovative architecture and interior design solutions to meet the most discerning requirements.
                 </p>
-              </CardContent>
-            </CardHeader>
-            <CardContent>
+              </div>
+            </div>
+            <CardContent className="p-6">
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
                   <AccordionTrigger className="text-xl font-semibold">Our Philosophy</AccordionTrigger>
