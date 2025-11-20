@@ -9,6 +9,7 @@ import { Users } from 'lucide-react';
 import Link from 'next/link';
 
 const departments = [
+  { name: 'CEO', employees: 1, href: '/dashboard/department/ceo' },
   { name: 'ADMIN', employees: 2, href: '/dashboard/department/admin' },
   { name: 'HR', employees: 2, href: '/dashboard/department/hr' },
   { name: 'SOFTWARE ENGINEER', employees: 2, href: '/dashboard/department/software-engineer' },

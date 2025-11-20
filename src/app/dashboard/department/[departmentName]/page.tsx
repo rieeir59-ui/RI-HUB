@@ -3,6 +3,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const employees = {
+  ceo: [
+    { name: 'Isbah Hassan', contact: '123-456-7890', email: 'isbah.hassan@ri-hub.com', record: 'EMP-001', avatarId: 'avatar-1' },
+  ],
   admin: [
     { name: 'Isbah Hassan', contact: '123-456-7890', email: 'isbah.hassan@ri-hub.com', record: 'EMP-001', avatarId: 'avatar-1' },
     { name: 'Sobia', contact: '123-456-7890', email: 'sobia@ri-hub.com', record: 'EMP-002', avatarId: 'avatar-3' },
@@ -39,6 +42,7 @@ const employees = {
 };
 
 function formatDepartmentName(slug: string) {
+  if (slug.toLowerCase() === 'ceo') return 'CEO';
   return slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
