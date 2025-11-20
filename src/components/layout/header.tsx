@@ -32,8 +32,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-card shadow-sm">
       <div className="bg-sidebar text-white text-sm py-2">
-        <div className="container flex justify-between items-center h-8">
-          <span className="flex-1 text-center animate-in fade-in slide-in-from-top-2 duration-1000">Welcome to RI-HUB (Software Engineers)</span>
+        <div className="container flex justify-between items-center h-10">
+          <div className="flex-1 text-center animate-in fade-in slide-in-from-top-2 duration-1000">Welcome to RI-HUB (Software Engineers)</div>
           <div className="flex items-center space-x-3">
              <Link href="#" className="text-white hover:text-primary"><MessageCircle size={18} /></Link>
              <Link href="#" className="text-white hover:text-primary"><Facebook size={18} /></Link>
@@ -42,9 +42,9 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <div className="w-full h-px bg-black/80" />
+      <div className="w-full h-px bg-black/20" />
       <div className="container flex h-24 items-center">
-        <div className="mr-auto flex items-center">
+        <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2">
            <div
               className="relative bg-primary flex items-center justify-center p-2"
@@ -61,7 +61,7 @@ export default function Header() {
             </div>
           </Link>
         </div>
-        <nav className="hidden md:flex items-center space-x-4 text-sm font-medium">
+        <nav className="ml-auto flex items-center space-x-4 text-sm font-medium">
           {navLinks.map((link) => (
             <Link
               key={link.href}
