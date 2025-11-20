@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -19,6 +20,7 @@ import {
   Users,
   Contact,
   History,
+  KeyRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +32,7 @@ const menuItems = [
   { href: '/dashboard/team', label: 'Our Team', icon: Users },
   { href: '/dashboard/employee', label: 'Employee', icon: Contact },
   { href: '/dashboard/login-record', label: 'Login Record', icon: History },
+  { href: '/dashboard/credentials', label: 'Credentials', icon: KeyRound },
 ];
 
 export default function DashboardSidebar() {

@@ -1,6 +1,6 @@
+
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, PlusCircle, ArrowLeft } from 'lucide-react';
 import {
@@ -11,47 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
-
-const employees = {
-  ceo: [
-    { name: 'Isbah Hassan', contact: '123-456-7890', email: 'isbah.hassan@ri-hub.com', record: 'EMP-001', avatarId: 'avatar-1' },
-  ],
-  admin: [
-    { name: 'Isbah Hassan', contact: '123-456-7890', email: 'isbah.hassan@ri-hub.com', record: 'EMP-001', avatarId: 'avatar-1' },
-    { name: 'Sobia', contact: '123-456-7890', email: 'sobia@ri-hub.com', record: 'EMP-002', avatarId: 'avatar-3' },
-    { name: 'Rabiya Eman', contact: '03012345678', email: 'rabiya.eman@ri-hub.com', record: 'EMP-004', avatarId: 'avatar-1' },
-    { name: 'Imran Abbas', contact: '12343846574', email: 'imran.abbas@ri-hub.com', record: 'EMP-005', avatarId: 'avatar-2' },
-  ],
-  hr: [
-      { name: 'Fiza', contact: '123-456-7890', email: 'fiza@ri-hub.com', record: 'EMP-003', avatarId: 'avatar-1' },
-      { name: 'Sobia', contact: '123-456-7890', email: 'sobia@ri-hub.com', record: 'EMP-002', avatarId: 'avatar-3' },
-  ],
-  'software-engineer': [
-    { name: 'Rabiya Eman', contact: '03012345678', email: 'rabiya.eman@ri-hub.com', record: 'EMP-004', avatarId: 'avatar-1' },
-    { name: 'Imran Abbas', contact: '12343846574', email: 'imran.abbas@ri-hub.com', record: 'EMP-005', avatarId: 'avatar-2' },
-  ],
-  draftman: [
-    { name: 'Waqas', contact: '123-456-7890', email: 'waqas@ri-hub.com', record: 'EMP-006', avatarId: 'avatar-2' },
-    { name: 'Mujahid', contact: '123-456-7890', email: 'mujahid@ri-hub.com', record: 'EMP-007', avatarId: 'avatar-2' },
-    { name: 'Jabbar', contact: '123-456-7890', email: 'jabbar@ri-hub.com', record: 'EMP-008', avatarId: 'avatar-2' },
-  ],
-  '3d-visualizer': [
-      { name: 'Mosin', contact: '123-456-7890', email: 'mosin@ri-hub.com', record: 'EMP-009', avatarId: 'avatar-2' },
-  ],
-  architects: [
-      { name: 'Hareeb', contact: '123-456-7890', email: 'hareeb@ri-hub.com', record: 'EMP-010', avatarId: 'avatar-2' },
-      { name: 'Loaman', contact: '123-456-7890', email: 'loaman@ri-hub.com', record: 'EMP-011', avatarId: 'avatar-2' },
-      { name: 'Asad', contact: '123-456-7890', email: 'asad@ri-hub.com', record: 'EMP-012', avatarId: 'avatar-2' },
-      { name: 'Wakeel', contact: '123-456-7890', email: 'wakeel@ri-hub.com', record: 'EMP-013', avatarId: 'avatar-2' },
-      { name: 'Kizzar', contact: '123-456-7890', email: 'kizzar@ri-hub.com', record: 'EMP-014', avatarId: 'avatar-2' },
-  ],
-  finance: [
-      { name: 'Waqar', contact: '123-456-7890', email: 'waqar@ri-hub.com', record: 'EMP-015', avatarId: 'avatar-2' },
-  ],
-  'quantity-management': [
-      { name: 'Noman', contact: '123-456-7890', email: 'noman@ri-hub.com', record: 'EMP-016', avatarId: 'avatar-2' },
-  ],
-};
+import { employeesByDepartment } from '@/lib/employees';
 
 function formatDepartmentName(slug: string) {
   if (slug.toLowerCase() === 'ceo') return 'CEO';
@@ -69,7 +29,7 @@ function getInitials(name: string) {
 
 export default function DepartmentPage({ params }: { params: { departmentName: string } }) {
   const { departmentName } = params;
-  const departmentEmployees = employees[departmentName as keyof typeof employees] || [];
+  const departmentEmployees = employeesByDepartment[departmentName as keyof typeof employeesByDepartment] || [];
   const formattedDeptName = formatDepartmentName(departmentName);
   
   const departmentImages: {[key: string]: string} = {
