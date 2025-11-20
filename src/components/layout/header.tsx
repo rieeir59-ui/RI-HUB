@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Search } from 'lucide-react';
+import { Facebook, Instagram, Phone, MessageCircle } from 'lucide-react';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -12,16 +12,17 @@ const navLinks = [
   { href: '/contact', label: 'Contact' },
 ];
 
-const RiLogo = () => (
+const RiIdLogo = () => (
     <svg
       width="48"
       height="48"
-      viewBox="0 0 120 100"
+      viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="text-black"
     >
-        <path d="M25,80 L25,30 L35,30 L35,80 L25,80 Z M50,80 L40,80 L40,30 L50,30 L65,30 C77.5,30 85,40 85,55 C85,70 77.5,80 65,80 L50,80 Z M50,70 L65,70 C72.5,70 75,65 75,55 C75,45 72.5,40 65,40 L50,40 L50,70 Z" fill="currentColor"/>
+        <path d="M20 80 L 20 20 L 30 20 L 30 80 Z" fill="currentColor" />
+        <path d="M40 20 L 40 35 C 40 45, 50 45, 55 40 L 60 35 L 60 20 L 40 20 Z M 40 80 L 40 50 C 40 55, 45 60, 50 60 L 55 60 C 60 60, 65 55, 65 50 L 65 45 L 40 45 L 40 80 Z" fill="currentColor" />
     </svg>
   );
 
@@ -29,12 +30,19 @@ export default function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-card shadow-md">
-       <div className="bg-sidebar text-white text-sm py-2">
-        <div className="container flex justify-center items-center">
-          <span>Welcome to RI-HUB (Software Engineers)</span>
+    <header className="sticky top-0 z-50 w-full bg-card shadow-sm">
+      <div className="bg-sidebar text-white text-sm py-2">
+        <div className="container flex justify-between items-center h-8">
+          <span className="flex-1 text-center">Welcome to RI-HUB (Software Engineers)</span>
+          <div className="flex items-center space-x-3">
+             <Link href="#" className="text-white hover:text-primary"><MessageCircle size={18} /></Link>
+             <Link href="#" className="text-white hover:text-primary"><Facebook size={18} /></Link>
+             <Link href="#" className="text-white hover:text-primary"><Instagram size={18} /></Link>
+             <Link href="#" className="text-white hover:text-primary"><Phone size={18} /></Link>
+          </div>
         </div>
       </div>
+      <div className="w-full h-px bg-black/80" />
       <div className="container flex h-24 items-center">
         <div className="mr-auto flex items-center">
           <Link href="/" className="flex items-center space-x-2">
@@ -47,7 +55,7 @@ export default function Header() {
               }}
             >
               <div className="flex items-center gap-2 text-black pr-8">
-                <RiLogo />
+                <RiIdLogo />
                 <span className="font-bold text-3xl">RI-HUB</span>
               </div>
             </div>
@@ -70,6 +78,7 @@ export default function Header() {
           ))}
         </nav>
       </div>
+       <div className="w-full h-px bg-black/20" />
     </header>
   );
 }
