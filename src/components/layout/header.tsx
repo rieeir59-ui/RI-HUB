@@ -44,7 +44,24 @@ export default function Header() {
       </div>
       <div className="w-full h-px bg-black/20" />
       <div className="container flex h-24 items-center">
-        <nav className="flex items-center space-x-4 text-sm font-medium">
+        <div className="flex items-center">
+          <Link href="/" className="flex items-center space-x-2">
+           <div
+              className="relative bg-primary flex items-center justify-center p-2"
+              style={{
+                clipPath: 'polygon(0% 0, 85% 0, 100% 100%, 0% 100%)',
+                height: '96px',
+                width: '300px'
+              }}
+            >
+              <div className="flex items-center gap-2 text-black pr-8">
+                <RiIdLogo />
+                <span className="font-bold text-3xl">RI-HUB</span>
+              </div>
+            </div>
+          </Link>
+        </div>
+        <nav className="flex items-center space-x-4 text-sm font-medium ml-auto">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -60,23 +77,6 @@ export default function Header() {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center ml-auto">
-          <Link href="/" className="flex items-center space-x-2">
-           <div
-              className="relative bg-primary flex items-center justify-center p-2"
-              style={{
-                clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)',
-                height: '96px',
-                width: '300px'
-              }}
-            >
-              <div className="flex items-center gap-2 text-black pl-8">
-                <RiIdLogo />
-                <span className="font-bold text-3xl">RI-HUB</span>
-              </div>
-            </div>
-          </Link>
-        </div>
       </div>
        <div className="w-full h-px bg-black/20" />
     </header>
