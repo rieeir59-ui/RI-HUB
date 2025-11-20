@@ -24,59 +24,59 @@ export default function ContactPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow container mx-auto px-4 py-8 md:py-16">
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-stretch">
-          
-          <div className="flex flex-col justify-center animate-in fade-in-50 slide-in-from-left-10 duration-1000">
-            <Card className="w-full h-full shadow-lg bg-accent/20">
-              <CardHeader>
-                <CardTitle className="text-4xl font-headline text-primary">Get in Touch</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6 text-lg">
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <MapPin className="h-6 w-6 text-primary mt-1" />
-                    <span>{contactDetails.address}</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <Phone className="h-6 w-6 text-primary" />
-                    <span>{contactDetails.phone}</span>
-                  </div>
-                   <div className="flex items-center gap-4">
-                    <Mail className="h-6 w-6 text-primary" />
-                    <span>{contactDetails.email}</span>
-                  </div>
-                </div>
+      <main className="flex-grow">
+        <section className="relative w-full h-80 flex items-center justify-center text-center text-white">
+          <Image
+            src="https://picsum.photos/seed/contact-arch/1920/1080"
+            alt="Contact background"
+            fill
+            className="object-cover"
+            priority
+            data-ai-hint="modern office"
+          />
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="relative z-10 animate-in fade-in slide-in-from-bottom-10 duration-1000 ease-out">
+            <h1 className="font-headline text-5xl md:text-7xl font-bold tracking-tight">
+              Contact Us
+            </h1>
+          </div>
+        </section>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-4">
-                     <Clock className="h-6 w-6 text-primary" />
-                     <h4 className="font-headline text-2xl text-primary">Hours</h4>
+        <div className="container mx-auto px-4 py-8 md:py-16">
+           <Card className="w-full max-w-4xl mx-auto shadow-xl bg-card/80 backdrop-blur-sm -mt-32 z-10">
+             <CardContent className="p-6 md:p-8">
+                <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+                  <div className="space-y-6">
+                     <h3 className="font-headline text-3xl text-primary border-b-2 border-primary pb-2">Our Office</h3>
+                     <div className="space-y-4 text-lg">
+                      <div className="flex items-start gap-4">
+                        <MapPin className="h-6 w-6 text-primary mt-1" />
+                        <span>{contactDetails.address}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Phone className="h-6 w-6 text-primary" />
+                        <span>{contactDetails.phone}</span>
+                      </div>
+                       <div className="flex items-center gap-4">
+                        <Mail className="h-6 w-6 text-primary" />
+                        <span>{contactDetails.email}</span>
+                      </div>
+                    </div>
                   </div>
-                  <ul className="space-y-1 pl-10">
-                    {hours.map(item => (
-                       <li key={item.day} className="flex justify-between">
-                         <span className="font-semibold">{item.day}</span>
-                         <span>{item.time}</span>
-                       </li>
-                    ))}
-                  </ul>
+                  <div className="space-y-6">
+                    <h3 className="font-headline text-3xl text-primary border-b-2 border-primary pb-2">Business Hours</h3>
+                    <ul className="space-y-2 text-lg">
+                      {hours.map(item => (
+                         <li key={item.day} className="flex justify-between">
+                           <span className="font-semibold">{item.day}</span>
+                           <span>{item.time}</span>
+                         </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-          
-          <div className="relative min-h-[400px] md:min-h-full w-full rounded-lg overflow-hidden shadow-2xl animate-in fade-in-50 slide-in-from-right-10 duration-1000">
-              <Image
-                src="https://media.licdn.com/dms/image/D4D03AQGEUVKstFYOwg/profile-displayphoto-shrink_800_800/0/1714318142608?e=1725494400&v=beta&t=7gEE7Jq9xX_Yk_3R_a_E7B0z3A4g2H6aD6gI5p_t_o"
-                alt="Isbah Hassan"
-                layout="fill"
-                objectFit="cover"
-                className="object-top"
-                priority
-              />
-          </div>
-
         </div>
       </main>
     </div>
