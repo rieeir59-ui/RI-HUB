@@ -33,7 +33,7 @@ export default function ContactPage() {
           </div>
            <Card className="w-full max-w-4xl mx-auto shadow-xl bg-accent/20">
              <CardContent className="p-6 md:p-8">
-                <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+                <div className="flex flex-col gap-8 md:gap-12">
                   <div className="space-y-6">
                      <h3 className="font-headline text-3xl text-primary border-b-2 border-primary pb-2">Our Office</h3>
                      <div className="space-y-4 text-lg">
@@ -52,7 +52,7 @@ export default function ContactPage() {
                     </div>
                   </div>
                   <div className="space-y-6">
-                    <h3 className="font-headline text-3xl text-primary border-b-2 border-primary pb-2">Business Hours</h3>
+                    <h3 className="font-headline text-3xl text-primary border-b-2 border-primary pb-2">Working Hours</h3>
                     <ul className="space-y-2 text-lg">
                       {hours.map(item => (
                          <li key={item.day} className="flex justify-between">
