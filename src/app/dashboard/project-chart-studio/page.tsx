@@ -5,4 +5,8 @@ export default function Page() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-
+        <CardTitle className="font-headline text-2xl">Project Chart (Studio)</CardTitle>
+      </CardHeader>
+    </Card>
+  );
+}

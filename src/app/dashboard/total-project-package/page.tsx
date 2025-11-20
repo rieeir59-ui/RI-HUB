@@ -5,4 +5,8 @@ export default function Page() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font
+        <CardTitle className="font-headline text-2xl">Total Project Package</CardTitle>
+      </CardHeader>
+    </Card>
+  );
+}

@@ -8,3 +8,5 @@ export default function Page() {
         <CardTitle className="font-headline text-2xl">Change Order</CardTitle>
       </CardHeader>
     </Card>
+  );
+}

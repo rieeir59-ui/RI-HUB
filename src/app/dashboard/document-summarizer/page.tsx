@@ -7,4 +7,6 @@ export default function Page() {
       <CardHeader>
         <CardTitle className="font-headline text-2xl">Document Summarizer</CardTitle>
       </CardHeader>
-    </
+    </Card>
+  );
+}

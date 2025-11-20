@@ -6,4 +6,7 @@ export default function Page() {
     <Card>
       <CardHeader>
         <CardTitle className="font-headline text-2xl">Project Data</CardTitle>
-      </
+      </CardHeader>
+    </Card>
+  );
+}

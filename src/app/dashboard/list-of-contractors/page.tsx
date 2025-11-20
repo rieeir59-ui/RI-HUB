@@ -6,4 +6,7 @@ export default function Page() {
     <Card>
       <CardHeader>
         <CardTitle className="font-headline text-2xl">List of Contractors</CardTitle>
-      </Card
+      </CardHeader>
+    </Card>
+  );
+}

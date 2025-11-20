@@ -5,4 +5,8 @@ export default function Page() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Pred
+        <CardTitle className="font-headline text-2xl">Predesign Assessment</CardTitle>
+      </CardHeader>
+    </Card>
+  );
+}

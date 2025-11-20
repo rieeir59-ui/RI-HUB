@@ -5,4 +5,8 @@ export default function Page() {
   return (
     <Card>
       <CardHeader>
-        <Card
+        <CardTitle className="font-headline text-2xl">Bill Of Quantity</CardTitle>
+      </CardHeader>
+    </Card>
+  );
+}
