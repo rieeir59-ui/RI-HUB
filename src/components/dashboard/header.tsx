@@ -13,10 +13,6 @@ export function Header() {
         {/* You can add a title here if needed */}
       </div>
       <div className="flex items-center gap-4">
-        <div className="text-right">
-            <p className="font-semibold">Isbah Hassan</p>
-            <p className="text-sm text-muted-foreground">CEO</p>
-        </div>
         <Avatar>
             {avatar && <AvatarImage src={avatar.imageUrl} alt="User avatar" />}
             <AvatarFallback>IH</AvatarFallback>
