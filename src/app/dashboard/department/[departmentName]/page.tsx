@@ -10,6 +10,10 @@ const employees = {
   hr: [
       { name: 'Ahmad Khan', contact: '123-456-7890', email: 'ahmad.khan@ri-hub.com', record: 'EMP-003', avatarId: 'avatar-2' },
   ],
+  'software-engineer': [
+    { name: 'Rabiya Eman', contact: '03012345678', email: 'rabiyaeman@gmail.com', record: 'EMP-004', avatarId: 'avatar-1' },
+    { name: 'Imran Abbas', contact: '12343846574', email: 'imranabbas@gmail.com', record: 'EMP-005', avatarId: 'avatar-2' },
+  ],
   // Add other departments and employees here
 };
 
