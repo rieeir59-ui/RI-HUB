@@ -1,4 +1,6 @@
 
+'use client';
+
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,10 +22,10 @@ function formatDepartmentName(slug: string) {
 
 function getInitials(name: string) {
     const nameParts = name.split(' ');
-    if (nameParts.length > 1) {
+    if (nameParts.length > 1 && nameParts[nameParts.length - 1]) {
         return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
     }
-    return name[0].toUpperCase();
+    return name[0] ? name[0].toUpperCase() : '';
 }
 
 
