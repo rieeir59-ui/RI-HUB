@@ -14,17 +14,16 @@ const navLinks = [
 
 const RiLogo = () => (
     <svg
-      width="32"
-      height="32"
+      width="28"
+      height="28"
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path
-        d="M20 20V80H40V55L60 80H80L55 50L80 20H60L40 45V20H20Z"
-        fill="black"
-        transform="scale(1.2) translate(-8, -8)"
-      />
+        <path d="M25 20V30H35V20H25Z" fill="currentColor" />
+        <path d="M25 35V80H35V35H25Z" fill="currentColor" />
+        <path d="M40 35H55C66.0457 35 75 43.9543 75 55C75 66.0457 66.0457 75 55 75H40V65H55C60.5228 65 65 60.5228 65 55C65 49.4772 60.5228 45 55 45H40V35Z" fill="currentColor" />
+        <path d="M58 60L78 80H88L68 60H58Z" fill="currentColor" />
     </svg>
   );
 
@@ -42,14 +41,16 @@ export default function Header() {
         <div className="mr-auto flex items-center">
           <Link href="/" className="flex items-center space-x-2">
            <div
-              className="relative bg-primary flex items-center justify-center p-2"
+              className="relative bg-primary flex items-center justify-center p-2 pl-4"
               style={{
                 clipPath: 'polygon(0 0, 90% 0, 100% 100%, 0% 100%)',
-                width: '60px',
                 height: '48px'
               }}
             >
-              <RiLogo />
+              <div className="flex items-center gap-2 text-primary-foreground">
+                <RiLogo />
+                <span className="font-bold text-xl">RI-HUB</span>
+              </div>
             </div>
           </Link>
         </div>
