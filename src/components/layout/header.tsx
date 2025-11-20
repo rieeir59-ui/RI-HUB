@@ -61,7 +61,7 @@ export default function Header() {
               className={cn(
                 'transition-colors hover:text-primary px-3 py-1.5 rounded-md font-semibold uppercase',
                 pathname === link.href
-                  ? 'bg-secondary text-secondary-foreground'
+                  ? 'bg-muted text-foreground'
                   : 'text-muted-foreground'
               )}
             >
