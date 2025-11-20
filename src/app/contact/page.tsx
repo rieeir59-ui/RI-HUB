@@ -36,14 +36,14 @@ export default function ContactPage() {
           />
           <div className="absolute inset-0 bg-black/60" />
           <div className="relative z-10 animate-in fade-in slide-in-from-bottom-10 duration-1000 ease-out">
-            <h1 className="font-headline text-5xl md:text-7xl font-bold tracking-tight">
+            <h1 className="font-headline text-5xl md:text-7xl font-bold tracking-tight text-primary">
               Contact Us
             </h1>
           </div>
         </section>
 
         <div className="container mx-auto px-4 py-8 md:py-16">
-           <Card className="w-full max-w-4xl mx-auto shadow-xl bg-card/80 backdrop-blur-sm -mt-32 z-10">
+           <Card className="w-full max-w-4xl mx-auto shadow-xl bg-accent/20 backdrop-blur-sm -mt-24 z-10">
              <CardContent className="p-6 md:p-8">
                 <div className="grid md:grid-cols-2 gap-8 md:gap-12">
                   <div className="space-y-6">
