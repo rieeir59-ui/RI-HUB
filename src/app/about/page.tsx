@@ -38,7 +38,7 @@ export default function AboutPage() {
             </div>
           </div>
             
-          <Card className="w-full max-w-5xl mx-auto overflow-hidden shadow-2xl mt-12 md:mt-24 z-10 relative bg-accent/20">
+          <Card className="w-full max-w-5xl mx-auto overflow-hidden shadow-lg mt-12 md:mt-24 z-10 relative bg-accent/20">
             <CardContent className="p-6">
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
