@@ -101,45 +101,47 @@ export default function DepartmentPage({ params }: { params: { departmentName: s
         {departmentEmployees.map((employee) => {
           const initials = getInitials(employee.name);
           return (
-            <Card key={employee.record} className="overflow-hidden shadow-lg transition-transform hover:scale-[1.02] border-primary/50 relative">
-                <div className="absolute top-2 right-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Toggle menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <div className="flex">
-                    <div className="w-1/3 bg-secondary p-4 flex flex-col items-center justify-center relative">
-                        <div className="w-32 h-32 rounded-full bg-card flex items-center justify-center border-4 border-primary/50 shadow-inner">
-                            <span className="text-5xl font-bold text-primary">{initials}</span>
-                        </div>
-                         <p className="mt-4 text-center font-bold text-xl text-secondary-foreground">{employee.name}</p>
-                    </div>
-                    <CardContent className="w-2/3 p-6 space-y-4 bg-card/50">
-                        <div>
-                            <p className="text-sm text-muted-foreground">Contact Number</p>
-                            <p className="font-semibold text-lg">{employee.contact}</p>
-                        </div>
-                         <div>
-                            <p className="text-sm text-muted-foreground">Email</p>
-                            <p className="font-semibold text-lg">{employee.email}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Record Number</p>
-                            <p className="font-semibold text-lg">{employee.record}</p>
-                        </div>
-                    </CardContent>
-                </div>
-            </Card>
+            <Link href="/login" key={employee.record}>
+              <Card className="overflow-hidden shadow-lg transition-transform hover:scale-[1.02] border-primary/50 relative cursor-pointer">
+                  <div className="absolute top-2 right-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="flex">
+                      <div className="w-1/3 bg-secondary p-4 flex flex-col items-center justify-center relative">
+                          <div className="w-32 h-32 rounded-full bg-card flex items-center justify-center border-4 border-primary/50 shadow-inner">
+                              <span className="text-5xl font-bold text-primary">{initials}</span>
+                          </div>
+                           <p className="mt-4 text-center font-bold text-xl text-secondary-foreground">{employee.name}</p>
+                      </div>
+                      <CardContent className="w-2/3 p-6 space-y-4 bg-card/50">
+                          <div>
+                              <p className="text-sm text-muted-foreground">Contact Number</p>
+                              <p className="font-semibold text-lg">{employee.contact}</p>
+                          </div>
+                           <div>
+                              <p className="text-sm text-muted-foreground">Email</p>
+                              <p className="font-semibold text-lg">{employee.email}</p>
+                          </div>
+                          <div>
+                              <p className="text-sm text-muted-foreground">Record Number</p>
+                              <p className="font-semibold text-lg">{employee.record}</p>
+                          </div>
+                      </CardContent>
+                  </div>
+              </Card>
+            </Link>
           );
         })}
       </div>

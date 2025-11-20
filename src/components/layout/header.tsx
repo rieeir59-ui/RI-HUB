@@ -12,7 +12,7 @@ const navLinks = [
   { href: '/contact', label: 'Contact' },
 ];
 
-const RiIdLogo = () => (
+export const RiIdLogo = () => (
     <svg
       width="48"
       height="48"
