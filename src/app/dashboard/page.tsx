@@ -6,16 +6,17 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Users } from 'lucide-react';
+import Link from 'next/link';
 
 const departments = [
-  { name: 'ADMIN', employees: 5 },
-  { name: 'HR', employees: 2 },
-  { name: 'SOFTWARE ENGINEER', employees: 8 },
-  { name: 'DRAFTMAN', employees: 4 },
-  { name: '3D VISULIZER', employees: 3 },
-  { name: 'ARCHITECTS', employees: 6 },
-  { name: 'FINANCE', employees: 2 },
-  { name: 'QUANTITY MANAGEMENT', employees: 3 },
+  { name: 'ADMIN', employees: 5, href: '/dashboard/department/admin' },
+  { name: 'HR', employees: 2, href: '/dashboard/department/hr' },
+  { name: 'SOFTWARE ENGINEER', employees: 8, href: '/dashboard/department/software-engineer' },
+  { name: 'DRAFTMAN', employees: 4, href: '/dashboard/department/draftman' },
+  { name: '3D VISULIZER', employees: 3, href: '/dashboard/department/3d-visualizer' },
+  { name: 'ARCHITECTS', employees: 6, href: '/dashboard/department/architects' },
+  { name: 'FINANCE', employees: 2, href: '/dashboard/department/finance' },
+  { name: 'QUANTITY MANAGEMENT', employees: 3, href: '/dashboard/department/quantity-management' },
 ];
 
 export default function DashboardPage() {
@@ -41,17 +42,19 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-headline font-bold mb-4">Departments</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {departments.map((dept) => (
-            <Card key={dept.name} className="bg-sidebar text-sidebar-foreground border-2 border-primary/80 shadow-[0_0_15px_3px_hsl(var(--primary)/0.4)]">
-              <CardHeader>
-                <CardTitle className="text-primary font-bold">{dept.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2 text-sidebar-foreground/80">
-                  <Users className="h-5 w-5" />
-                  <span className="font-semibold">{dept.employees} Employees</span>
-                </div>
-              </CardContent>
-            </Card>
+            <Link href={dept.href} key={dept.name}>
+                <Card className="bg-sidebar text-sidebar-foreground border-2 border-primary/80 shadow-[0_0_15px_3px_hsl(var(--primary)/0.4)] h-full">
+                <CardHeader>
+                    <CardTitle className="text-primary font-bold">{dept.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center space-x-2 text-sidebar-foreground/80">
+                    <Users className="h-5 w-5" />
+                    <span className="font-semibold">{dept.employees} Employees</span>
+                    </div>
+                </CardContent>
+                </Card>
+            </Link>
           ))}
         </div>
       </div>
