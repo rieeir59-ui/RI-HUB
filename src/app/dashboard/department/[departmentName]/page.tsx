@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, ArrowLeft } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import Link from 'next/link';
 
 const employees = {
   ceo: [
@@ -79,7 +80,15 @@ export default function DepartmentPage({ params }: { params: { departmentName: s
   return (
     <div className="space-y-6">
        <div className="flex items-center justify-between">
-        <h1 className="text-3xl md:text-4xl font-headline text-primary">{formattedDeptName}</h1>
+        <div className="flex items-center gap-4">
+          <Button asChild variant="outline" size="icon">
+            <Link href="/dashboard">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back to Dashboard</span>
+            </Link>
+          </Button>
+          <h1 className="text-3xl md:text-4xl font-headline text-primary">{formattedDeptName}</h1>
+        </div>
         <Button size="sm" className="gap-1">
           <PlusCircle className="h-4 w-4" />
           Add Employee
