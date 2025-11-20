@@ -43,7 +43,7 @@ export default function ContactPage() {
         </section>
 
         <div className="container mx-auto px-4 py-8 md:py-16">
-           <Card className="w-full max-w-4xl mx-auto shadow-xl bg-accent/20 backdrop-blur-sm -mt-24 z-10">
+           <Card className="w-full max-w-4xl mx-auto shadow-xl bg-accent/20">
              <CardContent className="p-6 md:p-8">
                 <div className="grid md:grid-cols-2 gap-8 md:gap-12">
                   <div className="space-y-6">
