@@ -198,35 +198,35 @@ const serviceCategories = [
     number: 1,
     title: 'Predesign',
     icon: Search,
-    color: 'bg-green-600',
+    color: 'bg-emerald-600',
     services: predesignServices,
   },
   {
     number: 2,
     title: 'Design',
     icon: DraftingCompass,
-    color: 'bg-blue-600',
+    color: 'bg-sky-600',
     services: designServices,
   },
   {
     number: 3,
     title: 'Construction',
     icon: Hammer,
-    color: 'bg-red-600',
+    color: 'bg-rose-600',
     services: constructionServices,
   },
   {
     number: 4,
     title: 'Post-Construction',
     icon: ClipboardList,
-    color: 'bg-purple-600',
+    color: 'bg-violet-600',
     services: postConstructionServices,
   },
   {
     number: 5,
     title: 'Supplemental',
     icon: Sparkles,
-    color: 'bg-yellow-500',
+    color: 'bg-amber-500',
     services: supplementalServices,
   },
 ];
@@ -303,12 +303,7 @@ export default function ServicesPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {serviceCategories.slice(0, 3).map((cat) => (
-            <ServiceCard key={cat.number} {...cat} />
-          ))}
-        </div>
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 lg:w-2/3 lg:mx-auto">
-           {serviceCategories.slice(3, 5).map((cat) => (
+          {serviceCategories.map((cat) => (
             <ServiceCard key={cat.number} {...cat} />
           ))}
         </div>
