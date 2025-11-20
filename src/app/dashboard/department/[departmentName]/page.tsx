@@ -1,6 +1,15 @@
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const employees = {
   ceo: [
@@ -69,13 +78,34 @@ export default function DepartmentPage({ params }: { params: { departmentName: s
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl md:text-4xl font-headline text-primary">{formattedDeptName}</h1>
+       <div className="flex items-center justify-between">
+        <h1 className="text-3xl md:text-4xl font-headline text-primary">{formattedDeptName}</h1>
+        <Button size="sm" className="gap-1">
+          <PlusCircle className="h-4 w-4" />
+          Add Employee
+        </Button>
+      </div>
 
       <div className="grid gap-6">
         {departmentEmployees.map((employee) => {
           const initials = getInitials(employee.name);
           return (
-            <Card key={employee.record} className="overflow-hidden shadow-lg transition-transform hover:scale-[1.02] border-primary/50">
+            <Card key={employee.record} className="overflow-hidden shadow-lg transition-transform hover:scale-[1.02] border-primary/50 relative">
+                <div className="absolute top-2 right-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Toggle menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
                 <div className="flex">
                     <div className="w-1/3 bg-secondary p-4 flex flex-col items-center justify-center relative">
                         <div className="w-32 h-32 rounded-full bg-card flex items-center justify-center border-4 border-primary/50 shadow-inner">
