@@ -1,6 +1,6 @@
 
 import Header from '@/components/layout/header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Accordion,
   AccordionContent,
@@ -13,25 +13,25 @@ export default function AboutPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="flex flex-col items-center justify-center py-12 md:py-24 space-y-8">
-          <Card className="w-full max-w-4xl overflow-hidden shadow-2xl">
-            <div className="relative h-64 md:h-80 w-full text-white">
-              <Image
-                src="https://www.isbahhassan.com/upload/about1.jpg"
-                alt="About Isbah Hassan & Associates"
-                layout="fill"
-                objectFit="cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-black/50" />
-              <div className="relative z-10 flex h-full flex-col items-center justify-center text-center p-4 animate-in fade-in-50 slide-in-from-bottom-10 duration-1000">
-                <h1 className="text-4xl md:text-5xl font-headline text-shadow-lg text-primary">About Us</h1>
-                <p className="mt-4 max-w-2xl text-base md:text-lg text-shadow">
-                  Isbah Hassan & Associates (Pvt.) Ltd. offers elegant and innovative architecture and interior design solutions to meet the most discerning requirements.
-                </p>
-              </div>
-            </div>
+      <main className="flex-grow">
+        <div className="relative h-64 md:h-80 w-full text-white">
+          <Image
+            src="https://www.isbahhassan.com/upload/about1.jpg"
+            alt="About Isbah Hassan & Associates"
+            layout="fill"
+            objectFit="cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative z-10 flex h-full flex-col items-center justify-center text-center p-4 animate-in fade-in-50 slide-in-from-bottom-10 duration-1000">
+            <h1 className="text-4xl md:text-5xl font-headline text-shadow-lg text-primary">About Us</h1>
+            <p className="mt-4 max-w-2xl text-base md:text-lg text-shadow">
+              Isbah Hassan & Associates (Pvt.) Ltd. offers elegant and innovative architecture and interior design solutions to meet the most discerning requirements.
+            </p>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-8">
+            <Card className="w-full max-w-4xl mx-auto overflow-hidden shadow-2xl mt-[-4rem] z-20 relative">
             <CardContent className="p-6">
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
