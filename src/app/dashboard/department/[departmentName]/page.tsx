@@ -21,6 +21,15 @@ function formatDepartmentName(slug: string) {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
+function getInitials(name: string) {
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+        return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
+    }
+    return name[0].toUpperCase();
+}
+
+
 export default function DepartmentPage({ params }: { params: { departmentName: string } }) {
   const { departmentName } = params;
   const departmentEmployees = employees[departmentName as keyof typeof employees] || [];
@@ -39,35 +48,28 @@ export default function DepartmentPage({ params }: { params: { departmentName: s
 
       <div className="grid gap-6">
         {departmentEmployees.map((employee) => {
-          const avatar = PlaceHolderImages.find(p => p.id === employee.avatarId);
+          const initials = getInitials(employee.name);
           return (
-            <Card key={employee.record} className="overflow-hidden shadow-lg transition-transform hover:scale-[1.02]">
+            <Card key={employee.record} className="overflow-hidden shadow-lg transition-transform hover:scale-[1.02] border-primary/50">
                 <div className="flex">
-                    <div className="w-1/3 bg-primary/20 p-4 flex flex-col items-center justify-center relative">
-                        {avatar && (
-                            <Image
-                                src={avatar.imageUrl}
-                                alt={employee.name}
-                                width={128}
-                                height={128}
-                                className="rounded-full border-4 border-card object-cover aspect-square"
-                                data-ai-hint={avatar.imageHint}
-                            />
-                        )}
-                         <p className="mt-4 text-center font-bold text-lg text-primary-foreground bg-black/50 px-2 py-1 rounded">{employee.name}</p>
+                    <div className="w-1/3 bg-primary/90 p-4 flex flex-col items-center justify-center relative">
+                        <div className="w-32 h-32 rounded-full bg-card flex items-center justify-center border-4 border-primary/50 shadow-inner">
+                            <span className="text-5xl font-bold text-primary">{initials}</span>
+                        </div>
+                         <p className="mt-4 text-center font-bold text-xl text-primary-foreground">{employee.name}</p>
                     </div>
-                    <CardContent className="w-2/3 p-6 space-y-2">
+                    <CardContent className="w-2/3 p-6 space-y-4 bg-card/50">
                         <div>
                             <p className="text-sm text-muted-foreground">Contact Number</p>
-                            <p className="font-semibold">{employee.contact}</p>
+                            <p className="font-semibold text-lg">{employee.contact}</p>
                         </div>
                          <div>
                             <p className="text-sm text-muted-foreground">Email</p>
-                            <p className="font-semibold">{employee.email}</p>
+                            <p className="font-semibold text-lg">{employee.email}</p>
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Record Number</p>
-                            <p className="font-semibold">{employee.record}</p>
+                            <p className="font-semibold text-lg">{employee.record}</p>
                         </div>
                     </CardContent>
                 </div>
