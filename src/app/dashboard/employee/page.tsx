@@ -1,3 +1,6 @@
+
+'use client';
+
 import Image from 'next/image';
 import { MoreHorizontal, PlusCircle, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +13,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,33 +37,71 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { employees as initialEmployees, type Employee } from '@/lib/employees';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
-const employees = [
-  {
-    name: 'Isbah Hassan',
-    email: 'isbah.hassan@ri-hub.com',
-    role: 'Principal Architect',
-    status: 'Active',
-    avatarId: 'avatar-1',
-  },
-  {
-    name: 'Ahmad Khan',
-    email: 'ahmad.khan@ri-hub.com',
-    role: 'Project Manager',
-    status: 'Active',
-    avatarId: 'avatar-2',
-  },
-  {
-    name: 'Fatima Ali',
-    email: 'fatima.ali@ri-hub.com',
-    role: 'Junior Architect',
-    status: 'On Leave',
-    avatarId: 'avatar-3',
-  },
+const departments = [
+    { name: 'CEO', slug: 'ceo' },
+    { name: 'ADMIN', slug: 'admin' },
+    { name: 'HR', slug: 'hr' },
+    { name: 'SOFTWARE ENGINEER', slug: 'software-engineer' },
+    { name: 'DRAFTMAN', slug: 'draftman' },
+    { name: '3D VISULIZER', slug: '3d-visualizer' },
+    { name: 'ARCHITECTS', slug: 'architects' },
+    { name: 'FINANCE', slug: 'finance' },
+    { name: 'QUANTITY MANAGEMENT', slug: 'quantity-management' },
 ];
 
 export default function EmployeePage() {
+  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleAddEmployee = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const contact = formData.get('contact') as string;
+    const department = formData.get('department') as string;
+
+    if (!name || !email || !department) {
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Please fill out all required fields.",
+      });
+      return;
+    }
+
+    const newEmployee: Employee = {
+      name,
+      email,
+      contact,
+      department,
+      record: `EMP-${String(employees.length + 1).padStart(3, '0')}`,
+      avatarId: 'avatar-3', // Default avatar
+    };
+
+    setEmployees([...employees, newEmployee]);
+    setIsDialogOpen(false);
+    toast({
+      title: "Employee Added",
+      description: `${name} has been added to the employee list.`,
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -60,10 +110,62 @@ export default function EmployeePage() {
             <CardTitle className="font-headline text-2xl">Employees</CardTitle>
             <CardDescription>Manage your company's employee records.</CardDescription>
           </div>
-          <Button size="sm" className="gap-1">
-            <PlusCircle className="h-4 w-4" />
-            Add Employee
-          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1">
+                <PlusCircle className="h-4 w-4" />
+                Add Employee
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add New Employee</DialogTitle>
+                <DialogDescription>
+                  Enter the details of the new employee below.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddEmployee}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Name
+                    </Label>
+                    <Input id="name" name="name" className="col-span-3" required />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="email" className="text-right">
+                      Email
+                    </Label>
+                    <Input id="email" name="email" type="email" className="col-span-3" required />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="contact" className="text-right">
+                      Contact
+                    </Label>
+                    <Input id="contact" name="contact" className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="department" className="text-right">
+                      Department
+                    </Label>
+                     <Select name="department" required>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Select a department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {departments.map(dept => (
+                             <SelectItem key={dept.slug} value={dept.slug}>{dept.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Save Employee</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </CardHeader>
       <CardContent>
@@ -74,8 +176,8 @@ export default function EmployeePage() {
                 <span className="sr-only">Avatar</span>
               </TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Department</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -102,12 +204,8 @@ export default function EmployeePage() {
                     <div className="font-bold">{employee.name}</div>
                     <div className="text-sm text-muted-foreground md:hidden">{employee.email}</div>
                   </TableCell>
-                  <TableCell>{employee.role}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <Badge variant={employee.status === 'Active' ? 'default' : 'secondary'} className={employee.status === 'Active' ? 'bg-green-600' : ''}>
-                      {employee.status}
-                    </Badge>
-                  </TableCell>
+                  <TableCell>{employee.email}</TableCell>
+                   <TableCell>{departments.find(d => d.slug === employee.department)?.name || employee.department}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -131,7 +229,7 @@ export default function EmployeePage() {
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
-          Showing <strong>1-3</strong> of <strong>3</strong> employees
+          Showing <strong>1-{employees.length}</strong> of <strong>{employees.length}</strong> employees
         </div>
         <div className="ml-auto">
           <Button size="sm" variant="outline" className="gap-1">
