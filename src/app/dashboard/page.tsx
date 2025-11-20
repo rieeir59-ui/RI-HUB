@@ -41,7 +41,7 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-headline font-bold mb-4">Departments</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {departments.map((dept) => (
-            <Card key={dept.name} className="bg-sidebar border-2 border-primary/50 text-sidebar-foreground">
+            <Card key={dept.name} className="bg-sidebar text-sidebar-foreground border-2 border-primary/80 shadow-[0_0_15px_3px_hsl(var(--primary)/0.4)]">
               <CardHeader>
                 <CardTitle className="text-primary font-bold">{dept.name}</CardTitle>
               </CardHeader>
