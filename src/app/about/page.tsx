@@ -42,19 +42,19 @@ export default function AboutPage() {
             <CardContent className="p-6">
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
-                  <AccordionTrigger className="text-xl font-semibold">Our Philosophy</AccordionTrigger>
+                  <AccordionTrigger className="text-xl font-headline">Our Philosophy</AccordionTrigger>
                   <AccordionContent className="text-base text-muted-foreground text-left">
                     With over 25 years of experience working on complex projects ranging from office buildings and interiors to industrial constructions and private residences, we have developed a sophisticated and thorough approach towards design, technical development, code analysis, and document production that seamlessly blends functionality with aesthetics. Mindful of developments that influence 21st century architecture, we opt for stylised, space efficient and financially viable buildings fuelled by a unique vision using state of the art technological advancements and innovative materials while cultivating respect for the environment. 
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
-                  <AccordionTrigger className="text-xl font-semibold">Our Approach</AccordionTrigger>
+                  <AccordionTrigger className="text-xl font-headline">Our Approach</AccordionTrigger>
                   <AccordionContent className="text-base text-muted-foreground text-left">
                      We believe in functional elegance and responsiveness to a site’s physical surroundings keeping the client’s needs and requirements in perspective within the approved budget. This formula has transpired into various successful developments that now line an emerging modern landscape in Pakistan, and we are proud to be part of this renaissance.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-3">
-                  <AccordionTrigger className="text-xl font-semibold">Collaboration</AccordionTrigger>
+                  <AccordionTrigger className="text-xl font-headline">Collaboration</AccordionTrigger>
                   <AccordionContent className="text-base text-muted-foreground text-left space-y-4">
                     <p>
                       We believe that all projects benefit from a process involving the client, architect, builder and various specialists in an informative collaboration, and that successful projects are made possible through the management of all participants involved. We encourage this collaboration and act as a guide through the process of design and construction so that each project benefits from the participation and strengths of each team member.
@@ -65,7 +65,7 @@ export default function AboutPage() {
                   </AccordionContent>
                 </AccordionItem>
                  <AccordionItem value="item-4">
-                  <AccordionTrigger className="textxl font-semibold">Our Founder</AccordionTrigger>
+                  <AccordionTrigger className="text-xl font-headline">Our Founder</AccordionTrigger>
                   <AccordionContent className="text-base text-muted-foreground text-left space-y-4">
                     <p>
                       Ms. Isbah Hassan is a veteran in the field of architecture and interior design and has been in practice since 1995. A leading architect in South Asia, she has designed projects in multiple spheres and on multiple scales, frequently earning her finalist status in countrywide competitions for government projects.
