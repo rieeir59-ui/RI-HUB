@@ -42,18 +42,14 @@ export default function Header() {
         <div className="mr-auto flex items-center">
           <Link href="/" className="flex items-center space-x-2">
            <div
-              className="relative bg-primary"
+              className="relative bg-primary flex items-center justify-center p-2"
               style={{
                 clipPath: 'polygon(0 0, 90% 0, 100% 100%, 0% 100%)',
-                width: '200px',
+                width: '60px',
+                height: '48px'
               }}
             >
-              <div className="flex items-center p-2">
-                <RiLogo />
-                <span className="ml-2 font-headline text-xl font-bold text-black">
-                  RI-HUB
-                </span>
-              </div>
+              <RiLogo />
             </div>
           </Link>
         </div>
