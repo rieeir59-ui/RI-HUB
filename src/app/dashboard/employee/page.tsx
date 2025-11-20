@@ -3,7 +3,6 @@
 
 import Image from 'next/image';
 import { MoreHorizontal, PlusCircle, Download } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -187,7 +186,7 @@ export default function EmployeePage() {
             {employees.map((employee) => {
               const avatar = PlaceHolderImages.find(p => p.id === employee.avatarId);
               return (
-                <TableRow key={employee.email}>
+                <TableRow key={employee.record}>
                   <TableCell className="hidden sm:table-cell">
                     {avatar && (
                        <Image
