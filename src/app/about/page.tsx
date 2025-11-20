@@ -7,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import Image from 'next/image';
 
 export default function AboutPage() {
   return (
@@ -14,7 +15,15 @@ export default function AboutPage() {
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="flex flex-col items-center justify-center py-12 md:py-24 space-y-8">
-          <Card className="w-full max-w-4xl">
+          <Card className="w-full max-w-4xl overflow-hidden">
+            <div className="relative h-64 w-full">
+              <Image
+                src="https://www.isbahhassan.com/upload/about1.jpg"
+                alt="About Isbah Hassan & Associates"
+                layout="fill"
+                objectFit="cover"
+              />
+            </div>
             <CardHeader className="text-center">
               <CardTitle className="text-3xl md:text-4xl font-headline text-primary">About Us</CardTitle>
               <CardContent className="text-base md:text-lg text-muted-foreground pt-4">
