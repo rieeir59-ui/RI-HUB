@@ -32,7 +32,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background shadow-md">
-       <div className="bg-gray-800 text-white text-xs py-1">
+       <div className="bg-gray-800 text-white text-xs py-2">
         <div className="container flex justify-center items-center">
           <span>Welcome to RI-HUB (Software Engineers)</span>
         </div>
@@ -41,13 +41,12 @@ export default function Header() {
         <div className="mr-auto flex items-center">
           <Link href="/" className="flex items-center space-x-2">
            <div
-              className="relative bg-primary flex items-center justify-center p-2 pr-6"
+              className="relative bg-primary flex items-center justify-center p-2"
               style={{
-                clipPath: 'polygon(0 0, 95% 0, 100% 100%, 0% 100%)',
-                height: '56px'
+                height: '68px'
               }}
             >
-              <div className="flex items-center gap-2 text-primary-foreground">
+              <div className="flex items-center gap-2 text-primary-foreground px-4">
                 <RiLogo />
                 <span className="font-bold text-2xl">RI-HUB</span>
               </div>
