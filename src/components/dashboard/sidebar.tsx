@@ -19,7 +19,6 @@ import {
   Users,
   Contact,
   History,
-  Building,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -39,14 +38,14 @@ export default function DashboardSidebar() {
   return (
     <>
       {/* The trigger is positioned absolutely, so it needs to be outside the sidebar itself */}
-      <div className="absolute top-4 right-4 z-20">
+      <div className="absolute top-4 left-4 z-20">
         <SidebarTrigger />
       </div>
-      <Sidebar side="right" collapsible="offcanvas">
+      <Sidebar side="left" collapsible="offcanvas">
         <SidebarHeader>
           <div className="flex items-center gap-2 p-2">
-            <Building className="text-primary w-8 h-8" />
-            <h2 className="font-headline text-2xl text-primary">RI-HUB</h2>
+            <Briefcase className="text-primary w-8 h-8" />
+            <h2 className="font-headline text-2xl text-primary">Isbah Dashboard</h2>
           </div>
         </SidebarHeader>
         <SidebarContent>
