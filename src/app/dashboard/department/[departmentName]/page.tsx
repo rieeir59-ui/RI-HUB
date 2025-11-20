@@ -19,6 +19,8 @@ const employees = {
   admin: [
     { name: 'Isbah Hassan', contact: '123-456-7890', email: 'isbah.hassan@ri-hub.com', record: 'EMP-001', avatarId: 'avatar-1' },
     { name: 'Sobia', contact: '123-456-7890', email: 'sobia@ri-hub.com', record: 'EMP-002', avatarId: 'avatar-3' },
+    { name: 'Rabiya Eman', contact: '03012345678', email: 'rabiyaeman@gmail.com', record: 'EMP-004', avatarId: 'avatar-1' },
+    { name: 'Imran Abbas', contact: '12343846574', email: 'imranabbas@gmail.com', record: 'EMP-005', avatarId: 'avatar-2' },
   ],
   hr: [
       { name: 'Fiza', contact: '123-456-7890', email: 'fiza@ri-hub.com', record: 'EMP-003', avatarId: 'avatar-1' },
