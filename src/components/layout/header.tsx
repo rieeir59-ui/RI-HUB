@@ -33,7 +33,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full bg-card shadow-sm">
       <div className="bg-sidebar text-white text-sm py-2">
         <div className="container flex justify-between items-center h-8">
-          <span className="flex-1 text-center">Welcome to RI-HUB (Software Engineers)</span>
+          <span className="flex-1 text-center animate-in fade-in slide-in-from-top-2 duration-1000">Welcome to RI-HUB (Software Engineers)</span>
           <div className="flex items-center space-x-3">
              <Link href="#" className="text-white hover:text-primary"><MessageCircle size={18} /></Link>
              <Link href="#" className="text-white hover:text-primary"><Facebook size={18} /></Link>

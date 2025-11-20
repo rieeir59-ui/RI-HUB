@@ -28,7 +28,7 @@ export default function Home() {
             <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-shadow-lg">
               ISBAH HASSAN & ASSOCIATES
             </h1>
-            <p className="text-2xl md:text-3xl lg:text-4xl text-white font-semibold text-shadow-md">
+            <p className="text-2xl md:text-3xl lg:text-4xl text-primary text-shadow-md">
               Architecture Company
             </p>
             <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-10 py-6 transition-transform hover:scale-105">
