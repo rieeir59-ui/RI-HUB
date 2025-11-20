@@ -14,8 +14,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import { employeesByDepartment } from '@/lib/employees';
+import { useParams } from 'next/navigation';
 
 function formatDepartmentName(slug: string) {
+  if (!slug) return '';
   if (slug.toLowerCase() === 'ceo') return 'CEO';
   return slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
@@ -29,8 +31,9 @@ function getInitials(name: string) {
 }
 
 
-export default function DepartmentPage({ params }: { params: { departmentName: string } }) {
-  const { departmentName } = params;
+export default function DepartmentPage() {
+  const params = useParams();
+  const departmentName = Array.isArray(params.departmentName) ? params.departmentName[0] : params.departmentName;
   const departmentEmployees = employeesByDepartment[departmentName as keyof typeof employeesByDepartment] || [];
   const formattedDeptName = formatDepartmentName(departmentName);
   
