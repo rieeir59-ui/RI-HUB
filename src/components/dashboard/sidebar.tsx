@@ -61,8 +61,8 @@ const menuItems = [
     { href: '/dashboard/services', label: 'Services', icon: FileText },
     { href: '/dashboard/login-record', label: 'Login Record', icon: LogIn },
     { href: '/dashboard/saved-records', label: 'Saved Records', icon: Database },
-    { href: '/dashboard/data-entry', label: 'Data Entry', roles: ['admin'] },
-    { href: '/dashboard/settings', label: 'Settings', roles: ['software-engineer', 'admin'] },
+    { href: '/dashboard/data-entry', label: 'Data Entry', icon: FileUp, roles: ['admin'] },
+    { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['software-engineer', 'admin'] },
     { href: '/dashboard/credentials', label: 'Credentials', icon: KeyRound, roles: ['software-engineer', 'admin'] },
   ];
 
