@@ -48,6 +48,34 @@ export default function AboutPage() {
                     </p>
                   </AccordionContent>
                 </AccordionItem>
+                 <AccordionItem value="item-4">
+                  <AccordionTrigger className="text-xl font-semibold">Our Founder</AccordionTrigger>
+                  <AccordionContent className="text-base text-muted-foreground text-left space-y-4">
+                    <p>
+                      Ms. Isbah Hassan is a veteran in the field of architecture and interior design and has been in practice since 1995. A leading architect in South Asia, she has designed projects in multiple spheres and on multiple scales, frequently earning her finalist status in countrywide competitions for government projects.
+                    </p>
+                    <p>
+                      Since its inception, Isbah Hassan and Associates has earned a reputation for combining innovative design practices with unique vision and exemplary function. The firm’s projects have included amusement parks, banks, boutiques, cafés, campuses, cinemas, government buildings, high-rises, low-rises, offices, places of worship, residences, resort development and shopping malls.
+                    </p>
+                    <p>
+                      Ms. Hassan began her career at Fujikawa & Johnson in Chicago, working on high-rise buildings in Texas, following her Bachelor’s in Architecture (Honours) from the Illinois Institute of Technology and Minor in Oil Painting and Charcoal Drawing at the Art Institute of Chicago. In Pakistan, she worked at Wasif Ali & Associates and at Arshad and Shahid Abdulla Architects in Karachi and Lahore prior to launching Isbah Hassan and Associates.
+                    </p>
+                    <p>
+                      Ms. Hassan was awarded UBL’s ‘Achievement of Excellence’ Award as the architect and interior designer of the bank’s iconic regional headquarters at One Jail Road, Lahore, in 2018.
+                    </p>
+                    <div className="font-semibold">
+                      <p>Ms. Isbah Hassan</p>
+                      <p>CEO and Chief Architect</p>
+                      <p>Isbah Hassan and Associates</p>
+                    </div>
+                    <p>
+                      She has been an honourary juror for the National College of Arts, attended advanced placement seminars on ‘Sustainable Communities in the 21 st Century,’ ‘Health Building and Materials,’ and ‘Project Management for Architectural Firms,’ participated at the UAEIA Conference in Chicago, and was nominated for the Eisenhower Exchange Fellowship. She has also served on numerous boards including the Punjab Municipal Development Corporation Program for uplifting rural municipalities (sponsored by the World Bank), New Murree (Patriata City Project), and the Lahore American School. She is registered with the Pakistan Council of Architects and Town Planners, the Institute of Architects-Pakistan, the Lahore Development Authority, the Defence Housing Authority, the Capital Development Authority and the Lahore Cantonment Board.
+                    </p>
+                     <p>
+                      Always one to spearhead innovation, Ms. Hassan brought in a team of specialists from Sri Lanka and Scandinavia for a proposed joint venture to revitalize tourism in Khyber- Pakhtunkhwa. Her designs were selected for the Prime Minister’s Housing Scheme on Multan Road in Lahore, the Parliament’s new administrative block on Constitution Avenue in Islamabad, the Aga Khan Secondary School Complex in Karimabad and Karachi. She has been the architect for significant federal and provincial housing schemes including the Punjab Government Servant Society Mohlanwal and the Prime Minister’s Housing Scheme.
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
               </Accordion>
             </CardContent>
           </Card>
