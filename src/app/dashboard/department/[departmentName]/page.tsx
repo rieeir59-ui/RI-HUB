@@ -5,16 +5,37 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 const employees = {
   admin: [
     { name: 'Isbah Hassan', contact: '123-456-7890', email: 'isbah.hassan@ri-hub.com', record: 'EMP-001', avatarId: 'avatar-1' },
-    { name: 'Jane Smith', contact: '123-456-7891', email: 'jane.smith@ri-hub.com', record: 'EMP-002', avatarId: 'avatar-3' },
+    { name: 'Sobia', contact: '123-456-7890', email: 'sobia@ri-hub.com', record: 'EMP-002', avatarId: 'avatar-3' },
   ],
   hr: [
-      { name: 'Ahmad Khan', contact: '123-456-7890', email: 'ahmad.khan@ri-hub.com', record: 'EMP-003', avatarId: 'avatar-2' },
+      { name: 'Fiza', contact: '123-456-7890', email: 'fiza@ri-hub.com', record: 'EMP-003', avatarId: 'avatar-1' },
+      { name: 'Sobia', contact: '123-456-7890', email: 'sobia@ri-hub.com', record: 'EMP-002', avatarId: 'avatar-3' },
   ],
   'software-engineer': [
     { name: 'Rabiya Eman', contact: '03012345678', email: 'rabiyaeman@gmail.com', record: 'EMP-004', avatarId: 'avatar-1' },
     { name: 'Imran Abbas', contact: '12343846574', email: 'imranabbas@gmail.com', record: 'EMP-005', avatarId: 'avatar-2' },
   ],
-  // Add other departments and employees here
+  draftman: [
+    { name: 'Waqas', contact: '123-456-7890', email: 'waqas@ri-hub.com', record: 'EMP-006', avatarId: 'avatar-2' },
+    { name: 'Mujahid', contact: '123-456-7890', email: 'mujahid@ri-hub.com', record: 'EMP-007', avatarId: 'avatar-2' },
+    { name: 'Jabbar', contact: '123-456-7890', email: 'jabbar@ri-hub.com', record: 'EMP-008', avatarId: 'avatar-2' },
+  ],
+  '3d-visualizer': [
+      { name: 'Mosin', contact: '123-456-7890', email: 'mosin@ri-hub.com', record: 'EMP-009', avatarId: 'avatar-2' },
+  ],
+  architects: [
+      { name: 'Hareeb', contact: '123-456-7890', email: 'hareeb@ri-hub.com', record: 'EMP-010', avatarId: 'avatar-2' },
+      { name: 'Loaman', contact: '123-456-7890', email: 'loaman@ri-hub.com', record: 'EMP-011', avatarId: 'avatar-2' },
+      { name: 'Asad', contact: '123-456-7890', email: 'asad@ri-hub.com', record: 'EMP-012', avatarId: 'avatar-2' },
+      { name: 'Wakeel', contact: '123-456-7890', email: 'wakeel@ri-hub.com', record: 'EMP-013', avatarId: 'avatar-2' },
+      { name: 'Kizzar', contact: '123-456-7890', email: 'kizzar@ri-hub.com', record: 'EMP-014', avatarId: 'avatar-2' },
+  ],
+  finance: [
+      { name: 'Waqar', contact: '123-456-7890', email: 'waqar@ri-hub.com', record: 'EMP-015', avatarId: 'avatar-2' },
+  ],
+  'quantity-management': [
+      { name: 'Noman', contact: '123-456-7890', email: 'noman@ri-hub.com', record: 'EMP-016', avatarId: 'avatar-2' },
+  ],
 };
 
 function formatDepartmentName(slug: string) {

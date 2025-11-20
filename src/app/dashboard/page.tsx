@@ -9,14 +9,14 @@ import { Users } from 'lucide-react';
 import Link from 'next/link';
 
 const departments = [
-  { name: 'ADMIN', employees: 5, href: '/dashboard/department/admin' },
+  { name: 'ADMIN', employees: 2, href: '/dashboard/department/admin' },
   { name: 'HR', employees: 2, href: '/dashboard/department/hr' },
-  { name: 'SOFTWARE ENGINEER', employees: 8, href: '/dashboard/department/software-engineer' },
-  { name: 'DRAFTMAN', employees: 4, href: '/dashboard/department/draftman' },
-  { name: '3D VISULIZER', employees: 3, href: '/dashboard/department/3d-visualizer' },
-  { name: 'ARCHITECTS', employees: 6, href: '/dashboard/department/architects' },
-  { name: 'FINANCE', employees: 2, href: '/dashboard/department/finance' },
-  { name: 'QUANTITY MANAGEMENT', employees: 3, href: '/dashboard/department/quantity-management' },
+  { name: 'SOFTWARE ENGINEER', employees: 2, href: '/dashboard/department/software-engineer' },
+  { name: 'DRAFTMAN', employees: 3, href: '/dashboard/department/draftman' },
+  { name: '3D VISULIZER', employees: 1, href: '/dashboard/department/3d-visualizer' },
+  { name: 'ARCHITECTS', employees: 5, href: '/dashboard/department/architects' },
+  { name: 'FINANCE', employees: 1, href: '/dashboard/department/finance' },
+  { name: 'QUANTITY MANAGEMENT', employees: 1, href: '/dashboard/department/quantity-management' },
 ];
 
 export default function DashboardPage() {
