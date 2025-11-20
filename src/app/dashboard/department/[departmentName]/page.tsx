@@ -52,11 +52,11 @@ export default function DepartmentPage({ params }: { params: { departmentName: s
           return (
             <Card key={employee.record} className="overflow-hidden shadow-lg transition-transform hover:scale-[1.02] border-primary/50">
                 <div className="flex">
-                    <div className="w-1/3 bg-primary/90 p-4 flex flex-col items-center justify-center relative">
+                    <div className="w-1/3 bg-secondary p-4 flex flex-col items-center justify-center relative">
                         <div className="w-32 h-32 rounded-full bg-card flex items-center justify-center border-4 border-primary/50 shadow-inner">
                             <span className="text-5xl font-bold text-primary">{initials}</span>
                         </div>
-                         <p className="mt-4 text-center font-bold text-xl text-primary-foreground">{employee.name}</p>
+                         <p className="mt-4 text-center font-bold text-xl text-secondary-foreground">{employee.name}</p>
                     </div>
                     <CardContent className="w-2/3 p-6 space-y-4 bg-card/50">
                         <div>
