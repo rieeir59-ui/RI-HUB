@@ -53,7 +53,7 @@ export default function DashboardSidebar() {
           <SidebarMenu>
             {menuItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href} legacyBehavior passHref>
+                <Link href={item.href} passHref>
                   <SidebarMenuButton
                     isActive={pathname === item.href}
                     className={cn(pathname === item.href && 'bg-sidebar-accent text-sidebar-accent-foreground')}
