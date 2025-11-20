@@ -10,9 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarFooter,
@@ -21,30 +19,17 @@ import {
 import {
   LayoutDashboard,
   Settings,
-  User,
   Briefcase,
-  Users,
-  Contact,
-  History,
   KeyRound,
   FileCheck,
   FileText,
-  FileQuestion,
   Database,
   FileUp,
   FileJson,
-  Book,
-  FileBarChart2,
-  Users2,
-  List,
   Clock,
   FileSpreadsheet,
-  Sheet,
-  Scale,
   FileKey2,
-  FileSignature,
   FilePlus2,
-  FileCheck2,
   LogOut,
   Folder,
   Search,
@@ -111,13 +96,13 @@ const menuItems = [
         { href: '/dashboard/project-application-summary', label: 'Project Application Summary' },
         { href: '/dashboard/continuation-sheet', label: 'Continuation Sheet' },
         { href: '/dashboard/construction-schedule', label: 'Construction Schedule' },
+        { href: '/dashboard/preliminary-project-budget', label: 'Preliminary Project Budget' },
       ],
     },
     {
       label: 'Bill Of Quantity',
       icon: FileSpreadsheet,
       subItems: [
-        { href: '/dashboard/preliminary-project-budget', label: 'Preliminary Project Budget' },
         { href: '/dashboard/bill-of-quantity', label: 'Bill Of Quantity' },
         { href: '/dashboard/rate-analysis', label: 'Rate Analysis' },
       ],
@@ -126,7 +111,6 @@ const menuItems = [
       label: 'Change Order',
       icon: FileKey2,
       subItems: [
-        { href: '/dashboard/change-order', label: 'Change Order' },
         { href: '/dashboard/payment-certificates', label: 'Payment Certificates' },
       ],
     },
@@ -144,8 +128,8 @@ const menuItems = [
     },
     { href: '/dashboard/document-summarizer', label: 'Document Summarizer', icon: FileJson },
     { href: '/dashboard/saved-records', label: 'Saved Records', icon: Database },
-    { href: '/dashboard/data-entry', label: 'Data Entry', icon: FileUp },
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+    { href: '/dashboard/data-entry', label: 'Data Entry', icon: FileUp, roles: ['admin'] },
+    { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['software-engineer', 'admin'] },
     { href: '/dashboard/credentials', label: 'Credentials', icon: KeyRound, roles: ['software-engineer', 'admin'] },
   ];
 
@@ -169,7 +153,6 @@ export default function DashboardSidebar() {
   });
   
   return (
-    <>
       <Sidebar side="left" collapsible="icon">
         <SidebarHeader className="p-4">
             <Link href="/dashboard" className="flex items-center gap-2 text-primary font-bold text-2xl font-headline">
@@ -230,4 +213,5 @@ export default function DashboardSidebar() {
             </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-    </>
+  );
+}
