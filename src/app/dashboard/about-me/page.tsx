@@ -1,6 +1,5 @@
 
-import Header from '@/components/layout/header';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Accordion,
   AccordionContent,
@@ -11,20 +10,28 @@ import Image from 'next/image';
 
 export default function AboutMePage() {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline text-2xl">About Us</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-base md:text-lg text-muted-foreground space-y-4">
+              <p>
+                Isbah Hassan & Associates (Pvt.) Ltd. offers elegant and innovative architecture and interior design solutions to meet the most discerning requirements.
+              </p>
+              <p>
+                Whether it’s a high-rise, a housing development, an amusement park or a campus, our holistic approach ensures that buildings are stylish, practical, comfortable and in perfect harmony with their indigenous surroundings.
+              </p>
+          </div>
+        </CardContent>
+      </Card>
+
       <main className="flex-grow">
-        <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className="space-y-6">
               <h1 className="text-4xl md:text-5xl font-headline text-primary">ISBAH HASSAN</h1>
-              <div className="text-base md:text-lg text-muted-foreground space-y-4">
-                  <p>
-                    Isbah Hassan & Associates (Pvt.) Ltd. offers elegant and innovative architecture and interior design solutions to meet the most discerning requirements.
-                  </p>
-                  <p>
-                    Whether it’s a high-rise, a housing development, an amusement park or a campus, our holistic approach ensures that buildings are stylish, practical, comfortable and in perfect harmony with their indigenous surroundings.
-                  </p>
-              </div>
             </div>
             <div className="relative h-80 md:h-[450px] w-full rounded-lg overflow-hidden shadow-2xl">
                 <Image
