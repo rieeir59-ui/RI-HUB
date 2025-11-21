@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -47,10 +48,10 @@ const CheckboxRow = ({ label, id }: { label: string; id: string }) => (
 const ConsultantRow = ({ type }: { type: string }) => (
     <TableRow>
         <TableCell className="font-medium">{type}</TableCell>
-        <TableCell><Checkbox name={`${type.toLowerCase().replace(/ /g, '_')}_basic`} /></TableCell>
-        <TableCell><Checkbox name={`${type.toLowerCase().replace(/ /g, '_')}_additional`} /></TableCell>
-        <TableCell><Checkbox name={`${type.toLowerCase().replace(/ /g, '_')}_architect`} /></TableCell>
-        <TableCell><Checkbox name={`${type.toLowerCase().replace(/ /g, '_')}_owner`} /></TableCell>
+        <TableCell><Input name={`${type.toLowerCase().replace(/ /g, '_')}_basic`} className="w-full" /></TableCell>
+        <TableCell><Input name={`${type.toLowerCase().replace(/ /g, '_')}_additional`} className="w-full" /></TableCell>
+        <TableCell><Input name={`${type.toLowerCase().replace(/ /g, '_')}_architect`} className="w-full" /></TableCell>
+        <TableCell><Input name={`${type.toLowerCase().replace(/ /g, '_')}_owner`} className="w-full" /></TableCell>
     </TableRow>
 );
 
@@ -258,17 +259,17 @@ export default function ProjectInformationPage() {
             const slug = type.toLowerCase().replace(/ /g, '_');
             return [
                 type,
-                getCheckboxValue(`${slug}_basic`) ? 'X' : '',
-                getCheckboxValue(`${slug}_additional`) ? 'X' : '',
-                getCheckboxValue(`${slug}_architect`) ? 'X' : '',
-                getCheckboxValue(`${slug}_owner`) ? 'X' : '',
+                getInputValue(`${slug}_basic`),
+                getInputValue(`${slug}_additional`),
+                getInputValue(`${slug}_architect`),
+                getInputValue(`${slug}_owner`),
             ];
         });
         doc.autoTable({
             head: head,
             body: body,
             startY: yPos,
-            styles: { halign: 'center' },
+            styles: { halign: 'left' },
             headStyles: { fillColor: [22, 160, 133] }
         });
         yPos = doc.autoTable.previous.finalY + 10;
