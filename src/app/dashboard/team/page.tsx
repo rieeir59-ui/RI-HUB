@@ -15,7 +15,7 @@ const TeamMemberCard = ({ name, role }: { name: string; role: string; }) => {
   }
 
   return (
-    <Card className="text-center bg-card/80 border-primary/20 shadow-lg hover:shadow-primary/30 transition-shadow duration-300">
+    <Card className="text-center bg-card/80 border-2 border-blue-600 shadow-lg hover:shadow-primary/30 transition-shadow duration-300">
       <CardContent className="p-4">
         <div className="relative inline-block">
             <div className="w-20 h-20 rounded-full bg-black flex items-center justify-center border-2 border-primary shadow-[0_0_8px_hsl(var(--primary))]">
@@ -51,7 +51,7 @@ export default function TeamPage() {
     const hr = [getEmployee('Sobia'), getEmployee('Fiza')];
     const architects = {
         lead: getEmployee('Asad'),
-        team: [getEmployee('Luqman'), getEmployee('Kizzar'), getEmployee('Waleed'), getEmployee('Haseeb')]
+        team: [getEmployee('Luqman'), getEmployee('Waleed'), getEmployee('Haseeb'), getEmployee('Kizzar')]
     };
     const finance = getEmployee('Waqar');
     const softwareEngineers = [getEmployee('Rabiya Eman'), getEmployee('Imran Abbas')];
