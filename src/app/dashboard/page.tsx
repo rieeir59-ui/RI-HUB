@@ -49,7 +49,7 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {departments.map((dept) => (
             <Link href={`/dashboard/department/${dept.slug}`} key={dept.name}>
-                <Card className="bg-sidebar text-sidebar-foreground border-2 border-primary/80 shadow-[0_0_15px_3px_hsl(var(--primary)/0.4)] h-full transition-transform hover:scale-105 hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.5)] cursor-pointer">
+                <Card className="bg-sidebar text-sidebar-foreground border-2 border-primary/80 shadow-lg h-full transition-transform hover:scale-105 hover:shadow-xl hover:shadow-primary/20 cursor-pointer">
                 <CardHeader>
                     <CardTitle className="text-primary font-bold uppercase">{dept.name}</CardTitle>
                 </CardHeader>

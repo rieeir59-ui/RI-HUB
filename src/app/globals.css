@@ -20,8 +20,8 @@ body {
     --secondary-foreground: 45 30% 20%;
     --muted: 45 50% 92%;
     --muted-foreground: 45 25% 45%;
-    --accent: 30 90% 70%; /* Soft orange for accents */
-    --accent-foreground: 30 50% 15%;
+    --accent: 0 0% 50%; /* Neutral gray */
+    --accent-foreground: 0 0% 98%; /* White */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 45 50% 85%;
@@ -52,8 +52,8 @@ body {
     --secondary-foreground: 45 65% 95%;
     --muted: 45 30% 20%;
     --muted-foreground: 45 40% 70%;
-    --accent: 30 90% 70%; /* Soft orange for accents */
-    --accent-foreground: 30 50% 15%;
+    --accent: 0 0% 80%; /* Light gray */
+    --accent-foreground: 0 0% 10%; /* Dark gray */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 45 30% 25%;
