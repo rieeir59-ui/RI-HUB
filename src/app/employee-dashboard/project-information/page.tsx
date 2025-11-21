@@ -283,7 +283,7 @@ export default function ProjectInformationPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other", "...", "...", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"].map(c => <ConsultantRow key={c} type={c} />)}
+                                    {["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other", "...", "...", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"].map((c, index) => <ConsultantRow key={`${c}-${index}`} type={c} />)}
                                 </TableBody>
                              </Table>
                         </Section>
@@ -324,5 +324,4 @@ export default function ProjectInformationPage() {
             </Card>
         </div>
     );
-
-    
+}
