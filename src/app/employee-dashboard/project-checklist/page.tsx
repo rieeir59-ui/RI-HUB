@@ -2,28 +2,20 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Download, Save } from 'lucide-react';
-import DashboardPageHeader from '@/components/dashboard/PageHeader';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 const checklistData = {
   predesign: {
-    title: 'Predesign',
+    title: '1: - Predesign',
     sections: {
       predesignServices: {
-        title: 'Predesign Services',
+        title: 'Predesign Services:',
         items: [
           'Project Administration',
           'Disciplines Coordination Document Checking',
@@ -56,10 +48,10 @@ const checklistData = {
     },
   },
   design: {
-    title: 'Design',
+    title: '2: - Design',
     sections: {
       schematicDesign: {
-        title: 'Schematic Design Services',
+        title: 'Schematic Design Services:',
         items: [
             'Project Administration',
             'Disciplines Coordination Document Checking',
@@ -79,7 +71,7 @@ const checklistData = {
         ],
       },
       designDevelopment: {
-        title: 'Design Development Services',
+        title: 'Design Development Services:',
         items: [
             'Project Administration',
             'Disciplines Coordination Document Checking',
@@ -99,7 +91,7 @@ const checklistData = {
         ],
       },
       constructionDocuments: {
-        title: 'Construction Documents Services',
+        title: 'Construction Documents Services:',
         items: [
             'Project Administration',
             'Disciplines Coordination Document Checking',
@@ -121,10 +113,10 @@ const checklistData = {
     },
   },
   construction: {
-    title: 'Construction',
+    title: '3: - Construction',
     sections: {
         bidding: {
-            title: 'Bidding Or Negotiation Services',
+            title: 'Bidding Or Negotiation Services:',
             items: [
                 'Project Administration',
                 'Disciplines Coordination Document Checking',
@@ -140,7 +132,7 @@ const checklistData = {
             ],
         },
         contractAdmin: {
-            title: 'Construction Contract Administration Services',
+            title: 'Construction Contract Administration Services:',
             items: [
                 'Project Administration',
                 'Disciplines Coordination Document Checking',
@@ -160,10 +152,10 @@ const checklistData = {
     },
   },
   postConstruction: {
-      title: 'Post-Construction',
+      title: '4: - Post Construction',
       sections: {
           postConstruction: {
-              title: 'Post Construction Services',
+              title: 'Post Construction Services:',
               items: [
                 'Project Administration',
                 'Disciplines Coordination Document Checking',
@@ -179,10 +171,10 @@ const checklistData = {
       },
   },
   supplemental: {
-      title: 'Supplemental',
+      title: '5: - Supplemental',
       sections: {
           supplemental: {
-              title: 'Supplemental Services',
+              title: 'Supplemental Services:',
               items: [
                 'Graphics Design',
                 'Fine Arts and Crafts Services',
@@ -191,7 +183,7 @@ const checklistData = {
               ],
           },
           materials: {
-              title: 'List Of Materials',
+              title: 'List Of Materials:',
               items: [
                 'Conceptual Site and Building Plans/ Basic Layout',
                 'Preliminary Sections and Elevations',
@@ -225,19 +217,16 @@ const checklistData = {
   },
 };
 
-const ChecklistItem = ({ item, id }: { item: string, id: string }) => {
+const ChecklistItem = ({ item, index }: { item: string, index: number }) => {
     return (
-        <div className="flex items-center space-x-3 py-2">
-            <Checkbox id={id} />
-            <Label htmlFor={id} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {item}
-            </Label>
+        <div className="flex items-start space-x-3 py-1">
+            <div className="flex-shrink-0 w-6 text-right font-medium">{`${index + 1}.`}</div>
+            <div className="flex-grow">{item}</div>
         </div>
     );
 };
 
 export default function ProjectChecklistPage() {
-    const image = PlaceHolderImages.find(p => p.id === 'project-checklist');
     const { toast } = useToast();
 
     const handleSave = () => {
@@ -252,66 +241,78 @@ export default function ProjectChecklistPage() {
             title: "Download Started",
             description: "Your checklist is being prepared for download.",
         });
+        window.print();
     };
 
     return (
-        <div className="space-y-8">
-            <DashboardPageHeader
-                title="Project Checklist"
-                description="Track project tasks with a checklist."
-                imageUrl={image?.imageUrl || ''}
-                imageHint={image?.imageHint || ''}
-            />
+        <div className="bg-white p-8 md:p-12 lg:p-16 text-black rounded-lg shadow-lg">
+            <style jsx global>{`
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    .printable-area, .printable-area * {
+                        visibility: visible;
+                    }
+                    .printable-area {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                    }
+                    .no-print {
+                        display: none;
+                    }
+                }
+            `}</style>
+            
+            <div className="printable-area">
+                <h1 className="text-2xl font-bold text-center mb-10">PROJECT CHECKLIST</h1>
 
-            <Card>
-                <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                        <div className="space-y-2">
-                            <Label htmlFor="project-name">Project Name, Address</Label>
-                            <Input id="project-name" placeholder="Enter project name and address" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="architect">Architect</Label>
-                            <Input id="architect" placeholder="Enter architect's name" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="project-no">Architect Project No</Label>
-                            <Input id="project-no" placeholder="Enter project number" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="project-date">Project Date</Label>
-                            <Input id="project-date" type="date" />
-                        </div>
+                <div className="space-y-4 mb-10">
+                    <div className="flex items-center">
+                        <Label htmlFor="project-name" className="w-48 font-semibold">Project:</Label>
+                        <Input id="project-name" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
                     </div>
-                    
-                    <Accordion type="multiple" className="w-full">
-                        {Object.entries(checklistData).map(([key, mainSection]) => (
-                            <AccordionItem value={key} key={key}>
-                                <AccordionTrigger className="text-2xl font-headline text-primary bg-muted/50 px-4 rounded-md">
-                                    {mainSection.title}
-                                </AccordionTrigger>
-                                <AccordionContent className="p-4 space-y-6">
-                                    {Object.entries(mainSection.sections).map(([sectionKey, subSection]) => (
-                                        <div key={sectionKey} className="space-y-2">
-                                            <h3 className="text-lg font-semibold border-b pb-2">{subSection.title}</h3>
-                                            <div className="pt-2 pl-2">
-                                                {subSection.items.map((item, index) => (
-                                                    <ChecklistItem key={index} item={item} id={`${sectionKey}-${index}`} />
-                                                ))}
-                                            </div>
+                    <div className="flex items-center">
+                        <Label htmlFor="architect" className="w-48 font-semibold">Name, Address: Architect:</Label>
+                        <Input id="architect" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
+                    </div>
+                    <div className="flex items-center">
+                        <Label htmlFor="project-no" className="w-48 font-semibold">Architect Project No:</Label>
+                        <Input id="project-no" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
+                    </div>
+                    <div className="flex items-center">
+                        <Label htmlFor="project-date" className="w-48 font-semibold">Project Date:</Label>
+                        <Input id="project-date" type="date" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
+                    </div>
+                </div>
+
+                <div className="space-y-8">
+                    {Object.values(checklistData).map((mainSection) => (
+                        <div key={mainSection.title}>
+                            <h2 className="text-xl font-bold mb-4">{mainSection.title}</h2>
+                            <div className="space-y-6">
+                                {Object.values(mainSection.sections).map((subSection) => (
+                                    <div key={subSection.title} className="pl-4">
+                                        <h3 className="font-semibold underline mb-2">{subSection.title}</h3>
+                                        <div className="space-y-1">
+                                            {subSection.items.map((item, index) => (
+                                                <ChecklistItem key={index} item={item} index={index} />
+                                            ))}
                                         </div>
-                                    ))}
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
-                    </Accordion>
-                    
-                    <div className="flex justify-end gap-4 mt-8">
-                        <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save Record</Button>
-                        <Button onClick={handleDownload} variant="outline"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
-                    </div>
-                </CardContent>
-            </Card>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="flex justify-end gap-4 mt-12 no-print">
+                <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                <Button onClick={handleDownload} variant="outline" className="text-black border-black hover:bg-gray-200"><Download className="mr-2 h-4 w-4" /> Download/Print PDF</Button>
+            </div>
         </div>
     );
 }
