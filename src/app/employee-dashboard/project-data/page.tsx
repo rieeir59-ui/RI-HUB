@@ -14,6 +14,10 @@ import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
+interface jsPDFWithAutoTable extends jsPDF {
+    autoTable: (options: any) => jsPDF;
+}
+
 const Section = ({ title, children }: { title?: string; children: React.ReactNode }) => (
   <div className="mb-6">
     {title && <h2 className="text-lg font-bold text-primary mb-3 pb-1 border-b border-primary">{title}</h2>}
@@ -23,7 +27,7 @@ const Section = ({ title, children }: { title?: string; children: React.ReactNod
   </div>
 );
 
-const InputRow = ({ label, id, placeholder, type = 'text' }: { label: string; id: string; placeholder?: string; type?: string }) => (
+const InputRow = ({ label, id, placeholder, type = 'text' }: { label: string; id: string; placeholder?: string; type?: string; }) => (
     <div className="flex items-center gap-4">
         <Label htmlFor={id} className="w-48 text-right">{label}</Label>
         <Input id={id} name={id} placeholder={placeholder} type={type} className="flex-1" />
@@ -43,11 +47,159 @@ export default function ProjectDataPage() {
     }
 
     const handleDownloadPdf = () => {
+        const form = document.getElementById('project-data-form') as HTMLFormElement;
+        if (!form) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not find form data.' });
+            return;
+        }
+
+        const doc = new jsPDF() as jsPDFWithAutoTable;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 14;
+        let yPos = 22;
+
+        const getInputValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.value || '';
+        const getRadioValue = (name: string) => (form.elements.namedItem(name) as HTMLInputElement)?.value || '';
+        
+        const addSectionTitle = (title: string) => {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text(title, margin, yPos);
+            yPos += 8;
+        };
+
+        const addKeyValuePair = (label: string, value: string) => {
+            if (yPos > 270) { doc.addPage(); yPos = 20; }
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.text(label, margin, yPos);
+            doc.setFont('helvetica', 'normal');
+            const splitValue = doc.splitTextToSize(value, pageWidth - margin * 2 - 50);
+            doc.text(splitValue, margin + 60, yPos);
+            yPos += (splitValue.length * 5) + 2;
+        };
+        
+        const addTextArea = (label: string, value: string) => {
+            if (yPos > 260) { doc.addPage(); yPos = 20; }
+             doc.setFont('helvetica', 'bold');
+            doc.text(label, margin, yPos);
+            yPos += 7;
+            doc.setFont('helvetica', 'normal');
+            const splitText = doc.splitTextToSize(value, pageWidth - margin * 2 - 5);
+            doc.text(splitText, margin + 5, yPos);
+            yPos += (splitText.length * 5) + 5;
+        }
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text('PROJECT DATA', pageWidth / 2, 15, { align: 'center' });
+
+        // --- General Info ---
+        addSectionTitle("Project Information");
+        addKeyValuePair('Project:', getInputValue('project_name'));
+        addKeyValuePair('Address:', getInputValue('project_address'));
+        addKeyValuePair('Owner:', getInputValue('project_owner'));
+        addKeyValuePair("Architect's Project No.:", getInputValue('architect_project_no'));
+        addKeyValuePair('Date:', getInputValue('project_date'));
+        addKeyValuePair('Tel:', getInputValue('project_tel'));
+        addKeyValuePair('Business Address:', getInputValue('business_address'));
+        addKeyValuePair('Home Address:', getInputValue('home_address'));
+        addKeyValuePair('Tel (Business):', getInputValue('business_tel'));
+        addKeyValuePair('Tel (Home):', getInputValue('home_tel'));
+
+        // --- Project Details ---
+        addSectionTitle("Project Details");
+        addKeyValuePair('Proposed Improvements:', getInputValue('proposed_improvements'));
+        addKeyValuePair('Building Dept. Classification:', getInputValue('building_classification'));
+        addKeyValuePair('Set Backs:', `N: ${getInputValue('setback_n')}, E: ${getInputValue('setback_e')}, S: ${getInputValue('setback_s')}, W: ${getInputValue('setback_w')}, Coverage: ${getInputValue('setback_coverage')}`);
+        addKeyValuePair('Cost:', getInputValue('project_cost'));
+        addKeyValuePair('Stories:', getInputValue('project_stories'));
+        addKeyValuePair('Fire Zone:', getInputValue('fire_zone'));
+        addTextArea('Other Agency Standards or Approvals Required:', getInputValue('agency_approvals'));
+
+        // --- Site Legal Description ---
+        addSectionTitle("Site Legal Description");
+        addTextArea('Description:', getInputValue('site_legal_description'));
+        addKeyValuePair('Deed recorded in Vol.:', getInputValue('deed_vol'));
+        addKeyValuePair('Page:', getInputValue('deed_page'));
+        addKeyValuePair('at:', getInputValue('deed_at'));
+        addKeyValuePair('to:', getInputValue('deed_to'));
+        addKeyValuePair('Date:', getInputValue('deed_date'));
+        addKeyValuePair('Restrictions:', getInputValue('restrictions'));
+        addKeyValuePair('Easements:', getInputValue('easements'));
+        addKeyValuePair('Liens, Leases:', getInputValue('liens_leases'));
+        addKeyValuePair('Lot Dimensions:', `Dimensions: ${getInputValue('lot_dimensions')}, Facing: ${getInputValue('lot_facing')}, Value: ${getInputValue('lot_value')}`);
+        addKeyValuePair('Adjacent property use:', getInputValue('adjacent_property_use'));
+
+        // --- Contacts ---
+        addSectionTitle("Contacts");
+        addKeyValuePair('Owners: Name:', getInputValue('owner_name_contact'));
+        addKeyValuePair('Designated Representative:', getInputValue('rep_name_contact'));
+        addKeyValuePair('Address:', getInputValue('contact_address'));
+        addKeyValuePair('Tel:', getInputValue('contact_tel'));
+        addKeyValuePair('Attorney at Law:', getInputValue('attorney'));
+        addKeyValuePair('Insurance Advisor:', getInputValue('insurance_advisor'));
+        addKeyValuePair('Consultant on:', getInputValue('consultant_on'));
+
+        // --- Site Information Sources ---
+        addSectionTitle("Site Information Sources");
+        addKeyValuePair('Property Survey by:', getInputValue('survey_property'));
+        addKeyValuePair('Date:', getInputValue('survey_property_date'));
+        addKeyValuePair('Topographic Survey by:', getInputValue('survey_topo'));
+        addKeyValuePair('Date:', getInputValue('survey_topo_date'));
+        addKeyValuePair('Soils Tests by:', getInputValue('soils_tests'));
+        addKeyValuePair('Date:', getInputValue('soils_date'));
+        addKeyValuePair('Aerial Photos by:', getInputValue('aerial_photos'));
+        addKeyValuePair('Date:', getInputValue('aerial_date'));
+        addKeyValuePair('Maps:', getInputValue('maps_source'));
+
+        // --- Public Services ---
+        addSectionTitle("Public Services");
+        addKeyValuePair('Gas Company (Name, Address):', getInputValue('gas_company'));
+        addKeyValuePair('Representative:', getInputValue('gas_rep'));
+        addKeyValuePair('Tel:', getInputValue('gas_tel'));
+        addKeyValuePair('Electric Co (Name, Address):', getInputValue('electric_company'));
+        addKeyValuePair('Representative:', getInputValue('electric_rep'));
+        addKeyValuePair('Tel:', getInputValue('electric_tel'));
+        addKeyValuePair('Telephone Co (Name, Address):', getInputValue('tel_company'));
+        addKeyValuePair('Representative:', getInputValue('tel_rep'));
+        addKeyValuePair('Tel:', getInputValue('tel_tel'));
+        addKeyValuePair('Sewers:', getInputValue('sewers'));
+        addKeyValuePair('Water:', getInputValue('water'));
+
+        // --- Financial Data ---
+        addSectionTitle("Financial Data");
+        addKeyValuePair('Loan:', `Amount: ${getInputValue('loan_amount')}, Type: ${getInputValue('loan_type')}, Rate: ${getInputValue('loan_rate')}`);
+        addKeyValuePair('Loan by:', getInputValue('loan_by'));
+        addKeyValuePair('Representative:', getInputValue('loan_rep'));
+        addKeyValuePair('Tel:', getInputValue('loan_tel'));
+        addKeyValuePair('Bonds or Liens:', getInputValue('bonds_liens'));
+        addKeyValuePair('Grant:', `Amount: ${getInputValue('grant_amount')}, Limitations: ${getInputValue('grant_limitations')}`);
+        addKeyValuePair('Grant from:', getInputValue('grant_from'));
+        addKeyValuePair('Representative:', getInputValue('grant_rep'));
+        addKeyValuePair('Tel:', getInputValue('grant_tel'));
+
+        // --- Method of Handling ---
+        addSectionTitle("Method of Handling");
+        addKeyValuePair('Contract Type:', getRadioValue('contract_type'));
+        addKeyValuePair('Negotiated:', getInputValue('negotiated'));
+        addKeyValuePair('Bid:', getInputValue('bid'));
+        addKeyValuePair('Stipulated Sum:', getInputValue('stipulated_sum'));
+        addKeyValuePair('Cost Plus Fee:', getInputValue('cost_plus_fee'));
+        addKeyValuePair('Force Amount:', getInputValue('force_amount'));
+        addKeyValuePair('Equipment:', `Fixed: ${getInputValue('equipment_fixed')}, Movable: ${getInputValue('equipment_movable')}, Interiors: ${getInputValue('equipment_interiors')}`);
+        addKeyValuePair('Landscaping:', getInputValue('landscaping'));
+
+        // --- Sketch of Property ---
+        addSectionTitle("Sketch of Property");
+        addTextArea('Notations:', getInputValue('sketch_notes'));
+
+        doc.save('project-data.pdf');
+        
         toast({
             title: "Download Started",
             description: "The project data PDF is being generated.",
         });
-        // PDF generation logic would go here
     }
     
     return (
@@ -220,3 +372,5 @@ export default function ProjectDataPage() {
         </div>
     );
 }
+
+    
