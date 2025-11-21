@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Users, Building, UserPlus } from 'lucide-react';
+import { Users } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useEmployees } from '@/context/EmployeeContext';
@@ -26,9 +26,8 @@ const departments = [
 ];
 
 export default function DashboardPage() {
-    const { employees, employeesByDepartment } = useEmployees();
+    const { employeesByDepartment } = useEmployees();
     const [departmentCounts, setDepartmentCounts] = useState<Record<string, number>>({});
-    const recentHires = employees.slice(-3);
 
     useEffect(() => {
         const counts: Record<string, number> = {};
@@ -41,44 +40,6 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-in fade-in-50 space-y-8">
-      <div className="space-y-4">
-            <h2 className="text-2xl font-headline font-bold">Analytics Overview</h2>
-             <div className="grid gap-6 md:grid-cols-3">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{employees.length}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Departments</CardTitle>
-                        <Building className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{departments.length}</div>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Recent Hires</CardTitle>
-                        <UserPlus className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-1">
-                          {recentHires.map((employee) => (
-                            <div key={employee.record} className="text-sm text-muted-foreground">
-                              {employee.name}
-                            </div>
-                          ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-      </div>
       <div>
         <h2 className="text-2xl font-headline font-bold mb-4">DEPARTMENTS</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
