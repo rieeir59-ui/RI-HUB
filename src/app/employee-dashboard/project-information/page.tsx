@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -68,51 +67,134 @@ export default function ProjectInformationPage() {
     }
 
     const handleDownloadPdf = () => {
-        const doc = new jsPDF() as jsPDFWithAutoTable;
-        
-        const form = document.getElementById('project-info-form');
-        if (form) {
-            doc.setFontSize(16);
-            doc.text("Project Information", 14, 20);
-            doc.setFontSize(10);
-            
-            const body = Array.from((form as HTMLFormElement).elements)
-                .filter(el => (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && el.id)
-                .map(el => {
-                    const input = el as HTMLInputElement;
-                    let value = '';
-                    if (input.type === 'checkbox') {
-                        value = input.checked ? 'Yes' : 'No';
-                    } else if(input.type === 'radio') {
-                         if (input.checked) value = input.value;
-                         else return null;
-                    } 
-                    else {
-                        value = input.value;
-                    }
-                    const label = document.querySelector(`label[for='${input.id}']`)?.textContent || input.id;
-                    return [label, value];
-                }).filter(row => row !== null && row[1] !== 'No' && row[1]);
-
-            // @ts-ignore
-            doc.autoTable({
-                head: [['Field', 'Value']],
-                body: body,
-                startY: 30,
-            });
-            
-            toast({
-                title: "PDF Downloaded",
-                description: "The project information has been downloaded as a PDF.",
-            });
-            doc.save('project-information.pdf');
-        } else {
+        const form = document.getElementById('project-info-form') as HTMLFormElement;
+        if (!form) {
              toast({
                 variant: 'destructive',
                 title: "Error",
                 description: "Could not find form data to generate PDF.",
             });
+            return;
         }
+
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 14;
+        let yPos = 22;
+        const lineSpacing = 8;
+        const labelX = margin;
+        const valueX = 65;
+        const lineXEnd = pageWidth - margin;
+
+        const getInputValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.value || '';
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text('PROJECT INFORMATION', pageWidth / 2, yPos, { align: 'center' });
+        yPos += 18;
+
+        const addLine = () => doc.line(valueX, yPos - 1, lineXEnd, yPos - 1);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        
+        // Project Information
+        doc.text('Project:', labelX, yPos);
+        doc.text(getInputValue('project'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+
+        doc.text('Address:', labelX, yPos);
+        doc.text(getInputValue('project_address'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+
+        doc.text('Project No:', labelX, yPos);
+        doc.text(getInputValue('project_no'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+        
+        doc.text('Prepared By:', labelX, yPos);
+        doc.text(getInputValue('prepared_by'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+
+        doc.text('Prepared Date:', labelX, yPos);
+        doc.text(getInputValue('prepared_date'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing + 2;
+
+        doc.setLineDash([1, 1], 0);
+        doc.line(margin, yPos, pageWidth - margin, yPos);
+        doc.setLineDash([], 0);
+        yPos += lineSpacing;
+
+        // About Owner
+        doc.setFont('helvetica', 'bold');
+        doc.text('About Owner:', labelX, yPos);
+        yPos += lineSpacing;
+
+        doc.setFont('helvetica', 'normal');
+        doc.text('Full Name:', labelX, yPos);
+        doc.text(getInputValue('owner_name'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+        
+        doc.text('Address (Office):', labelX, yPos);
+        doc.text(getInputValue('owner_office_address'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+
+        doc.text('Address (Res.):', labelX, yPos);
+        doc.text(getInputValue('owner_res_address'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+
+        doc.text('Phone (Office):', labelX, yPos);
+        doc.text(getInputValue('owner_office_phone'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+        
+        doc.text('Phone (Res.):', labelX, yPos);
+        doc.text(getInputValue('owner_res_phone'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+        
+        doc.text("Owner's Project Representative Name:", labelX, yPos);
+        doc.text(getInputValue('rep_name'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+        
+        doc.text('Address (Office):', labelX, yPos);
+        doc.text(getInputValue('rep_office_address'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+
+        doc.text('Address (Res.):', labelX, yPos);
+        doc.text(getInputValue('rep_res_address'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+
+        doc.text('Phone (Office):', labelX, yPos);
+        doc.text(getInputValue('rep_office_phone'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing;
+        
+        doc.text('Phone (Res.):', labelX, yPos);
+        doc.text(getInputValue('rep_res_phone'), valueX, yPos);
+        addLine();
+        yPos += lineSpacing + 2;
+
+        doc.setLineDash([1, 1], 0);
+        doc.line(margin, yPos, pageWidth - margin, yPos);
+        doc.setLineDash([], 0);
+        yPos += lineSpacing;
+
+        doc.save('project-information.pdf');
+        toast({
+            title: "PDF Downloaded",
+            description: "The project information has been downloaded as a PDF.",
+        });
     };
     
     return (
