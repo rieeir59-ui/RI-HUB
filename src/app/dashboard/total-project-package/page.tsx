@@ -1,12 +1,18 @@
 
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardPageHeader from "@/components/dashboard/PageHeader";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export default function Page() {
+  const image = PlaceHolderImages.find(p => p.id === 'total-project-package');
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Total Project Package</CardTitle>
-      </CardHeader>
-    </Card>
+    <div>
+      <DashboardPageHeader
+        title="Total Project Package"
+        description="Manage the total project package."
+        imageUrl={image?.imageUrl || ''}
+        imageHint={image?.imageHint || ''}
+      />
+    </div>
   );
 }

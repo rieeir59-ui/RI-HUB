@@ -1,14 +1,18 @@
 
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardPageHeader from "@/components/dashboard/PageHeader";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export default function Page() {
+  const image = PlaceHolderImages.find(p => p.id === 'employee-record');
+
   return (
     <div className="space-y-8">
-      <Card className="bg-card/90">
-          <CardHeader>
-              <CardTitle className="font-headline text-4xl text-center text-primary">Employee Record</CardTitle>
-          </CardHeader>
-      </Card>
+      <DashboardPageHeader
+        title="Employee Record"
+        description="View and manage employee records."
+        imageUrl={image?.imageUrl || ''}
+        imageHint={image?.imageHint || ''}
+      />
     </div>
   );
 }

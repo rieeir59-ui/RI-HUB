@@ -1,11 +1,18 @@
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+
+import DashboardPageHeader from "@/components/dashboard/PageHeader";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export default function DataEntryPage() {
+  const image = PlaceHolderImages.find(p => p.id === 'data-entry');
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Data Entry</CardTitle>
-      </CardHeader>
-    </Card>
+    <div>
+      <DashboardPageHeader
+        title="Data Entry"
+        description="Enter new data into the system."
+        imageUrl={image?.imageUrl || ''}
+        imageHint={image?.imageHint || ''}
+      />
+    </div>
   );
 }

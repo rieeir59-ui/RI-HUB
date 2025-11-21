@@ -1,3 +1,4 @@
+
 'use client';
 
 import { MoreHorizontal, PlusCircle, Download } from 'lucide-react';
@@ -60,6 +61,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useEmployees } from '@/context/EmployeeContext';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import DashboardPageHeader from '@/components/dashboard/PageHeader';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 
 const departments = [
@@ -89,6 +92,7 @@ export default function EmployeePage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const image = PlaceHolderImages.find(p => p.id === 'employee-record');
   
   const { toast } = useToast();
 
@@ -185,11 +189,17 @@ export default function EmployeePage() {
 
   return (
     <>
+      <DashboardPageHeader
+        title="Employees"
+        description="Manage your company's employee records."
+        imageUrl={image?.imageUrl || ''}
+        imageHint={image?.imageHint || ''}
+      />
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="font-headline text-2xl">Employees</CardTitle>
+              <CardTitle>Employee List</CardTitle>
               <CardDescription>Manage your company's employee records.</CardDescription>
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

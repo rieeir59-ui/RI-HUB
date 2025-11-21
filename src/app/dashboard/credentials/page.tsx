@@ -12,6 +12,8 @@ import {
 import { employees } from '@/lib/employees';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import DashboardPageHeader from '@/components/dashboard/PageHeader';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 // This is a mock hook to simulate getting the current user's role.
 // In a real app, this would come from your authentication context.
@@ -31,6 +33,7 @@ export default function CredentialsPage() {
   const router = useRouter();
   const userRole = useUserRole();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const image = PlaceHolderImages.find(p => p.id === 'credentials');
 
   useEffect(() => {
     if (userRole) {
@@ -51,31 +54,39 @@ export default function CredentialsPage() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Employee Credentials</CardTitle>
-        <CardDescription>List of all employee emails and passwords.</CardDescription>
-      </CardHeader>
-      <CardContent>
-         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Password</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {employees.map((employee) => (
-              <TableRow key={employee.record}>
-                <TableCell className="font-medium">{employee.name}</TableCell>
-                <TableCell>{employee.email}</TableCell>
-                <TableCell>{employee.password}</TableCell>
+    <div>
+      <DashboardPageHeader
+        title="Employee Credentials"
+        description="List of all employee emails and passwords."
+        imageUrl={image?.imageUrl || ''}
+        imageHint={image?.imageHint || ''}
+      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Credentials</CardTitle>
+          <CardDescription>Confidential employee login information.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Password</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+            </TableHeader>
+            <TableBody>
+              {employees.map((employee) => (
+                <TableRow key={employee.record}>
+                  <TableCell className="font-medium">{employee.name}</TableCell>
+                  <TableCell>{employee.email}</TableCell>
+                  <TableCell>{employee.password}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -1,11 +1,18 @@
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+
+import DashboardPageHeader from "@/components/dashboard/PageHeader";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export default function Page() {
+  const image = PlaceHolderImages.find(p => p.id === 'requirement-performa');
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Requirement Performa</CardTitle>
-      </CardHeader>
-    </Card>
+    <div>
+      <DashboardPageHeader
+        title="Requirement Performa"
+        description="Manage requirement performas."
+        imageUrl={image?.imageUrl || ''}
+        imageHint={image?.imageHint || ''}
+      />
+    </div>
   );
 }

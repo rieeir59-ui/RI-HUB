@@ -1,11 +1,18 @@
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+
+import DashboardPageHeader from "@/components/dashboard/PageHeader";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export default function SettingsPage() {
+  const image = PlaceHolderImages.find(p => p.id === 'settings');
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Settings</CardTitle>
-      </CardHeader>
-    </Card>
+    <div>
+      <DashboardPageHeader
+        title="Settings"
+        description="Configure your application settings."
+        imageUrl={image?.imageUrl || ''}
+        imageHint={image?.imageHint || ''}
+      />
+    </div>
   );
 }

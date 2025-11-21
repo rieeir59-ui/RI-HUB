@@ -1,12 +1,18 @@
 
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardPageHeader from "@/components/dashboard/PageHeader";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export default function Page() {
+  const image = PlaceHolderImages.find(p => p.id === 'list-of-sub-consultants');
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">List Of Sub-consultants</CardTitle>
-      </CardHeader>
-    </Card>
+    <div>
+      <DashboardPageHeader
+        title="List Of Sub-consultants"
+        description="Manage the list of sub-consultants."
+        imageUrl={image?.imageUrl || ''}
+        imageHint={image?.imageHint || ''}
+      />
+    </div>
   );
 }

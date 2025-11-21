@@ -1,14 +1,18 @@
 
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardPageHeader from "@/components/dashboard/PageHeader";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export default function Page() {
+  const image = PlaceHolderImages.find(p => p.id === 'project-chart-studio');
+
   return (
     <div className="space-y-8">
-      <Card className="bg-card/90">
-          <CardHeader>
-              <CardTitle className="font-headline text-4xl text-center text-primary">Project Chart (Studio)</CardTitle>
-          </CardHeader>
-      </Card>
+      <DashboardPageHeader
+        title="Project Chart (Studio)"
+        description="Visualize project data with charts."
+        imageUrl={image?.imageUrl || ''}
+        imageHint={image?.imageHint || ''}
+      />
     </div>
   );
 }

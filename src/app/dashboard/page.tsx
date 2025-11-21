@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -39,15 +40,6 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-in fade-in-50 space-y-8">
-       <Card className="bg-card/90 border-primary/30 shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-3xl font-headline text-primary">Welcome to RI-HUB Management System</CardTitle>
-          <CardDescription className="text-lg">Your central place for managing projects, employees, and operations.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Navigate through departments, manage employee records, and keep track of project details all in one place.</p>
-        </CardContent>
-      </Card>
       <div>
         <h2 className="text-2xl font-headline font-bold mb-4">DEPARTMENTS</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
