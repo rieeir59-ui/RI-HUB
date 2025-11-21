@@ -14,7 +14,7 @@ const TeamMemberCard = ({ name, role }: { name: string; role: string; }) => {
   }
 
   return (
-    <Card className="text-center bg-card/80 border-2 border-blue-600 shadow-lg hover:shadow-primary/30 transition-shadow duration-300">
+    <Card className="text-center bg-card/80 border-2 border-primary shadow-lg hover:shadow-primary/30 transition-shadow duration-300">
       <CardContent className="p-4">
         <div className="relative inline-block">
             <div className="w-20 h-20 rounded-full bg-black flex items-center justify-center border-2 border-primary shadow-[0_0_8px_hsl(var(--primary))]">
