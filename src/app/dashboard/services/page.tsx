@@ -230,24 +230,45 @@ const serviceCategories = [
   },
 ];
 
-const ServiceCategory = ({
+const ServiceCard = ({
+  number,
   title,
   icon: Icon,
+  color,
   services,
 }: {
+  number: number;
   title: string;
   icon: React.ElementType;
+  color: string;
   services: Record<string, string[]>;
 }) => {
   return (
-    <Card className="flex flex-col h-full bg-card overflow-hidden shadow-lg border-primary/20">
-      <CardHeader>
-        <div className="flex items-center gap-4">
-            <Icon className="h-8 w-8 text-primary" />
-            <CardTitle className="text-2xl font-headline text-primary">{title}</CardTitle>
+    <Card className="flex flex-col h-full bg-card overflow-hidden shadow-2xl border-primary/20 hover:border-primary/50 transition-all duration-300 hover:shadow-primary/20">
+      <div className="relative p-6">
+        <div
+          className={cn(
+            'absolute top-0 left-0 h-full w-full opacity-10',
+            color
+          )}
+          style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 0% 100%)' }}
+        ></div>
+        <div className="relative flex items-center justify-between">
+          <div
+            className={cn(
+              'flex items-center justify-center h-12 w-12 rounded-full text-white font-bold text-xl shadow-lg',
+              color
+            )}
+          >
+            {number}
+          </div>
+          <Icon className={cn('h-10 w-10', color.replace('bg-', 'text-'))} />
         </div>
-      </CardHeader>
-      <CardContent className="flex-grow">
+        <h3 className="mt-4 text-3xl font-headline font-bold text-primary">
+          {title}
+        </h3>
+      </div>
+      <CardContent className="flex-grow pt-4">
         <Accordion type="single" collapsible className="w-full">
           {Object.entries(services).map(([subtitle, items]) => (
             <AccordionItem value={subtitle} key={subtitle}>
@@ -281,7 +302,7 @@ export default function DashboardServicesPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {serviceCategories.map((cat) => (
-            <ServiceCategory key={cat.number} title={cat.title} icon={cat.icon} services={cat.services} />
+            <ServiceCard key={cat.number} {...cat} />
           ))}
         </div>
     </div>
