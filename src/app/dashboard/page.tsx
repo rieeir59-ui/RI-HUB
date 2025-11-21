@@ -55,7 +55,7 @@ export default function DashboardPage() {
             <Link href={`/dashboard/department/${dept.slug}`} key={dept.name}>
                 <Card className="bg-sidebar text-sidebar-foreground border-2 border-primary/80 shadow-[0_0_15px_3px_hsl(var(--primary)/0.4)] h-full transition-transform hover:scale-105 hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.5)] cursor-pointer">
                 <CardHeader>
-                    <CardTitle className="text-primary font-bold">{dept.name}</CardTitle>
+                    <CardTitle className="text-primary font-bold uppercase">{dept.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center space-x-2 text-sidebar-foreground/80">
