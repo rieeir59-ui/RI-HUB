@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -131,8 +132,6 @@ function TeamPageContent() {
 
 export default function TeamPage() {
     return (
-        <EmployeeProvider>
-            <TeamPageContent />
-        </EmployeeProvider>
+        <TeamPageContent />
     )
 }
