@@ -60,7 +60,7 @@ const menuItems = [
     { href: '/dashboard/employee', label: 'Employees', icon: Users },
     { href: '/dashboard/team', label: 'Our Team', icon: User },
     { href: '/dashboard/about-me', label: 'About Me', icon: User },
-    { href: '/dashboard/services', label: 'Services', icon: FileText },
+    { href: 'src/app/dashboard/services', label: 'Services', icon: FileText },
     { href: '/dashboard/data-entry', label: 'Data Entry', icon: FileUp, roles: ['admin'] },
     { href: '/dashboard/saved-records', label: 'Saved Records', icon: Database, roles: ['admin', 'software-engineer'] },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['software-engineer', 'admin'] },
@@ -132,7 +132,7 @@ export default function DashboardSidebar() {
         <SidebarHeader className="p-4">
             <Link href="/dashboard" className="flex items-center gap-2 text-primary font-bold text-2xl font-headline">
                 <Users className="w-8 h-8" />
-                <span className="group-data-[collapsible=icon]:hidden">RI Dashboard</span>
+                <span className="group-data-[collapsible=icon]:hidden">RI-HUB</span>
             </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">
