@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -48,8 +49,8 @@ export default function SavedRecordsPage() {
         // Wait until we have a user to determine roles
         if (!currentUser) {
             // Still loading the user, so we wait.
-            if (isLoading) return;
-            setIsLoading(true);
+            // If we are not already loading, set loading to true.
+            if (!isLoading) setIsLoading(true);
             return;
         }
 
