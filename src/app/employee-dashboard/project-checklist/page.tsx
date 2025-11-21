@@ -358,21 +358,19 @@ export default function ProjectChecklistPage() {
         doc.text(`Architect Project No: ${projectNo || 'N/A'}`, 14, 44);
         doc.text(`Project Date: ${projectDate || 'N/A'}`, 14, 50);
 
-        const tableData = selectedData.flatMap(section => [
-            { content: section.category, styles: { fontStyle: 'bold', fillColor: '#f0f0f0' } },
-            ...section.items.map(item => ({ content: item }))
-        ]);
+        const body: any[] = [];
+        selectedData.forEach(section => {
+            body.push([{ content: section.category, colSpan: 1, styles: { fontStyle: 'bold' } }]);
+            section.items.forEach(item => {
+                body.push([item]);
+            });
+        });
 
         doc.autoTable({
             startY: 60,
-            head: [['Selected Items']],
-            body: tableData.map(row => [row.content]),
-            didParseCell: (data) => {
-                if (data.row.raw.styles) {
-                    Object.assign(data.cell.styles, data.row.raw.styles);
-                }
-            },
-            theme: 'grid'
+            body: body,
+            theme: 'plain',
+            showHead: 'never',
         });
 
         doc.save(`${projectName || 'project'}_checklist.pdf`);
