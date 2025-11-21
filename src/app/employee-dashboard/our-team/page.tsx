@@ -30,37 +30,37 @@ const TeamMemberCard = ({ name, role }: { name: string; role: string; }) => {
   );
 };
 
-const DepartmentSection = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => (
-    <div className="space-y-4">
-        <div className="flex items-center gap-3">
-            <div className="bg-primary p-2 rounded-full text-primary-foreground">
-                {icon}
+const DepartmentSection = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => {
+    if (React.Children.count(children) === 0) return null;
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center gap-3">
+                <div className="bg-primary p-2 rounded-full text-primary-foreground">
+                    {icon}
+                </div>
+                <h2 className="text-2xl font-headline font-semibold text-primary">{title}</h2>
             </div>
-            <h2 className="text-2xl font-headline font-semibold text-primary">{title}</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pl-12">
+                {children}
+            </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pl-12">
-            {children}
-        </div>
-    </div>
-);
-
+    );
+}
 
 export default function TeamPage() {
-    const { employees } = useEmployees();
+    const { employeesByDepartment } = useEmployees();
     
-    const getEmployeesByDept = (deptSlug: string) => employees.filter(e => e.department === deptSlug);
-
-    const ceo = getEmployeesByDept('ceo')[0];
-    const hr = getEmployeesByDept('hr');
+    const ceo = employeesByDepartment['ceo']?.[0];
+    const hr = employeesByDepartment['hr'] || [];
     const architects = {
-        lead: employees.find(e => e.name.toLowerCase() === 'asad'),
-        team: getEmployeesByDept('architects').filter(e => e.name.toLowerCase() !== 'asad')
+        lead: (employeesByDepartment['architects'] || []).find(e => e.name.toLowerCase() === 'asad'),
+        team: (employeesByDepartment['architects'] || []).filter(e => e.name.toLowerCase() !== 'asad')
     };
-    const finance = getEmployeesByDept('finance');
-    const softwareEngineers = getEmployeesByDept('software-engineer');
-    const quantityManagement = getEmployeesByDept('quantity-management');
-    const visualizer = getEmployeesByDept('3d-visualizer');
-    const drafting = getEmployeesByDept('draftman');
+    const finance = employeesByDepartment['finance'] || [];
+    const softwareEngineers = employeesByDepartment['software-engineer'] || [];
+    const quantityManagement = employeesByDepartment['quantity-management'] || [];
+    const visualizer = employeesByDepartment['3d-visualizer'] || [];
+    const drafting = employeesByDepartment['draftman'] || [];
 
   return (
     <div className="space-y-12">
@@ -71,25 +71,25 @@ export default function TeamPage() {
         </Card>
 
         {/* CEO Section */}
-        <div className="text-center space-y-4">
-             <div className="inline-flex items-center gap-3">
-                <Crown className="h-8 w-8 text-primary" />
-                <h2 className="text-3xl font-headline font-bold text-primary">Chief Executive Officer</h2>
-             </div>
-             <div className="flex justify-center">
-                 {ceo && <div className="w-64"><TeamMemberCard name={ceo.name} role="CEO" /></div>}
-             </div>
-        </div>
+        {ceo && (
+            <div className="text-center space-y-4">
+                 <div className="inline-flex items-center gap-3">
+                    <Crown className="h-8 w-8 text-primary" />
+                    <h2 className="text-3xl font-headline font-bold text-primary">Chief Executive Officer</h2>
+                 </div>
+                 <div className="flex justify-center">
+                    <div className="w-64"><TeamMemberCard name={ceo.name} role="CEO" /></div>
+                 </div>
+            </div>
+        )}
 
         <div className="border-t border-dashed border-primary/50 my-8"></div>
 
         <div className="space-y-10">
-            {/* HR Department */}
             <DepartmentSection title="Human Resources" icon={<Users className="w-5 h-5" />}>
-                {hr.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="HR" />)}
+                {hr.map(e => <TeamMemberCard key={e.record} name={e.name} role="HR" />)}
             </DepartmentSection>
 
-            {/* Architects Department */}
             <div className="space-y-4">
                 <div className="flex items-center gap-3">
                     <div className="bg-primary p-2 rounded-full text-primary-foreground">
@@ -100,30 +100,29 @@ export default function TeamPage() {
                 <div className="pl-12 space-y-6">
                     {architects.lead && <div className="w-48"><TeamMemberCard name={architects.lead.name} role="Lead Architect" /></div>}
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
-                        {architects.team.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Architect" />)}
+                        {architects.team.map(e => <TeamMemberCard key={e.record} name={e.name} role="Architect" />)}
                     </div>
                 </div>
             </div>
 
-            {/* Other Departments */}
             <DepartmentSection title="Finance" icon={<Users className="w-5 h-5" />}>
-                {finance.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Finance" />)}
+                {finance.map(e => <TeamMemberCard key={e.record} name={e.name} role="Finance" />)}
             </DepartmentSection>
 
              <DepartmentSection title="Software Engineers" icon={<Users className="w-5 h-5" />}>
-                {softwareEngineers.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Software Engineer" />)}
+                {softwareEngineers.map(e => <TeamMemberCard key={e.record} name={e.name} role="Software Engineer" />)}
             </DepartmentSection>
 
             <DepartmentSection title="Quantity Management" icon={<Users className="w-5 h-5" />}>
-                {quantityManagement.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Quantity Manager" />)}
+                {quantityManagement.map(e => <TeamMemberCard key={e.record} name={e.name} role="Quantity Manager" />)}
             </DepartmentSection>
 
             <DepartmentSection title="3D Visualizer" icon={<User className="w-5 h-5" />}>
-                {visualizer.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="3D Visualizer" />)}
+                {visualizer.map(e => <TeamMemberCard key={e.record} name={e.name} role="3D Visualizer" />)}
             </DepartmentSection>
 
             <DepartmentSection title="Drafting" icon={<Users className="w-5 h-5" />}>
-                {drafting.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Draftsman" />)}
+                {drafting.map(e => <TeamMemberCard key={e.record} name={e.name} role="Draftsman" />)}
             </DepartmentSection>
         </div>
     </div>
