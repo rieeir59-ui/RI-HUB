@@ -1,0 +1,11 @@
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+
+export default function SavedRecordsPage() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-headline text-2xl">Saved Records</CardTitle>
+      </CardHeader>
+    </Card>
+  );
+}
