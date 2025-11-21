@@ -290,21 +290,17 @@ export default function ProjectChecklistPage() {
                                 <AccordionTrigger className="text-2xl font-headline text-primary bg-muted/50 px-4 rounded-md">
                                     {mainSection.title}
                                 </AccordionTrigger>
-                                <AccordionContent className="p-4">
-                                    <Accordion type="multiple" className="w-full space-y-4">
-                                        {Object.entries(mainSection.sections).map(([sectionKey, subSection]) => (
-                                            <AccordionItem value={sectionKey} key={sectionKey}>
-                                                <AccordionTrigger className="text-lg font-semibold border-b pb-2">
-                                                    {subSection.title}
-                                                </AccordionTrigger>
-                                                <AccordionContent className="pt-4 pl-2">
-                                                    {subSection.items.map((item, index) => (
-                                                        <ChecklistItem key={index} item={item} id={`${sectionKey}-${index}`} />
-                                                    ))}
-                                                </AccordionContent>
-                                            </AccordionItem>
-                                        ))}
-                                    </Accordion>
+                                <AccordionContent className="p-4 space-y-6">
+                                    {Object.entries(mainSection.sections).map(([sectionKey, subSection]) => (
+                                        <div key={sectionKey} className="space-y-2">
+                                            <h3 className="text-lg font-semibold border-b pb-2">{subSection.title}</h3>
+                                            <div className="pt-2 pl-2">
+                                                {subSection.items.map((item, index) => (
+                                                    <ChecklistItem key={index} item={item} id={`${sectionKey}-${index}`} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </AccordionContent>
                             </AccordionItem>
                         ))}
@@ -319,5 +315,3 @@ export default function ProjectChecklistPage() {
         </div>
     );
 }
-
-    
