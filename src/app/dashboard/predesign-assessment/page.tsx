@@ -129,6 +129,10 @@ const factorsData = {
   },
 };
 
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => jsPDF;
+}
+
 const ChecklistItem = ({ item }: { item: { label: string; level: number } }) => {
   return (
     <div className="flex items-start">
@@ -152,11 +156,92 @@ export default function PredesignAssessmentPage() {
   };
 
   const handleDownload = () => {
+    const doc = new jsPDF() as jsPDFWithAutoTable;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 14;
+    let yPos = 20;
+
+    const getInputValue = (id: string) => {
+        const element = document.getElementById(id) as HTMLInputElement;
+        return element ? element.value : '';
+    };
+
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PREDESIGN ASSESSMENT', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const projectInfo = [
+        { title: 'Project:', value: getInputValue('project-name') },
+        { title: 'Architect:', value: getInputValue('architect') },
+        { title: 'Architects Project No:', value: getInputValue('project-no') },
+        { title: 'Project Date:', value: getInputValue('project-date') }
+    ];
+
+    projectInfo.forEach(info => {
+        doc.text(info.title, margin, yPos);
+        doc.text(info.value, margin + 50, yPos);
+        yPos += 7;
+    });
+
+    yPos += 10;
+    
+    const maxRows = Math.max(
+        factorsData.humanFactors.items.length,
+        factorsData.physicalFactors.items.length,
+        factorsData.externalFactors.items.length
+    );
+
+    const body = [];
+    for (let i = 0; i < maxRows; i++) {
+        const humanItem = factorsData.humanFactors.items[i];
+        const physicalItem = factorsData.physicalFactors.items[i];
+        const externalItem = factorsData.externalFactors.items[i];
+
+        const formatItem = (item: {label: string, level: number} | undefined) => {
+            if (!item) return '';
+            const indentation = ' '.repeat(item.level * 2);
+            return `${indentation}[] ${item.label}`;
+        };
+
+        body.push([
+            formatItem(humanItem),
+            formatItem(physicalItem),
+            formatItem(externalItem)
+        ]);
+    }
+    
+    doc.autoTable({
+        startY: yPos,
+        head: [['Human Factors', 'Physical Factors', 'External Factors']],
+        body: body,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [22, 160, 133],
+            textColor: 255,
+            fontStyle: 'bold',
+            halign: 'center'
+        },
+        styles: {
+            font: 'courier', // Monospaced font to respect indentation
+            fontSize: 8,
+            cellPadding: 2,
+            valign: 'top',
+        },
+        didParseCell: function (data) {
+             if (data.section === 'body') {
+                data.cell.styles.fillColor = '#ffffff';
+             }
+        }
+    });
+
+    doc.save('predesign-assessment.pdf');
     toast({
       title: "Download Started",
       description: "Your predesign assessment PDF is being generated.",
     });
-    // Add actual PDF generation logic here if needed
   };
 
   return (
@@ -205,3 +290,5 @@ export default function PredesignAssessmentPage() {
     </div>
   );
 }
+
+    
