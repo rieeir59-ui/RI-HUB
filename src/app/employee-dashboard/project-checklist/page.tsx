@@ -282,14 +282,14 @@ export default function ProjectChecklistPage() {
     };
     
     const getSelectedItems = () => {
-        const selected: { category: string, items: string[] }[] = [];
+        const selected: { mainTitle: string, subTitle: string, items: string[] }[] = [];
         for (const mainKey in checklistData) {
             const mainSection = checklistData[mainKey as keyof typeof checklistData];
             for (const subKey in mainSection.sections) {
                 const subSection = mainSection.sections[subKey as keyof typeof mainSection.sections];
                 const items = subSection.items.filter((_, index) => checkedItems[mainKey][subKey][index]);
                 if (items.length > 0) {
-                    selected.push({ category: subSection.title, items });
+                    selected.push({ mainTitle: mainSection.title, subTitle: subSection.title, items });
                 }
             }
         }
@@ -306,8 +306,12 @@ export default function ProjectChecklistPage() {
             return;
         }
 
-        const selectedData = getSelectedItems();
-        if (selectedData.length === 0) {
+        const selectedDataForSave = getSelectedItems().map(s => ({
+            category: `${s.mainTitle} - ${s.subTitle}`,
+            items: s.items
+        }));
+
+        if (selectedDataForSave.length === 0) {
             toast({ variant: "destructive", title: "Nothing to save", description: "Please select at least one item."});
             return;
         }
@@ -318,7 +322,7 @@ export default function ProjectChecklistPage() {
                 employeeName: currentUser.name,
                 fileName: 'Project Checklist',
                 projectName: projectName || 'Untitled Project',
-                data: selectedData,
+                data: selectedDataForSave,
                 createdAt: serverTimestamp(),
             });
 
@@ -339,7 +343,7 @@ export default function ProjectChecklistPage() {
     const handleDownload = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
         const selectedData = getSelectedItems();
-
+    
         if (selectedData.length === 0) {
             toast({
                 variant: "destructive",
@@ -348,33 +352,76 @@ export default function ProjectChecklistPage() {
             });
             return;
         }
-
-        doc.setFontSize(18);
-        doc.text('Project Checklist', 14, 22);
-
+    
+        // Main Title
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text('PROJECT CHECKLIST', doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
+    
+        // Project Info
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
-        doc.text(`Project: ${projectName || 'N/A'}`, 14, 32);
-        doc.text(`Name, Address: Architect: ${architectName || 'N/A'}`, 14, 38);
-        doc.text(`Architect Project No: ${projectNo || 'N/A'}`, 14, 44);
-        doc.text(`Project Date: ${projectDate || 'N/A'}`, 14, 50);
-
-        const body: any[] = [];
+        let yPos = 40;
+        doc.text('Project:', 14, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(projectName || '', 60, yPos);
+        yPos += 7;
+    
+        doc.setFont('helvetica', 'bold');
+        doc.text('Name, Address: Architect:', 14, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(architectName || '', 60, yPos);
+        yPos += 7;
+    
+        doc.setFont('helvetica', 'bold');
+        doc.text('Architect Project No:', 14, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(projectNo || '', 60, yPos);
+        yPos += 7;
+    
+        doc.setFont('helvetica', 'bold');
+        doc.text('Project Date:', 14, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(projectDate || '', 60, yPos);
+        yPos += 14;
+    
+        let lastMainTitle = '';
+    
         selectedData.forEach(section => {
-            body.push([{ content: section.category, colSpan: 1, styles: { fontStyle: 'bold' } }]);
-            section.items.forEach(item => {
-                body.push([item]);
+            if (section.mainTitle !== lastMainTitle) {
+                if (lastMainTitle !== '') yPos += 7; // Add space between main sections
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.text(section.mainTitle, 14, yPos);
+                yPos += 7;
+                lastMainTitle = section.mainTitle;
+            }
+    
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(11);
+            doc.text(section.subTitle, 20, yPos, { 'decoration': 'underline' });
+            yPos += 7;
+    
+            const body = section.items.map((item, index) => [`${index + 1}.`, item]);
+    
+            doc.autoTable({
+                startY: yPos,
+                body: body,
+                theme: 'plain',
+                showHead: 'never',
+                columnStyles: {
+                    0: { cellWidth: 8, fontStyle: 'normal' },
+                    1: { cellWidth: 'auto', fontStyle: 'normal' },
+                },
+                styles: { fontSize: 11, cellPadding: {top: 0.5, right: 1, bottom: 0.5, left: 1} },
+                margin: { left: 20 }
             });
+    
+            yPos = (doc as any).lastAutoTable.finalY + 7;
         });
-
-        doc.autoTable({
-            startY: 60,
-            body: body,
-            theme: 'plain',
-            showHead: 'never',
-        });
-
+    
         doc.save(`${projectName || 'project'}_checklist.pdf`);
-
+    
         toast({
             title: "Download Started",
             description: "Your checklist PDF is being generated.",
@@ -444,3 +491,4 @@ export default function ProjectChecklistPage() {
     );
 
     
+
