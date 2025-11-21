@@ -11,22 +11,7 @@ import { Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-
-// This is a mock hook to simulate getting the current user's role.
-// In a real app, this would come from your authentication context.
-const useUserRole = () => {
-  const [role, setRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    // For demonstration, we'll simulate the role of 'software-engineer' which has admin-like access here.
-    const timer = setTimeout(() => {
-        setRole('software-engineer'); 
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return role;
-};
+import { useCurrentUser } from '@/context/UserContext';
 
 
 type SavedRecordData = {
@@ -47,7 +32,7 @@ type SavedRecord = {
 export default function SavedRecordsPage() {
     const image = PlaceHolderImages.find(p => p.id === 'saved-records');
     const { firestore } = useFirebase();
-    const userRole = useUserRole();
+    const { user: currentUser } = useCurrentUser();
     const { toast } = useToast();
 
     const [records, setRecords] = useState<SavedRecord[]>([]);
@@ -55,18 +40,29 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        if (!firestore || !userRole) {
+        if (!firestore) {
             setIsLoading(false);
             return;
         }
 
-        if (userRole !== 'admin' && userRole !== 'software-engineer') {
-            setIsLoading(false);
+        // Wait until we have a user to determine roles
+        if (!currentUser) {
+            // Still loading the user, so we wait.
+            if (isLoading) return;
+            setIsLoading(true);
             return;
         }
 
+        const isAuthorized = currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo';
+
+        if (!isAuthorized) {
+            setIsLoading(false);
+            return;
+        }
+        
+        const recordsCollection = collection(firestore, 'savedRecords');
         const q = query(
-            collection(firestore, 'savedRecords'),
+            recordsCollection,
             orderBy('createdAt', 'desc')
         );
 
@@ -81,7 +77,7 @@ export default function SavedRecordsPage() {
             })
             .catch(serverError => {
                 const permissionError = new FirestorePermissionError({
-                    path: q.path,
+                    path: recordsCollection.path,
                     operation: 'list'
                 });
                 setError(permissionError);
@@ -91,7 +87,7 @@ export default function SavedRecordsPage() {
                 setIsLoading(false);
             });
             
-    }, [firestore, userRole, toast]);
+    }, [firestore, currentUser, toast, isLoading]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
@@ -118,7 +114,7 @@ export default function SavedRecordsPage() {
         URL.revokeObjectURL(url);
     };
 
-    if (userRole === null) {
+    if (!currentUser && isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -127,7 +123,9 @@ export default function SavedRecordsPage() {
         )
     }
 
-    if (userRole !== 'admin' && userRole !== 'software-engineer') {
+    const isAuthorized = currentUser && (currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo');
+
+    if (!isAuthorized) {
         return (
              <div className="space-y-8">
                 <DashboardPageHeader

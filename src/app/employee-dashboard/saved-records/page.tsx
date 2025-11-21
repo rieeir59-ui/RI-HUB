@@ -40,13 +40,22 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        if (!firestore || !currentUser) {
+        if (!firestore) {
             setIsLoading(false);
             return;
         }
+
+        // Wait until we have a user to query with
+        if (!currentUser) {
+            // Still loading the user, so we wait.
+             if (isLoading) return;
+            setIsLoading(true);
+            return;
+        }
         
+        const recordsCollection = collection(firestore, 'savedRecords');
         const q = query(
-            collection(firestore, 'savedRecords'),
+            recordsCollection,
             where('employeeId', '==', currentUser.record),
             orderBy('createdAt', 'desc')
         );
@@ -62,7 +71,7 @@ export default function SavedRecordsPage() {
             })
             .catch(serverError => {
                  const permissionError = new FirestorePermissionError({
-                    path: q.path,
+                    path: recordsCollection.path,
                     operation: 'list'
                 });
                 setError(permissionError);
@@ -72,7 +81,7 @@ export default function SavedRecordsPage() {
                 setIsLoading(false);
             });
 
-    }, [firestore, currentUser, toast]);
+    }, [firestore, currentUser, toast, isLoading]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
@@ -99,6 +108,15 @@ export default function SavedRecordsPage() {
         URL.revokeObjectURL(url);
     };
 
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-4">Loading your records...</span>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-8">
             <DashboardPageHeader
@@ -107,13 +125,6 @@ export default function SavedRecordsPage() {
                 imageUrl={image?.imageUrl || ''}
                 imageHint={image?.imageHint || ''}
             />
-
-            {isLoading && (
-                <div className="flex justify-center items-center h-64">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                    <span className="ml-4">Loading your records...</span>
-                </div>
-            )}
 
             {error && (
                  <Card className="text-center py-12 bg-destructive/10 border-destructive">

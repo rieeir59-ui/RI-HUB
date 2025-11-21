@@ -25,28 +25,10 @@ import {
   FileUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-
-// This is a mock hook to simulate getting the current user's role.
-// In a real app, this would come from your authentication context.
-const useUserRole = () => {
-  const [role, setRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    // For demonstration, we'll simulate the role of a 'software-engineer'
-    // after a short delay to mimic async fetching.
-    const timer = setTimeout(() => {
-        setRole('software-engineer'); 
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return role;
-};
+import { useCurrentUser } from '@/context/UserContext';
 
 
 const menuItems = [
@@ -54,9 +36,9 @@ const menuItems = [
     { href: '/dashboard/employee', label: 'Employees', icon: Users },
     { href: '/dashboard/team', label: 'Our Team', icon: User },
     { href: '/dashboard/about-me', label: 'About Me', icon: User },
-    { href: 'src/app/dashboard/services', label: 'Services', icon: FileText },
+    { href: '/dashboard/services', label: 'Services', icon: FileText },
     { href: '/dashboard/data-entry', label: 'Data Entry', icon: FileUp, roles: ['admin'] },
-    { href: '/dashboard/saved-records', label: 'Saved Records', icon: Database, roles: ['admin', 'software-engineer'] },
+    { href: '/dashboard/saved-records', label: 'Saved Records', icon: Database, roles: ['admin', 'software-engineer', 'ceo'] },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['software-engineer', 'admin'] },
     { href: '/dashboard/credentials', label: 'Credentials', icon: KeyRound, roles: ['software-engineer', 'admin'] },
   ];
@@ -64,11 +46,12 @@ const menuItems = [
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
-  const userRole = useUserRole();
+  const { user: currentUser, logout } = useCurrentUser();
   const { toast } = useToast();
   const router = useRouter();
 
   const handleLogout = () => {
+    logout();
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out.",
@@ -79,7 +62,7 @@ export default function DashboardSidebar() {
   const visibleMenuItems = menuItems.filter(item => {
     if (!item.roles) return true;
     // if a role is available, check if the user has one of the required roles
-    return userRole && item.roles.includes(userRole);
+    return currentUser && item.roles.includes(currentUser.department);
   });
   
   return (
