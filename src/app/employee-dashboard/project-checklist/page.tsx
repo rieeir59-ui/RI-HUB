@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -10,9 +9,9 @@ import { Download, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { employees } from '@/lib/employees';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { useCurrentUser } from '@/context/UserContext';
 
 const checklistData = {
   predesign: {
@@ -231,13 +230,6 @@ interface jsPDFWithAutoTable extends jsPDF {
     autoTable: (options: any) => jsPDF;
 }
 
-// This is a mock hook to simulate getting the current logged-in user.
-// In a real app, this would come from your authentication context.
-const useCurrentUser = () => {
-    // For demonstration, we'll simulate the user 'Rabiya Eman'.
-    return employees.find(e => e.email === 'rabiya.eman@ri-hub.com') || null;
-};
-
 
 const initializeState = (): ChecklistState => {
     const initialState: ChecklistState = {};
@@ -270,7 +262,7 @@ export default function ProjectChecklistPage() {
     const [projectNo, setProjectNo] = useState('');
     const [projectDate, setProjectDate] = useState('');
     const { firestore } = useFirebase();
-    const currentUser = useCurrentUser();
+    const { user: currentUser } = useCurrentUser();
 
 
     const handleCheckboxChange = (mainKey: string, subKey: string, itemIndex: number, checked: boolean) => {
@@ -328,7 +320,7 @@ export default function ProjectChecklistPage() {
 
             toast({
                 title: "Record Saved",
-                description: "Your project checklist has been saved.",
+                description: "Your project checklist has been saved to the central database.",
             });
         } catch (error) {
             console.error("Error saving document: ", error);
@@ -489,6 +481,4 @@ export default function ProjectChecklistPage() {
             </div>
         </div>
     );
-
-    
-
+}

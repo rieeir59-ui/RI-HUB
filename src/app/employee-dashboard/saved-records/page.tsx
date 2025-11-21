@@ -1,23 +1,16 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useFirebase } from '@/firebase/provider';
 import { collection, query, where, getDocs, orderBy, type Timestamp } from 'firebase/firestore';
-import { employees } from '@/lib/employees';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser } from '@/context/UserContext';
 
-// This is a mock hook to simulate getting the current logged-in user.
-// In a real app, this would come from your authentication context.
-const useCurrentUser = () => {
-    // For demonstration, we'll simulate the user 'Rabiya Eman'.
-    return employees.find(e => e.email === 'rabiya.eman@ri-hub.com') || null;
-};
 
 type SavedRecordData = {
     category: string;
@@ -37,7 +30,7 @@ type SavedRecord = {
 export default function SavedRecordsPage() {
     const image = PlaceHolderImages.find(p => p.id === 'saved-records');
     const { firestore } = useFirebase();
-    const currentUser = useCurrentUser();
+    const { user: currentUser } = useCurrentUser();
     const { toast } = useToast();
 
     const [records, setRecords] = useState<SavedRecord[]>([]);
@@ -105,7 +98,7 @@ export default function SavedRecordsPage() {
     return (
         <div className="space-y-8">
             <DashboardPageHeader
-                title="Saved Records"
+                title="Your Saved Records"
                 description="Access your saved project checklists and other documents."
                 imageUrl={image?.imageUrl || ''}
                 imageHint={image?.imageHint || ''}
