@@ -41,16 +41,13 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        if (!firestore) {
-            setIsLoading(false);
-            return;
-        }
-
-        // Wait until we have a user to query with
-        if (!currentUser) {
-            // Still loading the user, so we wait.
-            // If we are not already loading, set loading to true.
-            if (!isLoading) setIsLoading(true);
+        // Guard: Wait until both firestore and currentUser are available.
+        if (!firestore || !currentUser) {
+            // If the user isn't loaded yet, keep the loading state.
+            // When currentUser is definitively null (after loading), isLoading will be set to false.
+             if (currentUser === null) {
+                setIsLoading(false);
+            }
             return;
         }
         
@@ -82,7 +79,7 @@ export default function SavedRecordsPage() {
                 setIsLoading(false);
             });
 
-    }, [firestore, currentUser, toast, isLoading]);
+    }, [firestore, currentUser, toast]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
