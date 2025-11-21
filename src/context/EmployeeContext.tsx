@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect } from 'react';
@@ -14,13 +15,22 @@ type EmployeeContextType = {
 const EmployeeContext = createContext<EmployeeContextType | undefined>(undefined);
 
 export const EmployeeProvider = ({ children }: { children: ReactNode }) => {
-  const [employees, setEmployees] = useState<Employee[]>(() => {
-    if (typeof window !== 'undefined') {
-      const savedEmployees = localStorage.getItem('employees');
-      return savedEmployees ? JSON.parse(savedEmployees) : initialEmployees;
+  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+
+  // Load from localStorage only on the client, after the initial render.
+  useEffect(() => {
+    const savedEmployees = localStorage.getItem('employees');
+    if (savedEmployees) {
+      try {
+        const parsed = JSON.parse(savedEmployees);
+        setEmployees(parsed);
+      } catch (e) {
+        console.error("Failed to parse employees from localStorage", e);
+        // If parsing fails, fall back to initial employees and update localStorage
+        localStorage.setItem('employees', JSON.stringify(initialEmployees));
+      }
     }
-    return initialEmployees;
-  });
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
