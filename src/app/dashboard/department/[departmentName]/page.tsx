@@ -13,7 +13,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import { useEmployees } from '@/context/EmployeeContext';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useCurrentUser } from '@/context/UserContext';
+import { type Employee } from '@/lib/employees';
 
 function formatDepartmentName(slug: string) {
   if (!slug) return '';
@@ -32,18 +34,18 @@ function getInitials(name: string) {
 
 export default function DepartmentPage() {
   const params = useParams();
+  const router = useRouter();
   const { employeesByDepartment } = useEmployees();
+  const { login } = useCurrentUser();
   const departmentName = Array.isArray(params.departmentName) ? params.departmentName[0] : params.departmentName;
   const departmentEmployees = employeesByDepartment[departmentName as keyof typeof employeesByDepartment] || [];
   const formattedDeptName = formatDepartmentName(departmentName);
   
-  const departmentImages: {[key: string]: string} = {
-    'Admin': 'https://picsum.photos/seed/admin-dept/600/400',
-    'Hr': 'https://picsum.photos/seed/hr-dept/600/400',
-  }
+  const handleEmployeeSelect = (employee: Employee) => {
+    login(employee);
+    router.push('/employee-dashboard');
+  };
   
-  const defaultImage = 'https://picsum.photos/seed/default-dept/600/400';
-
   return (
     <div className="space-y-6">
        <div className="flex items-center justify-between">
@@ -62,8 +64,11 @@ export default function DepartmentPage() {
         {departmentEmployees.map((employee) => {
           const initials = getInitials(employee.name);
           return (
-            <Link href="/login" key={employee.record}>
-              <Card className="overflow-hidden shadow-lg transition-transform hover:scale-[1.02] border-primary/50 relative cursor-pointer">
+              <Card 
+                key={employee.record}
+                onClick={() => handleEmployeeSelect(employee)}
+                className="overflow-hidden shadow-lg transition-transform hover:scale-[1.02] border-primary/50 relative cursor-pointer"
+              >
                   <div className="flex">
                       <div className="w-1/3 bg-secondary p-4 flex flex-col items-center justify-center relative">
                           <div className="w-32 h-32 rounded-full bg-card flex items-center justify-center border-4 border-primary/50 shadow-inner">
@@ -87,7 +92,6 @@ export default function DepartmentPage() {
                       </CardContent>
                   </div>
               </Card>
-            </Link>
           );
         })}
       </div>
