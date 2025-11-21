@@ -8,7 +8,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Download, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 
 const checklistData = {
   predesign: {
@@ -217,10 +216,30 @@ const checklistData = {
   },
 };
 
-const ChecklistItem = ({ item, index }: { item: string, index: number }) => {
+type ChecklistState = {
+    [mainKey: string]: {
+        [subKey: string]: boolean[]
+    }
+};
+
+const initializeState = (): ChecklistState => {
+    const initialState: ChecklistState = {};
+    for (const mainKey in checklistData) {
+        initialState[mainKey] = {};
+        const mainSection = checklistData[mainKey as keyof typeof checklistData];
+        for (const subKey in mainSection.sections) {
+            const subSection = mainSection.sections[subKey as keyof typeof mainSection.sections];
+            initialState[mainKey][subKey] = Array(subSection.items.length).fill(false);
+        }
+    }
+    return initialState;
+};
+
+
+const ChecklistItem = ({ item, checked, onCheckedChange }: { item: string, checked: boolean, onCheckedChange: (checked: boolean) => void }) => {
     return (
-        <div className="flex items-start space-x-3 py-1">
-            <div className="flex-shrink-0 w-6 text-right font-medium">{`${index + 1}.`}</div>
+        <div className={`flex items-start space-x-3 py-1 item-container ${!checked ? 'print-hide' : ''}`}>
+            <Checkbox checked={checked} onCheckedChange={onCheckedChange} className="mt-1" />
             <div className="flex-grow">{item}</div>
         </div>
     );
@@ -228,11 +247,42 @@ const ChecklistItem = ({ item, index }: { item: string, index: number }) => {
 
 export default function ProjectChecklistPage() {
     const { toast } = useToast();
+    const [checkedItems, setCheckedItems] = useState<ChecklistState>(initializeState());
+
+    const handleCheckboxChange = (mainKey: string, subKey: string, itemIndex: number, checked: boolean) => {
+        setCheckedItems(prevState => {
+            const newState = { ...prevState };
+            newState[mainKey][subKey][itemIndex] = checked;
+            return newState;
+        });
+    };
+    
+    const getSelectedItems = () => {
+        const selected: { [key: string]: string[] } = {};
+        for (const mainKey in checklistData) {
+            const mainSection = checklistData[mainKey as keyof typeof checklistData];
+            for (const subKey in mainSection.sections) {
+                const subSection = mainSection.sections[subKey as keyof typeof mainSection.sections];
+                const items = subSection.items.filter((_, index) => checkedItems[mainKey][subKey][index]);
+                if (items.length > 0) {
+                    if (!selected[subSection.title]) {
+                        selected[subSection.title] = [];
+                    }
+                    selected[subSection.title].push(...items);
+                }
+            }
+        }
+        return selected;
+    };
 
     const handleSave = () => {
+        const selectedData = getSelectedItems();
+        // Here you would typically save `selectedData` to a database.
+        // For now, we'll just show a toast.
+        console.log("Data to save:", selectedData);
         toast({
             title: "Record Saved",
-            description: "Your checklist has been saved successfully.",
+            description: "Your selected checklist items have been saved.",
         });
     };
     
@@ -254,14 +304,17 @@ export default function ProjectChecklistPage() {
                     .printable-area, .printable-area * {
                         visibility: visible;
                     }
+                    .printable-area .print-hide {
+                        display: none;
+                    }
+                    .printable-area .no-print {
+                        display: none;
+                    }
                     .printable-area {
                         position: absolute;
                         left: 0;
                         top: 0;
                         width: 100%;
-                    }
-                    .no-print {
-                        display: none;
                     }
                 }
             `}</style>
@@ -289,16 +342,21 @@ export default function ProjectChecklistPage() {
                 </div>
 
                 <div className="space-y-8">
-                    {Object.values(checklistData).map((mainSection) => (
+                    {Object.entries(checklistData).map(([mainKey, mainSection]) => (
                         <div key={mainSection.title}>
                             <h2 className="text-xl font-bold mb-4">{mainSection.title}</h2>
                             <div className="space-y-6">
-                                {Object.values(mainSection.sections).map((subSection) => (
+                                {Object.entries(mainSection.sections).map(([subKey, subSection]) => (
                                     <div key={subSection.title} className="pl-4">
                                         <h3 className="font-semibold underline mb-2">{subSection.title}</h3>
                                         <div className="space-y-1">
                                             {subSection.items.map((item, index) => (
-                                                <ChecklistItem key={index} item={item} index={index} />
+                                                <ChecklistItem 
+                                                    key={index} 
+                                                    item={item}
+                                                    checked={checkedItems[mainKey]?.[subKey]?.[index] ?? false}
+                                                    onCheckedChange={(checked) => handleCheckboxChange(mainKey, subKey, index, !!checked)}
+                                                />
                                             ))}
                                         </div>
                                     </div>
@@ -316,3 +374,4 @@ export default function ProjectChecklistPage() {
         </div>
     );
 }
+
