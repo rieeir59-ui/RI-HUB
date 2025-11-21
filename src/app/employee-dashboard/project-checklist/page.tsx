@@ -8,6 +8,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Download, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/firebase/provider';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { employees, type Employee } from '@/lib/employees';
 
 const checklistData = {
   predesign: {
@@ -222,6 +225,14 @@ type ChecklistState = {
     }
 };
 
+// This is a mock hook to simulate getting the current logged-in user.
+// In a real app, this would come from your authentication context.
+const useCurrentUser = () => {
+    // For demonstration, we'll simulate the user 'Rabiya Eman'.
+    return employees.find(e => e.email === 'rabiya.eman@ri-hub.com') || null;
+};
+
+
 const initializeState = (): ChecklistState => {
     const initialState: ChecklistState = {};
     for (const mainKey in checklistData) {
@@ -248,6 +259,10 @@ const ChecklistItem = ({ item, checked, onCheckedChange }: { item: string, check
 export default function ProjectChecklistPage() {
     const { toast } = useToast();
     const [checkedItems, setCheckedItems] = useState<ChecklistState>(initializeState());
+    const [projectName, setProjectName] = useState('');
+    const { firestore } = useFirebase();
+    const currentUser = useCurrentUser();
+
 
     const handleCheckboxChange = (mainKey: string, subKey: string, itemIndex: number, checked: boolean) => {
         setCheckedItems(prevState => {
@@ -258,32 +273,58 @@ export default function ProjectChecklistPage() {
     };
     
     const getSelectedItems = () => {
-        const selected: { [key: string]: string[] } = {};
+        const selected: { category: string, items: string[] }[] = [];
         for (const mainKey in checklistData) {
             const mainSection = checklistData[mainKey as keyof typeof checklistData];
             for (const subKey in mainSection.sections) {
                 const subSection = mainSection.sections[subKey as keyof typeof mainSection.sections];
                 const items = subSection.items.filter((_, index) => checkedItems[mainKey][subKey][index]);
                 if (items.length > 0) {
-                    if (!selected[subSection.title]) {
-                        selected[subSection.title] = [];
-                    }
-                    selected[subSection.title].push(...items);
+                    selected.push({ category: subSection.title, items });
                 }
             }
         }
         return selected;
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        if (!firestore) {
+            toast({ variant: "destructive", title: "Error", description: "Database not available."});
+            return;
+        }
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "Error", description: "You must be logged in to save."});
+            return;
+        }
+
         const selectedData = getSelectedItems();
-        // Here you would typically save `selectedData` to a database.
-        // For now, we'll just show a toast.
-        console.log("Data to save:", selectedData);
-        toast({
-            title: "Record Saved",
-            description: "Your selected checklist items have been saved.",
-        });
+        if (selectedData.length === 0) {
+            toast({ variant: "destructive", title: "Nothing to save", description: "Please select at least one item."});
+            return;
+        }
+
+        try {
+            await addDoc(collection(firestore, 'savedRecords'), {
+                employeeId: currentUser.record,
+                employeeName: currentUser.name,
+                fileName: 'Project Checklist',
+                projectName: projectName || 'Untitled Project',
+                data: selectedData,
+                createdAt: serverTimestamp(),
+            });
+
+            toast({
+                title: "Record Saved",
+                description: "Your project checklist has been saved.",
+            });
+        } catch (error) {
+            console.error("Error saving document: ", error);
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Could not save the record. Please try again.",
+            });
+        }
     };
     
     const handleDownload = () => {
@@ -325,7 +366,12 @@ export default function ProjectChecklistPage() {
                 <div className="space-y-4 mb-10">
                     <div className="flex items-center">
                         <Label htmlFor="project-name" className="w-48 font-semibold">Project:</Label>
-                        <Input id="project-name" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
+                        <Input 
+                            id="project-name"
+                            value={projectName}
+                            onChange={(e) => setProjectName(e.target.value)}
+                            className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" 
+                        />
                     </div>
                     <div className="flex items-center">
                         <Label htmlFor="architect" className="w-48 font-semibold">Name, Address: Architect:</Label>
@@ -374,4 +420,3 @@ export default function ProjectChecklistPage() {
         </div>
     );
 }
-
