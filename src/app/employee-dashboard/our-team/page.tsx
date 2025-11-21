@@ -1,13 +1,12 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEmployees } from '@/context/EmployeeContext';
 import { Users, User, Crown } from 'lucide-react';
-import { EmployeeProvider } from '@/context/EmployeeContext';
 
 const TeamMemberCard = ({ name, role }: { name: string; role: string; }) => {
   const getInitials = (name: string) => {
+    if (!name) return '';
     const nameParts = name.split(' ');
     if (nameParts.length > 1 && nameParts[nameParts.length - 1]) {
         return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
@@ -45,7 +44,7 @@ const DepartmentSection = ({ title, icon, children }: { title: string; icon: Rea
 );
 
 
-function TeamPageContent() {
+export default function TeamPage() {
     const { employees } = useEmployees();
     const getEmployee = (name: string) => employees.find(e => e.name.toLowerCase() === name.toLowerCase());
     const getEmployeesByDept = (deptSlug: string) => employees.filter(e => e.department === deptSlug);
@@ -128,10 +127,4 @@ function TeamPageContent() {
         </div>
     </div>
   );
-}
-
-export default function TeamPage() {
-    return (
-        <TeamPageContent />
-    )
 }
