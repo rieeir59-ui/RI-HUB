@@ -16,7 +16,7 @@ export default function AboutMePage() {
         <div className="container mx-auto px-4 py-8 md:py-16">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className="space-y-6">
-              <h1 className="text-4xl md:text-5xl font-headline text-primary">About Us</h1>
+              <h1 className="text-4xl md:text-5xl font-headline text-primary">ISBAH HASSAN</h1>
               <div className="text-base md:text-lg text-muted-foreground space-y-4">
                   <p>
                     Isbah Hassan & Associates (Pvt.) Ltd. offers elegant and innovative architecture and interior design solutions to meet the most discerning requirements.
