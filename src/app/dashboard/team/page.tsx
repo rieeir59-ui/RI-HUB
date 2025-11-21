@@ -63,7 +63,7 @@ export default function TeamPage() {
     <div className="space-y-12">
         <Card className="bg-card/90">
             <CardHeader>
-                <CardTitle className="font-headline text-4xl text-center text-primary">Our Team</CardTitle>
+                <CardTitle className="font-headline text-4xl text-center text-primary">About Us</CardTitle>
             </CardHeader>
         </Card>
 
