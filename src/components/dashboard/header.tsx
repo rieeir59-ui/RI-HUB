@@ -1,18 +1,18 @@
+
 'use client';
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
-import { type Employee, employees } from "@/lib/employees";
+import { type Employee } from "@/lib/employees";
 
 // This is a mock hook to simulate getting the current logged-in user.
 // In a real app, this would come from your authentication context.
 const useCurrentUser = () => {
-    const [user, setUser] = useState<Employee | null>(null);
+    const [user, setUser] = useState<Partial<Employee> | null>(null);
 
     useEffect(() => {
-        // For demonstration, we'll simulate the user 'Rabiya Eman'.
-        const currentUser = employees.find(e => e.email === 'rabiya.eman@ri-hub.com');
-        setUser(currentUser || null);
+        // For the main admin dashboard, simulate a generic Admin user.
+        setUser({ name: 'Admin', email: 'admin@ri-hub.com' });
     }, []);
 
     return user;
@@ -37,7 +37,7 @@ export function Header() {
       <div className="flex-1">
         {/* You can add a title here if needed */}
       </div>
-      {user && (
+      {user && user.name && (
          <div className="flex items-center gap-3">
             <span className="font-semibold text-sm hidden sm:inline-block">{user.name}</span>
             <Avatar className="h-9 w-9 border-2 border-primary">
