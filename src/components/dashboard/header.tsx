@@ -1,4 +1,3 @@
-
 'use client';
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -8,9 +7,6 @@ export function Header() {
       <SidebarTrigger className="md:hidden" />
       <div className="flex-1">
         {/* You can add a title here if needed */}
-      </div>
-       <div className="flex items-center gap-3">
-          <span className="font-semibold text-sm hidden sm:inline-block">Welcome to dashboard</span>
       </div>
     </header>
   );

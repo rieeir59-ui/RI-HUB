@@ -41,7 +41,11 @@ export default function DashboardPage() {
   return (
     <div className="animate-in fade-in-50 space-y-8">
       <div>
-        <h2 className="text-2xl font-headline font-bold mb-4">DEPARTMENTS</h2>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome to Dashboard</h1>
+        <p className="text-muted-foreground">You can manage departments from here.</p>
+      </div>
+      <div>
+        <h2 className="text-2xl font-headline font-bold mb-4 mt-8">DEPARTMENTS</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {departments.map((dept) => (
             <Link href={`/dashboard/department/${dept.slug}`} key={dept.name}>
