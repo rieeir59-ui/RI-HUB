@@ -16,27 +16,43 @@ const EmployeeContext = createContext<EmployeeContextType | undefined>(undefined
 
 export const EmployeeProvider = ({ children }: { children: ReactNode }) => {
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load from localStorage only on the client, after the initial render.
   useEffect(() => {
-    const savedEmployees = localStorage.getItem('employees');
-    if (savedEmployees) {
-      try {
-        const parsed = JSON.parse(savedEmployees);
-        setEmployees(parsed);
-      } catch (e) {
-        console.error("Failed to parse employees from localStorage", e);
-        // If parsing fails, fall back to initial employees and update localStorage
-        localStorage.setItem('employees', JSON.stringify(initialEmployees));
-      }
+    // Only run on the client
+    if (typeof window !== 'undefined') {
+        const savedEmployees = localStorage.getItem('employees');
+        if (savedEmployees) {
+            try {
+                const parsed = JSON.parse(savedEmployees);
+                // Simple check if the data from local storage is outdated
+                // by comparing the number of employees. A more robust check
+                // could involve a version number.
+                if (parsed.length === initialEmployees.length) {
+                    setEmployees(parsed);
+                } else {
+                    // Data is outdated, use initialEmployees and update localStorage
+                    setEmployees(initialEmployees);
+                    localStorage.setItem('employees', JSON.stringify(initialEmployees));
+                }
+            } catch (e) {
+                console.error("Failed to parse employees from localStorage", e);
+                // If parsing fails, fall back to initial employees
+                setEmployees(initialEmployees);
+                localStorage.setItem('employees', JSON.stringify(initialEmployees));
+            }
+        }
+        setIsInitialized(true);
     }
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    // Only save to localStorage after initialization and on the client
+    if (isInitialized && typeof window !== 'undefined') {
         localStorage.setItem('employees', JSON.stringify(employees));
     }
-  }, [employees]);
+  }, [employees, isInitialized]);
 
 
   const addEmployee = (employee: Employee) => {
@@ -79,6 +95,17 @@ export const EmployeeProvider = ({ children }: { children: ReactNode }) => {
     return grouped;
 
   }, [employees]);
+
+
+  // To prevent hydration errors, we can return the initial state on the server
+  // and until the client is initialized.
+  if (!isInitialized && typeof window !== 'undefined') {
+      return (
+          <EmployeeContext.Provider value={{ employees: initialEmployees, addEmployee, updateEmployee, deleteEmployee, employeesByDepartment }}>
+            {children}
+          </EmployeeContext.Provider>
+      );
+  }
 
 
   return (
