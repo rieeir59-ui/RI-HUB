@@ -45,7 +45,7 @@ const DepartmentSection = ({ title, icon, children }: { title: string; icon: Rea
 
 
 export default function TeamPage() {
-    const getEmployee = (name: string) => employees.find(e => e.name.toLowerCase().includes(name.toLowerCase()));
+    const getEmployee = (name: string) => employees.find(e => e.name.toLowerCase() === name.toLowerCase());
 
     const ceo = getEmployee('Isbah Hassan');
     const hr = [getEmployee('Sobia'), getEmployee('Fiza')];
@@ -53,11 +53,11 @@ export default function TeamPage() {
         lead: getEmployee('Asad'),
         team: [getEmployee('Luqman'), getEmployee('Kizzar'), getEmployee('Waleed'), getEmployee('Haseeb')]
     };
-    const finance = getEmployee('Waqas');
+    const finance = getEmployee('Waqar');
     const softwareEngineers = [getEmployee('Rabiya Eman'), getEmployee('Imran Abbas')];
     const quantityManagement = getEmployee('Noman');
     const visualizer = getEmployee('Mosin');
-    const drafting = [getEmployee('Mujahid'), getEmployee('Jabbar'), getEmployee('Waqar')];
+    const drafting = [getEmployee('Mujahid'), getEmployee('Jabbar'), getEmployee('Waqas')];
 
   return (
     <div className="space-y-12">
@@ -96,7 +96,7 @@ export default function TeamPage() {
                 </div>
                 <div className="pl-12 space-y-6">
                     {architects.lead && <div className="w-48"><TeamMemberCard name={architects.lead.name} role="Lead Architect" /></div>}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pl-12">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
                         {architects.team.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Architect" />)}
                     </div>
                 </div>
