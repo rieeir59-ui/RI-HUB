@@ -1,4 +1,5 @@
 
+'use client';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/dashboard/sidebar";
 import { Header } from "@/components/dashboard/header";
@@ -25,3 +26,4 @@ export default function DashboardLayout({
     </EmployeeProvider>
   );
 }
+
