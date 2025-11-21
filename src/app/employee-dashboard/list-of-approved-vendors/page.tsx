@@ -3,10 +3,12 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Page() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">List of Approved Vendors</CardTitle>
-      </CardHeader>
-    </Card>
+    <div className="space-y-8">
+      <Card className="bg-card/90">
+          <CardHeader>
+              <CardTitle className="font-headline text-4xl text-center text-primary">List of Approved Vendors</CardTitle>
+          </CardHeader>
+      </Card>
+    </div>
   );
 }
