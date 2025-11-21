@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect } from 'react';
 import { employees as initialEmployees, type Employee } from '@/lib/employees';
 
 type EmployeeContextType = {
@@ -14,7 +14,20 @@ type EmployeeContextType = {
 const EmployeeContext = createContext<EmployeeContextType | undefined>(undefined);
 
 export const EmployeeProvider = ({ children }: { children: ReactNode }) => {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const [employees, setEmployees] = useState<Employee[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedEmployees = localStorage.getItem('employees');
+      return savedEmployees ? JSON.parse(savedEmployees) : initialEmployees;
+    }
+    return initialEmployees;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('employees', JSON.stringify(employees));
+    }
+  }, [employees]);
+
 
   const addEmployee = (employee: Employee) => {
     setEmployees((prevEmployees) => [...prevEmployees, employee]);

@@ -58,6 +58,9 @@ import { type Employee } from '@/lib/employees';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useEmployees } from '@/context/EmployeeContext';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
 
 const departments = [
     { name: 'CEO', slug: 'ceo' },
@@ -74,6 +77,11 @@ const departments = [
 function getFirstLetter(name: string) {
     return name ? name.charAt(0).toUpperCase() : '';
 }
+
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => jsPDF;
+}
+
 
 export default function EmployeePage() {
   const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
@@ -161,6 +169,19 @@ export default function EmployeePage() {
     setSelectedEmployee(employee);
     setIsDeleteDialogOpen(true);
   };
+
+  const handleDownloadPdf = () => {
+    const doc = new jsPDF() as jsPDFWithAutoTable;
+    doc.autoTable({
+      head: [['Name', 'Email', 'Department']],
+      body: employees.map(emp => [
+        emp.name,
+        emp.email,
+        departments.find(d => d.slug === emp.department)?.name || emp.department
+      ]),
+    });
+    doc.save('employee-list.pdf');
+  }
 
   return (
     <>
@@ -277,7 +298,7 @@ export default function EmployeePage() {
             Showing <strong>1-{employees.length}</strong> of <strong>{employees.length}</strong> employees
           </div>
           <div className="ml-auto">
-            <Button size="sm" variant="outline" className="gap-1">
+            <Button size="sm" variant="outline" className="gap-1" onClick={handleDownloadPdf}>
               <Download className="h-4 w-4" />
               Download PDF
             </Button>
