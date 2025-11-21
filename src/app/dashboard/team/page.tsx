@@ -1,13 +1,11 @@
 
 'use client';
 
-import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { employees, type Employee } from '@/lib/employees';
+import { employees } from '@/lib/employees';
 import { Users, User, Crown } from 'lucide-react';
 
-const TeamMemberCard = ({ name, role, avatarId }: { name: string; role: string; avatarId?: string }) => {
+const TeamMemberCard = ({ name, role }: { name: string; role: string; }) => {
   const getInitials = (name: string) => {
     const nameParts = name.split(' ');
     if (nameParts.length > 1 && nameParts[nameParts.length - 1]) {
@@ -53,7 +51,7 @@ export default function TeamPage() {
     const hr = [getEmployee('Sobia'), getEmployee('Fiza')];
     const architects = {
         lead: getEmployee('Asad'),
-        team: [getEmployee('Loaman'), getEmployee('Kizzar'), getEmployee('Wakeel'), getEmployee('Hareeb')]
+        team: [getEmployee('Luqman'), getEmployee('Kizzar'), getEmployee('Waleed'), getEmployee('Haseeb')]
     };
     const finance = getEmployee('Waqas');
     const softwareEngineers = [getEmployee('Rabiya Eman'), getEmployee('Imran Abbas')];
@@ -76,7 +74,7 @@ export default function TeamPage() {
                 <h2 className="text-3xl font-headline font-bold text-primary">Chief Executive Officer</h2>
              </div>
              <div className="flex justify-center">
-                 {ceo && <div className="w-64"><TeamMemberCard name={ceo.name} role="CEO" avatarId={ceo.avatarId} /></div>}
+                 {ceo && <div className="w-64"><TeamMemberCard name={ceo.name} role="CEO" /></div>}
              </div>
         </div>
 
@@ -85,7 +83,7 @@ export default function TeamPage() {
         <div className="space-y-10">
             {/* HR Department */}
             <DepartmentSection title="Human Resources" icon={<Users className="w-5 h-5" />}>
-                {hr.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="HR" avatarId={e.avatarId} />)}
+                {hr.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="HR" />)}
             </DepartmentSection>
 
             {/* Architects Department */}
@@ -97,38 +95,33 @@ export default function TeamPage() {
                     <h2 className="text-2xl font-headline font-semibold text-primary">Architects</h2>
                 </div>
                 <div className="pl-12 space-y-6">
-                    {architects.lead && <div className="w-48"><TeamMemberCard name={architects.lead.name} role="Lead Architect" avatarId={architects.lead.avatarId} /></div>}
+                    {architects.lead && <div className="w-48"><TeamMemberCard name={architects.lead.name} role="Lead Architect" /></div>}
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pl-12">
-                        {architects.team.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Architect" avatarId={e.avatarId} />)}
+                        {architects.team.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Architect" />)}
                     </div>
                 </div>
             </div>
 
             {/* Other Departments */}
             <DepartmentSection title="Finance" icon={<Users className="w-5 h-5" />}>
-                {finance && <TeamMemberCard name={finance.name} role="Finance" avatarId={finance.avatarId} />}
+                {finance && <TeamMemberCard name={finance.name} role="Finance" />}
             </DepartmentSection>
 
              <DepartmentSection title="Software Engineers" icon={<Users className="w-5 h-5" />}>
-                {softwareEngineers.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Software Engineer" avatarId={e.avatarId} />)}
+                {softwareEngineers.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Software Engineer" />)}
             </DepartmentSection>
 
             <DepartmentSection title="Quantity Management" icon={<Users className="w-5 h-5" />}>
-                {quantityManagement && <TeamMemberCard name={quantityManagement.name} role="Quantity Manager" avatarId={quantityManagement.avatarId} />}
+                {quantityManagement && <TeamMemberCard name={quantityManagement.name} role="Quantity Manager" />}
             </DepartmentSection>
 
-            <DepartmentSection title="3D Visualizer" icon={<Users className="w-5 h-5" />}>
-                {visualizer && <TeamMemberCard name={visualizer.name} role="3D Visualizer" avatarId={visualizer.avatarId} />}
+            <DepartmentSection title="3D Visualizer" icon={<User className="w-5 h-5" />}>
+                {visualizer && <TeamMemberCard name={visualizer.name} role="3D Visualizer" />}
             </DepartmentSection>
 
-            <DepartmentSection title="Drafting Team" icon={<Users className="w-5 h-5" />}>
-                 {drafting.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Draftsman" avatarId={e.avatarId} />)}
+            <DepartmentSection title="Drafting" icon={<Users className="w-5 h-5" />}>
+                {drafting.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Draftsman" />)}
             </DepartmentSection>
-
-            <DepartmentSection title="Office Staff" icon={<User className="w-5 h-5" />}>
-                <TeamMemberCard name="Sunil" role="Office Boy" />
-            </DepartmentSection>
-
         </div>
     </div>
   );

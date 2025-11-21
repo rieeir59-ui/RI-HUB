@@ -19,10 +19,10 @@ export const employees: Employee[] = [
   { name: 'Mujahid', contact: '123-456-7890', email: 'mujahid@ri-hub.com', record: 'EMP-007', avatarId: 'avatar-2', department: 'draftman', password: 'password123' },
   { name: 'Jabbar', contact: '123-456-7890', email: 'jabbar@ri-hub.com', record: 'EMP-008', avatarId: 'avatar-2', department: 'draftman', password: 'password123' },
   { name: 'Mosin', contact: '123-456-7890', email: 'mosin@ri-hub.com', record: 'EMP-009', avatarId: 'avatar-2', department: '3d-visualizer', password: 'password123' },
-  { name: 'Hareeb', contact: '123-456-7890', email: 'hareeb@ri-hub.com', record: 'EMP-010', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
-  { name: 'Loaman', contact: '123-456-7890', email: 'loaman@ri-hub.com', record: 'EMP-011', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
+  { name: 'Haseeb', contact: '123-456-7890', email: 'haseeb@ri-hub.com', record: 'EMP-010', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
+  { name: 'Luqman', contact: '123-456-7890', email: 'luqman@ri-hub.com', record: 'EMP-011', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
   { name: 'Asad', contact: '123-456-7890', email: 'asad@ri-hub.com', record: 'EMP-012', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
-  { name: 'Wakeel', contact: '123-456-7890', email: 'wakeel@ri-hub.com', record: 'EMP-013', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
+  { name: 'Waleed', contact: '123-456-7890', email: 'waleed@ri-hub.com', record: 'EMP-013', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
   { name: 'Kizzar', contact: '123-456-7890', email: 'kizzar@ri-hub.com', record: 'EMP-014', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
   { name: 'Waqar', contact: '123-456-7890', email: 'waqar@ri-hub.com', record: 'EMP-015', avatarId: 'avatar-2', department: 'draftman', password: 'password123' },
   { name: 'Noman', contact: '123-456-7890', email: 'noman@ri-hub.com', record: 'EMP-016', avatarId: 'avatar-2', department: 'quantity-management', password: 'password123' },
@@ -42,5 +42,4 @@ if (employeesByDepartment.admin) {
     const rabiya = employees.find(e => e.record === 'EMP-004');
     const imran = employees.find(e => e.record === 'EMP-005');
     if (rabiya) employeesByDepartment.admin.push(rabiya);
-    if (imran) employeesByDepartment.admin.push(imran);
-}
+    
