@@ -1,100 +1,130 @@
 
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import Image from 'next/image';
+import { useEmployees } from '@/context/EmployeeContext';
+import { Users, User, Crown } from 'lucide-react';
+
+const TeamMemberCard = ({ name, role }: { name: string; role: string; }) => {
+  const getInitials = (name: string) => {
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1 && nameParts[nameParts.length - 1]) {
+        return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
+    }
+    return name[0] ? name[0].toUpperCase() : '';
+  }
+
+  return (
+    <Card className="text-center bg-card/80 border-2 border-primary shadow-lg hover:shadow-primary/30 transition-shadow duration-300">
+      <CardContent className="p-4">
+        <div className="relative inline-block">
+            <div className="w-20 h-20 rounded-full bg-black flex items-center justify-center border-2 border-primary shadow-[0_0_8px_hsl(var(--primary))]">
+              <span className="text-3xl font-bold text-primary">{getInitials(name)}</span>
+            </div>
+        </div>
+        <p className="mt-2 font-bold text-lg">{name}</p>
+        <p className="text-sm text-muted-foreground">{role}</p>
+      </CardContent>
+    </Card>
+  );
+};
+
+const DepartmentSection = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => (
+    <div className="space-y-4">
+        <div className="flex items-center gap-3">
+            <div className="bg-primary p-2 rounded-full text-primary-foreground">
+                {icon}
+            </div>
+            <h2 className="text-2xl font-headline font-semibold text-primary">{title}</h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pl-12">
+            {children}
+        </div>
+    </div>
+);
+
 
 export default function AboutMePage() {
+    const { employees } = useEmployees();
+    const getEmployee = (name: string) => employees.find(e => e.name.toLowerCase() === name.toLowerCase());
+    const getEmployeesByDept = (deptSlug: string) => employees.filter(e => e.department === deptSlug);
+
+    const ceo = getEmployeesByDept('ceo')[0];
+    const hr = getEmployeesByDept('hr');
+    const architects = {
+        lead: getEmployee('Asad'),
+        team: getEmployeesByDept('architects').filter(e => e.name.toLowerCase() !== 'asad')
+    };
+    const finance = getEmployeesByDept('finance')[0];
+    const softwareEngineers = getEmployeesByDept('software-engineer');
+    const quantityManagement = getEmployeesByDept('quantity-management')[0];
+    const visualizer = getEmployeesByDept('3d-visualizer')[0];
+    const drafting = getEmployeesByDept('draftman');
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-grow">
-        <div className="container mx-auto px-4 py-8 md:py-16">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div className="space-y-6 animate-in fade-in-50 slide-in-from-left-10 duration-1000">
-              <h1 className="text-4xl md:text-5xl font-headline text-primary">About Us</h1>
-              <div className="text-base md:text-lg text-muted-foreground space-y-4">
-                  <p>
-                    Isbah Hassan & Associates (Pvt.) Ltd. offers elegant and innovative architecture and interior design solutions to meet the most discerning requirements.
-                  </p>
-                  <p>
-                    Whether it’s a high-rise, a housing development, an amusement park or a campus, our holistic approach ensures that buildings are stylish, practical, comfortable and in perfect harmony with their indigenous surroundings.
-                  </p>
-              </div>
-            </div>
-            <div className="relative h-80 md:h-[450px] w-full rounded-lg overflow-hidden shadow-2xl animate-in fade-in-50 slide-in-from-right-10 duration-1000">
-                <Image
-                  src="https://www.isbahhassan.com/upload/about1.jpg"
-                  alt="About Isbah Hassan & Associates"
-                  layout="fill"
-                  objectFit="cover"
-                  priority
-                />
-            </div>
-          </div>
-            
-          <Card className="w-full max-w-5xl mx-auto overflow-hidden shadow-lg mt-12 md:mt-24 z-10 relative bg-accent/20">
-            <CardContent className="p-6">
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="item-1">
-                  <AccordionTrigger className="text-xl font-headline">Our Philosophy</AccordionTrigger>
-                  <AccordionContent className="text-base text-muted-foreground text-left">
-                    With over 25 years of experience working on complex projects ranging from office buildings and interiors to industrial constructions and private residences, we have developed a sophisticated and thorough approach towards design, technical development, code analysis, and document production that seamlessly blends functionality with aesthetics. Mindful of developments that influence 21st century architecture, we opt for stylised, space efficient and financially viable buildings fuelled by a unique vision using state of the art technological advancements and innovative materials while cultivating respect for the environment. 
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-2">
-                  <AccordionTrigger className="text-xl font-headline">Our Approach</AccordionTrigger>
-                  <AccordionContent className="text-base text-muted-foreground text-left">
-                     We believe in functional elegance and responsiveness to a site’s physical surroundings keeping the client’s needs and requirements in perspective within the approved budget. This formula has transpired into various successful developments that now line an emerging modern landscape in Pakistan, and we are proud to be part of this renaissance.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-3">
-                  <AccordionTrigger className="text-xl font-headline">Collaboration</AccordionTrigger>
-                  <AccordionContent className="text-base text-muted-foreground text-left space-y-4">
-                    <p>
-                      We believe that all projects benefit from a process involving the client, architect, builder and various specialists in an informative collaboration, and that successful projects are made possible through the management of all participants involved. We encourage this collaboration and act as a guide through the process of design and construction so that each project benefits from the participation and strengths of each team member.
-                    </p>
-                    <p>
-                      We work with an array of the finest associates and specialists across Pakistan for project management, structural engineering, electrical engineering, public health engineering, geo- technical surveying, bill of quantities, HVAC, landscaping, environmental protection, energy design, security, and financial advising. Internationally, our associates include Shankland Cox Ltd. [UK and UAE], Tessa Kennedy Design Ltd. [UK], Jimmy Lim Design [Malaysia], Leigh & Orange Ltd. [Hong Kong], and Curtain Wall Consultants [China].
-                    </p>
-                  </AccordionContent>
-                </AccordionItem>
-                 <AccordionItem value="item-4">
-                  <AccordionTrigger className="text-xl font-headline">Our Founder</AccordionTrigger>
-                  <AccordionContent className="text-base text-muted-foreground text-left space-y-4">
-                    <p>
-                      Ms. Isbah Hassan is a veteran in the field of architecture and interior design and has been in practice since 1995. A leading architect in South Asia, she has designed projects in multiple spheres and on multiple scales, frequently earning her finalist status in countrywide competitions for government projects.
-                    </p>
-                    <p>
-                      Since its inception, Isbah Hassan and Associates has earned a reputation for combining innovative design practices with unique vision and exemplary function. The firm’s projects have included amusement parks, banks, boutiques, cafés, campuses, cinemas, government buildings, high-rises, low-rises, offices, places of worship, residences, resort development and shopping malls.
-                    </p>
-                    <p>
-                      Ms. Hassan began her career at Fujikawa & Johnson in Chicago, working on high-rise buildings in Texas, following her Bachelor’s in Architecture (Honours) from the Illinois Institute of Technology and Minor in Oil Painting and Charcoal Drawing at the Art Institute of Chicago. In Pakistan, she worked at Wasif Ali & Associates and at Arshad and Shahid Abdulla Architects in Karachi and Lahore prior to launching Isbah Hassan and Associates.
-                    </p>
-                    <p>
-                      Ms. Hassan was awarded UBL’s ‘Achievement of Excellence’ Award as the architect and interior designer of the bank’s iconic regional headquarters at One Jail Road, Lahore, in 2018.
-                    </p>
-                    <div className="font-semibold">
-                      <p>Ms. Isbah Hassan</p>
-                      <p>CEO and Chief Architect</p>
-                      <p>Isbah Hassan and Associates</p>
-                    </div>
-                    <p>
-                      She has been an honourary juror for the National College of Arts, attended advanced placement seminars on ‘Sustainable Communities in the 21 st Century,’ ‘Health Building and Materials,’ and ‘Project Management for Architectural Firms,’ participated at the UAEIA Conference in Chicago, and was nominated for the Eisenhower Exchange Fellowship. She has also served on numerous boards including the Punjab Municipal Development Corporation Program for uplifting rural municipalities (sponsored by the World Bank), New Murree (Patriata City Project), and the Lahore American School. She is registered with the Pakistan Council of Architects and Town Planners, the Institute of Architects-Pakistan, the Lahore Development Authority, the Defence Housing Authority, the Capital Development Authority and the Lahore Cantonment Board.
-                    </p>
-                     <p>
-                      Always one to spearhead innovation, Ms. Hassan brought in a team of specialists from Sri Lanka and Scandinavia for a proposed joint venture to revitalize tourism in Khyber- Pakhtunkhwa. Her designs were selected for the Prime Minister’s Housing Scheme on Multan Road in Lahore, the Parliament’s new administrative block on Constitution Avenue in Islamabad, the Aga Khan Secondary School Complex in Karimabad and Karachi. She has been the architect for significant federal and provincial housing schemes including the Punjab Government Servant Society Mohlanwal and the Prime Minister’s Housing Scheme.
-                    </p>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </CardContent>
-          </Card>
+    <div className="space-y-12">
+        <Card className="bg-card/90">
+            <CardHeader>
+                <CardTitle className="font-headline text-4xl text-center text-primary">About Me</CardTitle>
+            </CardHeader>
+        </Card>
+
+        {/* CEO Section */}
+        <div className="text-center space-y-4">
+             <div className="inline-flex items-center gap-3">
+                <Crown className="h-8 w-8 text-primary" />
+                <h2 className="text-3xl font-headline font-bold text-primary">Chief Executive Officer</h2>
+             </div>
+             <div className="flex justify-center">
+                 {ceo && <div className="w-64"><TeamMemberCard name={ceo.name} role="CEO" /></div>}
+             </div>
         </div>
-      </main>
+
+        <div className="border-t border-dashed border-primary/50 my-8"></div>
+
+        <div className="space-y-10">
+            {/* HR Department */}
+            <DepartmentSection title="Human Resources" icon={<Users className="w-5 h-5" />}>
+                {hr.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="HR" />)}
+            </DepartmentSection>
+
+            {/* Architects Department */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                    <div className="bg-primary p-2 rounded-full text-primary-foreground">
+                        <Users className="w-5 h-5" />
+                    </div>
+                    <h2 className="text-2xl font-headline font-semibold text-primary">Architects</h2>
+                </div>
+                <div className="pl-12 space-y-6">
+                    {architects.lead && <div className="w-48"><TeamMemberCard name={architects.lead.name} role="Lead Architect" /></div>}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+                        {architects.team.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Architect" />)}
+                    </div>
+                </div>
+            </div>
+
+            {/* Other Departments */}
+            <DepartmentSection title="Finance" icon={<Users className="w-5 h-5" />}>
+                {finance && <TeamMemberCard name={finance.name} role="Finance" />}
+            </DepartmentSection>
+
+             <DepartmentSection title="Software Engineers" icon={<Users className="w-5 h-5" />}>
+                {softwareEngineers.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Software Engineer" />)}
+            </DepartmentSection>
+
+            <DepartmentSection title="Quantity Management" icon={<Users className="w-5 h-5" />}>
+                {quantityManagement && <TeamMemberCard name={quantityManagement.name} role="Quantity Manager" />}
+            </DepartmentSection>
+
+            <DepartmentSection title="3D Visualizer" icon={<User className="w-5 h-5" />}>
+                {visualizer && <TeamMemberCard name={visualizer.name} role="3D Visualizer" />}
+            </DepartmentSection>
+
+            <DepartmentSection title="Drafting" icon={<Users className="w-5 h-5" />}>
+                {drafting.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Draftsman" />)}
+            </DepartmentSection>
+        </div>
     </div>
   );
 }
