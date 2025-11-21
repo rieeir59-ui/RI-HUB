@@ -39,15 +39,15 @@ export default function EmployeeDashboardPage() {
 
   return (
     <Card className="bg-card/90 border-primary/30 shadow-lg">
-        <CardHeader>
+        <CardHeader className="text-center">
           {user && (
             <>
-              <CardTitle className="text-3xl font-headline text-primary font-bold">{user.name}</CardTitle>
-              <CardDescription className="text-lg">Welcome to {formatDepartmentName(user.department)} Panel</CardDescription>
+              <CardTitle className="text-4xl font-headline text-primary font-bold">{user.name}</CardTitle>
+              <CardDescription className="text-xl text-primary/90 font-semibold pt-1">Welcome to {formatDepartmentName(user.department)} Panel</CardDescription>
             </>
           )}
         </CardHeader>
-        <CardContent>
+        <CardContent className="text-center">
           <p className="text-muted-foreground">Use the sidebar to navigate to different sections of your dashboard.</p>
         </CardContent>
       </Card>
