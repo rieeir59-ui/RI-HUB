@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Loader2 } from 'lucide-react';
 
 // This is a mock hook to simulate getting the current user's role.
 // In a real app, this would come from your authentication context.
@@ -22,7 +23,10 @@ const useUserRole = () => {
 
   useEffect(() => {
     // For demonstration, we'll simulate the role of a 'software-engineer'.
-    setRole('software-engineer');
+    const timer = setTimeout(() => {
+        setRole('software-engineer'); 
+    }, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   return role;
@@ -45,11 +49,20 @@ export default function CredentialsPage() {
     }
   }, [userRole, router]);
 
+  if (!userRole) {
+    return (
+        <div className="flex items-center justify-center h-48">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="ml-4">Verifying access...</p>
+        </div>
+    );
+  }
+
   if (!isAuthorized) {
     return (
-        <div className="flex items-center justify-center h-full">
-            <p>Verifying access...</p>
-        </div>
+      <div className="flex items-center justify-center h-48">
+          <p>Redirecting...</p>
+      </div>
     );
   }
 
