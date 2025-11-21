@@ -2,26 +2,10 @@
 'use client';
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useEffect, useState } from "react";
-import { type Employee, employees } from "@/lib/employees";
-
-// This is a mock hook to simulate getting the current logged-in user.
-// In a real app, this would come from your authentication context.
-const useCurrentUser = () => {
-    const [user, setUser] = useState<Employee | null>(null);
-
-    useEffect(() => {
-        // For demonstration, we'll simulate the user 'Rabiya Eman'.
-        const currentUser = employees.find(e => e.email === 'rabiya.eman@ri-hub.com');
-        setUser(currentUser || null);
-    }, []);
-
-    return user;
-};
-
+import { useCurrentUser } from "@/context/UserContext";
 
 export function Header() {
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
 
   const getInitials = (name: string) => {
     if (!name) return '';

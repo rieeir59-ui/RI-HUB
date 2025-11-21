@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -54,6 +55,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { useCurrentUser } from '@/context/UserContext';
 
 const menuItems = [
     { href: '/employee-dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -104,8 +106,10 @@ export default function EmployeeDashboardSidebar() {
   const pathname = usePathname();
   const { toast } = useToast();
   const router = useRouter();
+  const { logout } = useCurrentUser();
 
   const handleLogout = () => {
+    logout();
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out.",

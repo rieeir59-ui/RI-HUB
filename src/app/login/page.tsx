@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -9,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { RiIdLogo } from '@/components/layout/header';
+import { employees } from '@/lib/employees';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,21 +19,26 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    // Basic validation
-    if (!email || !password) {
+    const user = employees.find(e => e.email === email && e.password === password);
+
+    if (!user) {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Please enter both email and password.",
+        description: "Invalid email or password.",
       });
       return;
     }
+    
     // For now, any login attempt is successful and redirects to the dashboard.
     // We can add real authentication later.
+    localStorage.setItem('currentUserEmail', user.email);
+    
     toast({
       title: "Login Successful",
       description: "Welcome back!",
     });
+    
     router.push('/employee-dashboard');
   };
 
