@@ -1,46 +1,11 @@
 
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
 import { RiIdLogo } from '@/components/layout/header';
-import { employees } from '@/lib/employees';
-import { useCurrentUser } from '@/context/UserContext';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { toast } = useToast();
-  const { login } = useCurrentUser();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleLogin = () => {
-    const user = employees.find(e => e.email.toLowerCase() === email.toLowerCase() && e.password?.toLowerCase() === password.toLowerCase());
-
-    if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid email or password.",
-      });
-      return;
-    }
-    
-    login(user);
-    
-    toast({
-      title: "Login Successful",
-      description: "Welcome back!",
-    });
-    
-    router.push('/employee-dashboard');
-  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
@@ -50,36 +15,11 @@ export default function LoginPage() {
             <RiIdLogo />
           <CardTitle className="text-2xl font-headline text-primary">RI-HUB Management System</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email or Username</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="employee@ri-hub.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-4">
-             <Button onClick={handleLogin} className="flex-1 bg-green-600 hover:bg-green-700 text-white">
-                Sign In
-             </Button>
-             <Button variant="link" asChild className="flex-1 text-primary hover:underline p-0">
-                <Link href="#">Forgot Password?</Link>
-            </Button>
-          </div>
+        <CardContent className="space-y-6 text-center">
+            <p className="text-muted-foreground">Login functionality has been removed.</p>
+            <Link href="/" className="text-primary hover:underline">
+                Go back to Home
+            </Link>
         </CardContent>
       </Card>
     </div>
