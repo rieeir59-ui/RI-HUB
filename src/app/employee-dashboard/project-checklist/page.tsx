@@ -10,7 +10,9 @@ import { Download, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { employees, type Employee } from '@/lib/employees';
+import { employees } from '@/lib/employees';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const checklistData = {
   predesign: {
@@ -225,6 +227,10 @@ type ChecklistState = {
     }
 };
 
+interface jsPDFWithAutoTable extends jsPDF {
+    autoTable: (options: any) => jsPDF;
+}
+
 // This is a mock hook to simulate getting the current logged-in user.
 // In a real app, this would come from your authentication context.
 const useCurrentUser = () => {
@@ -260,6 +266,9 @@ export default function ProjectChecklistPage() {
     const { toast } = useToast();
     const [checkedItems, setCheckedItems] = useState<ChecklistState>(initializeState());
     const [projectName, setProjectName] = useState('');
+    const [architectName, setArchitectName] = useState('');
+    const [projectNo, setProjectNo] = useState('');
+    const [projectDate, setProjectDate] = useState('');
     const { firestore } = useFirebase();
     const currentUser = useCurrentUser();
 
@@ -328,38 +337,54 @@ export default function ProjectChecklistPage() {
     };
     
     const handleDownload = () => {
+        const doc = new jsPDF() as jsPDFWithAutoTable;
+        const selectedData = getSelectedItems();
+
+        if (selectedData.length === 0) {
+            toast({
+                variant: "destructive",
+                title: "Nothing to download",
+                description: "Please select at least one item to include in the PDF."
+            });
+            return;
+        }
+
+        doc.setFontSize(18);
+        doc.text('Project Checklist', 14, 22);
+
+        doc.setFontSize(11);
+        doc.text(`Project: ${projectName || 'N/A'}`, 14, 32);
+        doc.text(`Name, Address: Architect: ${architectName || 'N/A'}`, 14, 38);
+        doc.text(`Architect Project No: ${projectNo || 'N/A'}`, 14, 44);
+        doc.text(`Project Date: ${projectDate || 'N/A'}`, 14, 50);
+
+        const tableData = selectedData.flatMap(section => [
+            { content: section.category, styles: { fontStyle: 'bold', fillColor: '#f0f0f0' } },
+            ...section.items.map(item => ({ content: item }))
+        ]);
+
+        doc.autoTable({
+            startY: 60,
+            head: [['Selected Items']],
+            body: tableData.map(row => [row.content]),
+            didParseCell: (data) => {
+                if (data.row.raw.styles) {
+                    Object.assign(data.cell.styles, data.row.raw.styles);
+                }
+            },
+            theme: 'grid'
+        });
+
+        doc.save(`${projectName || 'project'}_checklist.pdf`);
+
         toast({
             title: "Download Started",
-            description: "Your checklist is being prepared for download.",
+            description: "Your checklist PDF is being generated.",
         });
-        window.print();
     };
 
     return (
         <div className="bg-white p-8 md:p-12 lg:p-16 text-black rounded-lg shadow-lg">
-            <style jsx global>{`
-                @media print {
-                    body * {
-                        visibility: hidden;
-                    }
-                    .printable-area, .printable-area * {
-                        visibility: visible;
-                    }
-                    .printable-area .print-hide {
-                        display: none;
-                    }
-                    .printable-area .no-print {
-                        display: none;
-                    }
-                    .printable-area {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
-                    }
-                }
-            `}</style>
-            
             <div className="printable-area">
                 <h1 className="text-2xl font-bold text-center mb-10">PROJECT CHECKLIST</h1>
 
@@ -375,15 +400,15 @@ export default function ProjectChecklistPage() {
                     </div>
                     <div className="flex items-center">
                         <Label htmlFor="architect" className="w-48 font-semibold">Name, Address: Architect:</Label>
-                        <Input id="architect" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
+                        <Input id="architect" value={architectName} onChange={(e) => setArchitectName(e.target.value)} className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
                     </div>
                     <div className="flex items-center">
                         <Label htmlFor="project-no" className="w-48 font-semibold">Architect Project No:</Label>
-                        <Input id="project-no" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
+                        <Input id="project-no" value={projectNo} onChange={(e) => setProjectNo(e.target.value)} className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
                     </div>
                     <div className="flex items-center">
                         <Label htmlFor="project-date" className="w-48 font-semibold">Project Date:</Label>
-                        <Input id="project-date" type="date" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
+                        <Input id="project-date" type="date" value={projectDate} onChange={(e) => setProjectDate(e.target.value)} className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
                     </div>
                 </div>
 
@@ -419,4 +444,5 @@ export default function ProjectChecklistPage() {
             </div>
         </div>
     );
-}
+
+    
