@@ -45,7 +45,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { employees as initialEmployees, type Employee } from '@/lib/employees';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -61,6 +60,10 @@ const departments = [
     { name: 'FINANCE', slug: 'finance' },
     { name: 'QUANTITY MANAGEMENT', slug: 'quantity-management' },
 ];
+
+function getFirstLetter(name: string) {
+    return name ? name.charAt(0).toUpperCase() : '';
+}
 
 export default function EmployeePage() {
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
@@ -183,21 +186,12 @@ export default function EmployeePage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {employees.map((employee) => {
-              const avatar = PlaceHolderImages.find(p => p.id === employee.avatarId);
-              return (
+            {employees.map((employee) => (
                 <TableRow key={employee.record}>
                   <TableCell className="hidden sm:table-cell">
-                    {avatar && (
-                       <Image
-                        alt="Employee avatar"
-                        className="aspect-square rounded-full object-cover"
-                        height="64"
-                        src={avatar.imageUrl}
-                        width="64"
-                        data-ai-hint={avatar.imageHint}
-                      />
-                    )}
+                    <div className="flex items-center justify-center h-16 w-16 rounded-full bg-secondary text-secondary-foreground font-bold text-2xl">
+                      {getFirstLetter(employee.name)}
+                    </div>
                   </TableCell>
                   <TableCell className="font-medium">
                     <div className="font-bold">{employee.name}</div>
@@ -222,7 +216,7 @@ export default function EmployeePage() {
                   </TableCell>
                 </TableRow>
               )
-            })}
+            )}
           </TableBody>
         </Table>
       </CardContent>
