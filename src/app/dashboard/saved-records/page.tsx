@@ -1,16 +1,16 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useFirebase } from '@/firebase/provider';
-import { collection, query, getDocs, orderBy, type Timestamp } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, type Timestamp, FirestoreError } from 'firebase/firestore';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useEmployees } from '@/context/EmployeeContext';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 // This is a mock hook to simulate getting the current user's role.
 // In a real app, this would come from your authentication context.
@@ -52,44 +52,45 @@ export default function SavedRecordsPage() {
 
     const [records, setRecords] = useState<SavedRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        const fetchRecords = async () => {
-            if (!firestore || !userRole) {
-                setIsLoading(false);
-                return;
-            }
-            
-            // Admins see all records
-            if (userRole !== 'admin' && userRole !== 'software-engineer') {
-                setIsLoading(false);
-                return;
-            }
+        if (!firestore || !userRole) {
+            setIsLoading(false);
+            return;
+        }
 
-            try {
-                const q = query(
-                    collection(firestore, 'savedRecords'),
-                    orderBy('createdAt', 'desc')
-                );
-                const querySnapshot = await getDocs(q);
+        if (userRole !== 'admin' && userRole !== 'software-engineer') {
+            setIsLoading(false);
+            return;
+        }
+
+        const q = query(
+            collection(firestore, 'savedRecords'),
+            orderBy('createdAt', 'desc')
+        );
+
+        getDocs(q)
+            .then(querySnapshot => {
                 const fetchedRecords = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 } as SavedRecord));
                 setRecords(fetchedRecords);
-            } catch (error) {
-                console.error("Error fetching records: ", error);
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Could not fetch saved records.",
+                setError(null);
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: q.path,
+                    operation: 'list'
                 });
-            } finally {
+                setError(permissionError);
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
                 setIsLoading(false);
-            }
-        };
-
-        fetchRecords();
+            });
+            
     }, [firestore, userRole, toast]);
 
     const handleDownload = (record: SavedRecord) => {
@@ -163,7 +164,18 @@ export default function SavedRecordsPage() {
                 </div>
             )}
 
-            {!isLoading && records.length === 0 && (
+            {error && (
+                 <Card className="text-center py-12 bg-destructive/10 border-destructive">
+                    <CardHeader>
+                        <CardTitle className="text-destructive">Error</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-destructive/90">Could not fetch saved records due to a permission issue.</p>
+                    </CardContent>
+                </Card>
+            )}
+
+            {!isLoading && !error && records.length === 0 && (
                 <Card className="text-center py-12">
                     <CardHeader>
                         <CardTitle>No Saved Records Found</CardTitle>
@@ -174,7 +186,7 @@ export default function SavedRecordsPage() {
                 </Card>
             )}
 
-            {!isLoading && records.length > 0 && (
+            {!isLoading && !error && records.length > 0 && (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {records.map(record => (
                         <Card key={record.id} className="flex flex-col">
