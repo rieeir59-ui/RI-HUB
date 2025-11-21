@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, ArrowLeft } from 'lucide-react';
+import { MoreHorizontal, ArrowLeft } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,10 +56,6 @@ export default function DepartmentPage() {
           </Button>
           <h1 className="text-3xl md:text-4xl font-headline text-primary">{formattedDeptName}</h1>
         </div>
-        <Button size="sm" className="gap-1">
-          <PlusCircle className="h-4 w-4" />
-          Add Employee
-        </Button>
       </div>
 
       <div className="grid gap-6">
