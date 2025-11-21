@@ -49,7 +49,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
       <div>
-        <h2 className="text-2xl font-headline font-bold mb-4">Departments</h2>
+        <h2 className="text-2xl font-headline font-bold mb-4">DEPARTMENTS</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {departments.map((dept) => (
             <Link href={`/dashboard/department/${dept.slug}`} key={dept.name}>
