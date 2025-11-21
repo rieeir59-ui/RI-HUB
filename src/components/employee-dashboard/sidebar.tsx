@@ -44,6 +44,11 @@ import {
   Clipboard,
   Presentation,
   Package,
+  ListChecks,
+  Palette,
+  Clock,
+  BookCopy,
+  UserCog,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -55,43 +60,43 @@ const menuItems = [
     { href: '/employee-dashboard/our-team', label: 'Our Team', icon: Users },
     { href: '/employee-dashboard/about-me', label: 'About Me', icon: User },
     { href: '/employee-dashboard/services', label: 'Services', icon: FileText },
-];
-
-const projectItems = [
+    { href: '/employee-dashboard/project-checklist', label: 'Project Checklist', icon: ListChecks },
     { href: '/employee-dashboard/project-information', label: 'Project Information', icon: Folder },
+    { href: '/employee-dashboard/predesign-assessment', label: 'Predesign Assessment', icon: FileSearch },
     { href: '/employee-dashboard/project-data', label: 'Project Data', icon: Database },
+    { href: '/employee-dashboard/project-agreement', label: 'Project Agreement', icon: FileSignature },
     { href: '/employee-dashboard/list-of-services', label: 'List of Services', icon: ClipboardList },
+    { href: '/employee-dashboard/requirement-performa', label: 'Requirement Performa', icon: FilePlus },
+    { href: '/employee-dashboard/site-survey', label: 'Site Survey', icon: Compass },
+    { href: '/employee-dashboard/project-bylaws', label: 'Project Bylaws', icon: FileKey },
+    { href: '/employee-dashboard/proposal-request', label: 'Proposal Request', icon: Briefcase },
+    { href: '/employee-dashboard/drawings', label: 'Drawings', icon: Palette },
+    { href: '/employee-dashboard/shop-drawings-record', label: 'Shop Drawings Record', icon: File },
+    { href: '/employee-dashboard/project-chart-studio', label: 'Project Chart (Studio)', icon: BarChart2 },
+    { href: '/employee-dashboard/field-reports-meetings', label: 'Field Reports/Meetings', icon: Presentation },
     { href: '/employee-dashboard/list-of-sub-consultants', label: 'List Of Sub-consultants', icon: BookUser },
     { href: '/employee-dashboard/list-of-contractors', label: 'List of Contractors', icon: Building },
     { href: '/employee-dashboard/list-of-approved-vendors', label: 'List of Approved Vendors', icon: UserCheck },
-    { href: '/employee-dashboard/requirement-performa', label: 'Requirement Performa', icon: FilePlus },
-    { href: '/employee-dashboard/site-survey', label: 'Site Survey', icon: Compass },
-    { href: '/employee-dashboard/predesign-assessment', label: 'Predesign Assessment', icon: FileSearch },
-    { href: '/employee-dashboard/project-agreement', label: 'Project Agreement', icon: FileSignature },
-    { href: '/employee-dashboard/project-bylaws', label: 'Project Bylaws', icon: FileKey },
-    { href: '/employee-dashboard/preliminary-project-budget', label: 'Preliminary Project Budget', icon: Scroll },
-    { href: '/employee-dashboard/rate-analysis', label: 'Rate Analysis', icon: BarChart2 },
-    { href: '/employee-dashboard/bill-of-quantity', label: 'Bill Of Quantity', icon: Wallet },
-    { href: '/employee-dashboard/shop-drawings-record', label: 'Shop Drawings Record', icon: File },
-    { href: '/employee-dashboard/construction-schedule', label: 'Construction Schedule', icon: Calendar },
+    { href: '/employee-dashboard/time-line-schedule', label: 'Time line Schedule', icon: Clock },
     { href: '/employee-dashboard/project-application-summary', label: 'Project Application Summary', icon: CheckSquare },
     { href: '/employee-dashboard/continuation-sheet', label: 'Continuation Sheet', icon: FileX },
-    { href: '/employee-dashboard/payment-certificates', label: 'Payment Certificates', icon: CircleDollarSign },
-    { href: '/employee-dashboard/substantial-summary', label: 'Substantial Summary', icon: Clipboard },
-    { href: '/employee-dashboard/consent-of-surety', label: 'Consent of Surety', icon: FilePen },
-    { href: '/employee-dashboard/instruction-sheet', label: 'Instruction Sheet', icon: FileUp },
-    { href: '/employee-dashboard/proposal-request', label: 'Proposal Request', icon: Briefcase },
+    { href: '/employee-dashboard/construction-schedule', label: 'Construction Schedule', icon: Calendar },
+    { href: '/employee-dashboard/preliminary-project-budget', label: 'Preliminary Project Budget', icon: Scroll },
+    { href: '/employee-dashboard/bill-of-quantity', label: 'Bill Of Quantity', icon: Wallet },
+    { href: '/employee-dashboard/rate-analysis', label: 'Rate Analysis', icon: BarChart2 },
     { href: '/employee-dashboard/change-order', label: 'Change Order', icon: Book },
-    { href: '/employee-dashboard/construction-change-director', label: 'Construction Change Director', icon: Users },
-    { href: '/employee-dashboard/architects-instructions', label: 'Architects Instructions', icon: User },
-    { href: '/employee-dashboard/field-reports-meetings', label: 'Field Reports/Meetings', icon: Presentation },
-    { href: '/employee-dashboard/document-summarizer', label: 'Document Summarizer', icon: FileText },
-    { href: '/employee-dashboard/project-chart-studio', label: 'Project Chart (Studio)', icon: BarChart2 },
+    { href: '/employee-dashboard/payment-certificates', label: 'Payment Certificates', icon: CircleDollarSign },
+    { href: '/employee-dashboard/instruction-sheet', label: 'Instruction Sheet', icon: FileUp },
+    { href: '/employee-dashboard/other-provisions', label: 'Other Provisions', icon: BookCopy },
+    { href: '/employee-dashboard/consent-of-surety', label: 'Consent of Surety', icon: FilePen },
+    { href: '/employee-dashboard/substantial-summary', label: 'Substantial Summary', icon: Clipboard },
     { href: '/employee-dashboard/total-project-package', label: 'Total Project Package', icon: Package },
-];
-
-const bottomMenuItems = [
+    { href: '/employee-dashboard/architects-instructions', label: 'Architects Instructions', icon: User },
+    { href: '/employee-dashboard/construction-change-director', label: 'Construction Change Director', icon: Users },
+    { href: '/employee-dashboard/document-summarizer', label: 'Document Summarizer', icon: FileText },
     { href: '/employee-dashboard/saved-records', label: 'Saved Records', icon: Database },
+    { href: '/employee-dashboard/data-entry', label: 'Data Entry', icon: FileUp },
+    { href: '/employee-dashboard/employee-record', label: 'Employee Record', icon: UserCog },
 ];
 
 
@@ -119,40 +124,6 @@ export default function EmployeeDashboardSidebar() {
         <SidebarContent className="p-2">
           <SidebarMenu>
             {menuItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href} passHref>
-                    <SidebarMenuButton
-                        isActive={pathname === item.href}
-                        className={cn(pathname === item.href && 'bg-sidebar-accent text-sidebar-accent-foreground', 'group-data-[collapsible=icon]:justify-center')}
-                        tooltip={item.label}
-                    >
-                        <item.icon className="size-5" />
-                        <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                    </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-
-            <SidebarSeparator className="my-2" />
-
-            {projectItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href} passHref>
-                    <SidebarMenuButton
-                        isActive={pathname === item.href}
-                        className={cn(pathname === item.href && 'bg-sidebar-accent text-sidebar-accent-foreground', 'group-data-[collapsible=icon]:justify-center')}
-                        tooltip={item.label}
-                    >
-                        <item.icon className="size-5" />
-                        <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                    </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-
-             <SidebarSeparator className="my-2" />
-
-            {bottomMenuItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} passHref>
                     <SidebarMenuButton
