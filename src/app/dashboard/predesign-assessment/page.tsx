@@ -131,9 +131,11 @@ const factorsData = {
 
 const ChecklistItem = ({ item }: { item: { label: string; level: number } }) => {
   return (
-    <div className="flex items-start" style={{ paddingLeft: `${item.level * 1.5}rem` }}>
-      <Checkbox id={item.label.replace(/\s+/g, '-')} className="mt-1" />
-      <Label htmlFor={item.label.replace(/\s+/g, '-')} className="ml-3 flex-1">{item.label}</Label>
+    <div className="flex items-start">
+      <div style={{ paddingLeft: `${item.level * 1.5}rem` }} className="flex items-start flex-1">
+        <Checkbox id={item.label.replace(/\s+/g, '-')} className="mt-1" />
+        <Label htmlFor={item.label.replace(/\s+/g, '-')} className="ml-3 flex-1">{item.label}</Label>
+      </div>
     </div>
   );
 };
@@ -203,5 +205,3 @@ export default function PredesignAssessmentPage() {
     </div>
   );
 }
-
-    
