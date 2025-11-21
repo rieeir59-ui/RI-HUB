@@ -21,7 +21,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    const user = employees.find(e => e.email.toLowerCase() === email.toLowerCase() && e.password === password);
+    const user = employees.find(e => e.email.toLowerCase() === email.toLowerCase() && e.password?.toLowerCase() === password.toLowerCase());
 
     if (!user) {
       toast({
