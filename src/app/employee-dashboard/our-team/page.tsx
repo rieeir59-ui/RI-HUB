@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEmployees } from '@/context/EmployeeContext';
 import { Users, User, Crown } from 'lucide-react';
+import React from 'react';
 
 const TeamMemberCard = ({ name, role }: { name: string; role: string; }) => {
   const getInitials = (name: string) => {
@@ -46,19 +47,19 @@ const DepartmentSection = ({ title, icon, children }: { title: string; icon: Rea
 
 export default function TeamPage() {
     const { employees } = useEmployees();
-    const getEmployee = (name: string) => employees.find(e => e.name.toLowerCase() === name.toLowerCase());
+    
     const getEmployeesByDept = (deptSlug: string) => employees.filter(e => e.department === deptSlug);
 
     const ceo = getEmployeesByDept('ceo')[0];
     const hr = getEmployeesByDept('hr');
     const architects = {
-        lead: getEmployee('Asad'),
+        lead: employees.find(e => e.name.toLowerCase() === 'asad'),
         team: getEmployeesByDept('architects').filter(e => e.name.toLowerCase() !== 'asad')
     };
-    const finance = getEmployeesByDept('finance')[0];
+    const finance = getEmployeesByDept('finance');
     const softwareEngineers = getEmployeesByDept('software-engineer');
-    const quantityManagement = getEmployeesByDept('quantity-management')[0];
-    const visualizer = getEmployeesByDept('3d-visualizer')[0];
+    const quantityManagement = getEmployeesByDept('quantity-management');
+    const visualizer = getEmployeesByDept('3d-visualizer');
     const drafting = getEmployeesByDept('draftman');
 
   return (
@@ -106,7 +107,7 @@ export default function TeamPage() {
 
             {/* Other Departments */}
             <DepartmentSection title="Finance" icon={<Users className="w-5 h-5" />}>
-                {finance && <TeamMemberCard name={finance.name} role="Finance" />}
+                {finance.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Finance" />)}
             </DepartmentSection>
 
              <DepartmentSection title="Software Engineers" icon={<Users className="w-5 h-5" />}>
@@ -114,11 +115,11 @@ export default function TeamPage() {
             </DepartmentSection>
 
             <DepartmentSection title="Quantity Management" icon={<Users className="w-5 h-5" />}>
-                {quantityManagement && <TeamMemberCard name={quantityManagement.name} role="Quantity Manager" />}
+                {quantityManagement.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="Quantity Manager" />)}
             </DepartmentSection>
 
             <DepartmentSection title="3D Visualizer" icon={<User className="w-5 h-5" />}>
-                {visualizer && <TeamMemberCard name={visualizer.name} role="3D Visualizer" />}
+                {visualizer.map(e => e && <TeamMemberCard key={e.record} name={e.name} role="3D Visualizer" />)}
             </DepartmentSection>
 
             <DepartmentSection title="Drafting" icon={<Users className="w-5 h-5" />}>
