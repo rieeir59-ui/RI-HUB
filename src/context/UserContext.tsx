@@ -6,6 +6,7 @@ import { type Employee, employees } from '@/lib/employees';
 
 interface UserContextType {
   user: Employee | null;
+  login: (user: Employee) => void;
   logout: () => void;
 }
 
@@ -22,13 +23,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const login = (user: Employee) => {
+    localStorage.setItem('currentUserEmail', user.email);
+    setUser(user);
+  };
+
   const logout = () => {
     localStorage.removeItem('currentUserEmail');
     setUser(null);
   };
 
   return (
-    <UserContext.Provider value={{ user, logout }}>
+    <UserContext.Provider value={{ user, login, logout }}>
       {children}
     </UserContext.Provider>
   );

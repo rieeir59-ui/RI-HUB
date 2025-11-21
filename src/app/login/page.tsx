@@ -11,15 +11,17 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { RiIdLogo } from '@/components/layout/header';
 import { employees } from '@/lib/employees';
+import { useCurrentUser } from '@/context/UserContext';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { login } = useCurrentUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    const user = employees.find(e => e.email === email && e.password === password);
+    const user = employees.find(e => e.email.toLowerCase() === email.toLowerCase() && e.password === password);
 
     if (!user) {
       toast({
@@ -30,9 +32,7 @@ export default function LoginPage() {
       return;
     }
     
-    // For now, any login attempt is successful and redirects to the dashboard.
-    // We can add real authentication later.
-    localStorage.setItem('currentUserEmail', user.email);
+    login(user);
     
     toast({
       title: "Login Successful",
