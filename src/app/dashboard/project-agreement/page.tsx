@@ -1,14 +1,19 @@
 
 'use client';
 
+import { useState } from 'react';
 import DashboardPageHeader from "@/components/dashboard/PageHeader";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Save, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { useFirebase } from '@/firebase/provider';
+import { useCurrentUser } from '@/context/UserContext';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 const Section = ({ title, children, className }: { title?: string; children: React.ReactNode, className?: string }) => (
   <div className={`mb-6 ${className}`}>
@@ -31,20 +36,157 @@ const SubSection = ({ title, children, className }: { title: string; children: R
 export default function ProjectAgreementPage() {
     const image = PlaceHolderImages.find(p => p.id === 'project-agreement');
     const { toast } = useToast();
+    const { firestore } = useFirebase();
+    const { user: currentUser } = useCurrentUser();
 
-    const handleSave = () => {
-        toast({
-            title: "Record Saved",
-            description: "The project agreement has been successfully saved.",
-        });
+    const [day, setDay] = useState('');
+    const [owner, setOwner] = useState('');
+    const [designOf, setDesignOf] = useState('');
+    const [address, setAddress] = useState('');
+    const [coveredArea, setCoveredArea] = useState('');
+    const [consultancyCharges, setConsultancyCharges] = useState('');
+    const [salesTax, setSalesTax] = useState('');
+    const [withholdingTax, setWithholdingTax] = useState('');
+    const [finalCharges, setFinalCharges] = useState('');
+
+    const handleSave = async () => {
+        if (!firestore || !currentUser) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'You must be logged in to save a record.',
+            });
+            return;
+        }
+
+        const recordData = [
+            {
+                category: "Agreement Details",
+                items: [
+                    `Made as of the day: ${day}`,
+                    `Between the Owner: ${owner}`,
+                    `For the Design of: ${designOf}`,
+                    `Address: ${address}`
+                ]
+            },
+            {
+                category: "Cost Breakdown",
+                items: [
+                    `Covered Area of Project: ${coveredArea}`,
+                    `Consultancy Charges: ${consultancyCharges}`,
+                    `Sales Tax @ 16%: ${salesTax}`,
+                    `Withholding Tax @ 10%: ${withholdingTax}`,
+                    `Final Consultancy Charges: ${finalCharges}`
+                ]
+            }
+        ];
+
+        try {
+            await addDoc(collection(firestore, 'savedRecords'), {
+                employeeId: currentUser.record,
+                employeeName: currentUser.name,
+                fileName: 'Project Agreement',
+                projectName: designOf || 'Untitled Project',
+                data: recordData,
+                createdAt: serverTimestamp(),
+            });
+
+            toast({
+                title: "Record Saved",
+                description: "The project agreement has been successfully saved.",
+            });
+        } catch (error) {
+            console.error("Error saving record:", error);
+            toast({
+                variant: 'destructive',
+                title: "Save Failed",
+                description: "There was an error saving the project agreement.",
+            });
+        }
     }
 
     const handleDownloadPdf = () => {
+        const doc = new jsPDF();
+        let yPos = 20;
+
+        const addText = (text: string, isBold = false, indent = 0) => {
+            if (yPos > 280) {
+                doc.addPage();
+                yPos = 20;
+            }
+            doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+            doc.text(text, 14 + indent, yPos);
+            yPos += 7;
+        };
+        
+        doc.setFontSize(14);
+        addText('COMMERCIAL AGREEMENT', true);
+        yPos += 5;
+        doc.setFontSize(10);
+        
+        addText(`Made as of the day ${day || '________________'}`);
+        addText(`Between the Owner: ${owner || '________________'}`);
+        addText(`And the Firm: Isbah Hassan & Associates`);
+        addText(`For the Design of: ${designOf || '________________'}`);
+        addText(`Address: ${address || '________________'}`);
+        yPos += 5;
+
+        doc.autoTable({
+            startY: yPos,
+            body: [
+                ['Covered Area of Project:', coveredArea],
+                ['Consultancy Charges @ Rs ___/Sft:', consultancyCharges],
+                ['Sales Tax @ 16%:', salesTax],
+                ['Withholding Tax @ 10%:', withholdingTax],
+                ['Final Consultancy Charges:', finalCharges],
+            ],
+            theme: 'plain',
+            styles: { fontSize: 10 },
+            bodyStyles: {
+                0: { fontStyle: 'bold' }
+            }
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+        
+        addText('PAYMENT SCHEDULE:', true);
+        doc.autoTable({
+            startY: yPos,
+            body: [
+                ['On mobilization (advance payment)', '20 %'],
+                ['On approval of schematic designs & 3D’s', '15%'],
+                ['On completion of submission drawings', '15%'],
+                ['On start of construction drawings', '15%'],
+                ['On completion of construction drawings', '10%'],
+                ['On completion of interior drawings', '10%'],
+                ['On preparation of detailed BOQ', '10%'],
+            ],
+            theme: 'plain',
+            styles: { fontSize: 10 }
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+
+        addText('Project Management:', true);
+        addText('Top Supervision:', true, 5);
+        const supervisionItems = [
+            'Please find attached the site visit schedule for the project please intimate the office one week in advance before the required visit for timely surveillance. Any Unscheduled visits would be charged as under.',
+            'For out of station visits, the travelling by air and lodging in a five-star hotel will be paid by the client.',
+            "Rs. 50,000 for Principal Architect's site visit per day.",
+            "Rs. 30,000 for Associate Architect's site visit per day.",
+            'For International visits, the travelling by air and lodging in a five-star hotel will be paid by the client.',
+            "Rs. 150,000 for Principal Architect' s fee per day.",
+            "Rs. 30,000 for Associate Architect' s fee per day."
+        ];
+        supervisionItems.forEach(item => addText(`• ${item}`, false, 10));
+        addText('Detailed Supervision:', true, 5);
+        addText('The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.', false, 10);
+        
+        yPos += 5;
+        doc.save('Project-Agreement.pdf');
+
         toast({
             title: "Download Started",
             description: "The project agreement PDF is being generated.",
         });
-        // PDF generation logic would go here
     }
     
     return (
@@ -63,20 +205,20 @@ export default function ProjectAgreementPage() {
                 <CardContent className="p-6 md:p-8">
                     <div id="agreement-content">
                         <Section>
-                            <p>Made as of the day ________________</p>
-                            <p>Between the Owner: ________________</p>
+                            <div className="flex items-center gap-2">Made as of the day <Input value={day} onChange={e => setDay(e.target.value)} className="w-48" /></div>
+                            <div className="flex items-center gap-2">Between the Owner: <Input value={owner} onChange={e => setOwner(e.target.value)} className="flex-1" /></div>
                             <p>And the Firm: Isbah Hassan & Associates</p>
-                            <p>For the Design of: ________________</p>
-                            <p>Address: ________________</p>
+                            <div className="flex items-center gap-2">For the Design of: <Input value={designOf} onChange={e => setDesignOf(e.target.value)} className="flex-1" /></div>
+                            <div className="flex items-center gap-2">Address: <Input value={address} onChange={e => setAddress(e.target.value)} className="flex-1" /></div>
                         </Section>
 
                         <Section>
-                             <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                                <p>Covered Area of Project:</p> <p>________________</p>
-                                <p>Consultancy Charges @ Rs ___/Sft:</p> <p>________________</p>
-                                <p>Sales Tax @ 16%:</p> <p>________________</p>
-                                <p>Withholding Tax @ 10%:</p> <p>________________</p>
-                                <p className="font-bold">Final Consultancy Charges:</p> <p className="font-bold">________________</p>
+                             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                                <p>Covered Area of Project:</p> <Input value={coveredArea} onChange={e => setCoveredArea(e.target.value)} />
+                                <p>Consultancy Charges @ Rs ___/Sft:</p> <Input value={consultancyCharges} onChange={e => setConsultancyCharges(e.target.value)} />
+                                <p>Sales Tax @ 16%:</p> <Input value={salesTax} onChange={e => setSalesTax(e.target.value)} />
+                                <p>Withholding Tax @ 10%:</p> <Input value={withholdingTax} onChange={e => setWithholdingTax(e.target.value)} />
+                                <p className="font-bold">Final Consultancy Charges:</p> <Input className="font-bold" value={finalCharges} onChange={e => setFinalCharges(e.target.value)} />
                              </div>
                         </Section>
 
@@ -245,11 +387,11 @@ export default function ProjectAgreementPage() {
 
                         <div className="flex justify-between mt-16">
                             <div>
-                                <p>______________</p>
+                                <p className="border-b-2 border-foreground w-48 mb-2"></p>
                                 <p>Architect</p>
                             </div>
                              <div>
-                                <p>_______________</p>
+                                <p className="border-b-2 border-foreground w-48 mb-2"></p>
                                 <p>Client</p>
                             </div>
                         </div>
@@ -264,3 +406,5 @@ export default function ProjectAgreementPage() {
         </div>
     );
 }
+
+    
