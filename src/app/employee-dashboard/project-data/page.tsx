@@ -62,9 +62,12 @@ export default function ProjectDataPage() {
         const getRadioValue = (name: string) => (form.elements.namedItem(name) as HTMLInputElement)?.value || '';
         
         const addSectionTitle = (title: string) => {
+            if (yPos > 260) { doc.addPage(); yPos = 20; }
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(12);
+            doc.setTextColor(40, 58, 90); // A professional blue color
             doc.text(title, margin, yPos);
+            doc.setTextColor(0, 0, 0); // Reset to black
             yPos += 8;
         };
 
@@ -91,8 +94,10 @@ export default function ProjectDataPage() {
         }
 
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(14);
+        doc.setFontSize(16);
+        doc.setTextColor(45, 95, 51); // Primary color for main heading
         doc.text('PROJECT DATA', pageWidth / 2, 15, { align: 'center' });
+        doc.setTextColor(0, 0, 0);
 
         // --- General Info ---
         addSectionTitle("Project Information");
