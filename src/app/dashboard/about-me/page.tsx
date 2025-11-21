@@ -11,25 +11,9 @@ import Image from 'next/image';
 export default function AboutMePage() {
   return (
     <div className="space-y-8">
-       <Card className="bg-card/90 border-primary/30 shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-headline text-primary">About Us</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-muted-foreground space-y-4">
-              <p>
-                  Isbah Hassan & Associates (Pvt.) Ltd. offers elegant and innovative architecture and interior design solutions to meet the most discerning requirements.
-              </p>
-              <p>
-                  Whether it’s a high-rise, a housing development, an amusement park or a campus, our holistic approach ensures that buildings are stylish, practical, comfortable and in perfect harmony with their indigenous surroundings.
-              </p>
-          </div>
-        </CardContent>
-      </Card>
-
       <Card>
         <CardHeader>
-            <CardTitle className="font-headline text-4xl text-primary">ISBAH HASSAN</CardTitle>
+            <CardTitle className="font-headline text-4xl text-primary">About Isbah Hassan</CardTitle>
         </CardHeader>
         <CardContent>
             <div className="grid md:grid-cols-3 gap-8 items-start">
