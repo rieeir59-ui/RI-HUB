@@ -221,5 +221,11 @@ service cloud.firestore {
       allow update: if isAdmin() && isExistingDoc();
       allow delete: if isAdmin() && isExistingDoc();
     }
+
+    match /savedRecords/{docId} {
+      allow create: if true;
+      allow list: if isSignedIn();
+      allow read, update, delete: if false;
+    }
   }
 }
