@@ -1,7 +1,7 @@
 
 'use client';
 
-import { MoreHorizontal, PlusCircle, Download } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Download, FileText as FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -187,6 +187,30 @@ export default function EmployeePage() {
     doc.save('employee-list.pdf');
   }
 
+  const handleDownloadCsv = () => {
+    const csvHeader = ['Name', 'Email', 'Department'];
+    const csvRows = employees.map(emp => [
+      `"${emp.name}"`,
+      `"${emp.email}"`,
+      `"${departments.find(d => d.slug === emp.department)?.name || emp.department}"`
+    ]);
+
+    const csvContent = [
+      csvHeader.join(','),
+      ...csvRows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'employee-list.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   return (
     <>
       <DashboardPageHeader
@@ -307,7 +331,11 @@ export default function EmployeePage() {
           <div className="text-xs text-muted-foreground">
             Showing <strong>1-{employees.length}</strong> of <strong>{employees.length}</strong> employees
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <Button size="sm" variant="outline" className="gap-1" onClick={handleDownloadCsv}>
+              <FileDown className="h-4 w-4" />
+              Download CSV
+            </Button>
             <Button size="sm" variant="outline" className="gap-1" onClick={handleDownloadPdf}>
               <Download className="h-4 w-4" />
               Download PDF
