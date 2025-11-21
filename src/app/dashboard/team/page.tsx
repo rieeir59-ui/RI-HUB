@@ -8,7 +8,6 @@ import { employees, type Employee } from '@/lib/employees';
 import { Users, User, Crown } from 'lucide-react';
 
 const TeamMemberCard = ({ name, role, avatarId }: { name: string; role: string; avatarId?: string }) => {
-  const avatar = PlaceHolderImages.find(p => p.id === avatarId);
   const getInitials = (name: string) => {
     const nameParts = name.split(' ');
     if (nameParts.length > 1 && nameParts[nameParts.length - 1]) {
@@ -21,20 +20,9 @@ const TeamMemberCard = ({ name, role, avatarId }: { name: string; role: string; 
     <Card className="text-center bg-card/80 border-primary/20 shadow-lg hover:shadow-primary/30 transition-shadow duration-300">
       <CardContent className="p-4">
         <div className="relative inline-block">
-          {avatar ? (
-            <Image
-              src={avatar.imageUrl}
-              alt={name}
-              width={80}
-              height={80}
-              className="rounded-full object-cover border-4 border-primary/50"
-              data-ai-hint={avatar.imageHint}
-            />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center border-4 border-primary/50">
+            <div className="w-20 h-20 rounded-full bg-black flex items-center justify-center border-2 border-primary shadow-[0_0_8px_hsl(var(--primary))]">
               <span className="text-3xl font-bold text-primary">{getInitials(name)}</span>
             </div>
-          )}
         </div>
         <p className="mt-2 font-bold text-lg">{name}</p>
         <p className="text-sm text-muted-foreground">{role}</p>
