@@ -6,6 +6,8 @@ import { employees as initialEmployees, type Employee } from '@/lib/employees';
 type EmployeeContextType = {
   employees: Employee[];
   addEmployee: (employee: Employee) => void;
+  updateEmployee: (record: string, updatedData: Partial<Employee>) => void;
+  deleteEmployee: (record: string) => void;
   employeesByDepartment: Record<string, Employee[]>;
 };
 
@@ -17,6 +19,21 @@ export const EmployeeProvider = ({ children }: { children: ReactNode }) => {
   const addEmployee = (employee: Employee) => {
     setEmployees((prevEmployees) => [...prevEmployees, employee]);
   };
+
+  const updateEmployee = (record: string, updatedData: Partial<Employee>) => {
+    setEmployees((prevEmployees) =>
+      prevEmployees.map((employee) =>
+        employee.record === record ? { ...employee, ...updatedData } : employee
+      )
+    );
+  };
+
+  const deleteEmployee = (record: string) => {
+    setEmployees((prevEmployees) =>
+      prevEmployees.filter((employee) => employee.record !== record)
+    );
+  };
+
 
   const employeesByDepartment = useMemo(() => {
     const grouped = employees.reduce((acc, employee) => {
@@ -42,7 +59,7 @@ export const EmployeeProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <EmployeeContext.Provider value={{ employees, addEmployee, employeesByDepartment }}>
+    <EmployeeContext.Provider value={{ employees, addEmployee, updateEmployee, deleteEmployee, employeesByDepartment }}>
       {children}
     </EmployeeContext.Provider>
   );

@@ -18,7 +18,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,8 +76,12 @@ function getFirstLetter(name: string) {
 }
 
 export default function EmployeePage() {
-  const { employees, addEmployee } = useEmployees();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  
   const { toast } = useToast();
 
   const handleAddEmployee = (event: React.FormEvent<HTMLFormElement>) => {
@@ -91,145 +106,245 @@ export default function EmployeePage() {
       email,
       contact,
       department,
-      record: `EMP-${String(employees.length + 1).padStart(3, '0')}`,
-      avatarId: 'avatar-3', // Default avatar
+      record: `EMP-${String(Date.now()).slice(-4)}`,
+      avatarId: 'avatar-3',
     };
 
     addEmployee(newEmployee);
-    setIsDialogOpen(false);
+    setIsAddDialogOpen(false);
     toast({
       title: "Employee Added",
       description: `${name} has been added to the employee list.`,
     });
   };
 
+  const handleEditEmployee = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedEmployee) return;
+
+    const formData = new FormData(event.currentTarget);
+    const updatedData: Partial<Employee> = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      contact: formData.get('contact') as string,
+      department: formData.get('department') as string,
+    };
+
+    updateEmployee(selectedEmployee.record, updatedData);
+    setIsEditDialogOpen(false);
+    setSelectedEmployee(null);
+    toast({
+      title: "Employee Updated",
+      description: `${updatedData.name} has been updated.`,
+    });
+  };
+
+  const handleDeleteEmployee = () => {
+    if (!selectedEmployee) return;
+
+    deleteEmployee(selectedEmployee.record);
+    setIsDeleteDialogOpen(false);
+    setSelectedEmployee(null);
+    toast({
+      variant: 'destructive',
+      title: "Employee Deleted",
+      description: `${selectedEmployee.name} has been removed.`,
+    });
+  };
+
+  const openEditDialog = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsDeleteDialogOpen(true);
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="font-headline text-2xl">Employees</CardTitle>
-            <CardDescription>Manage your company's employee records.</CardDescription>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-1">
-                <PlusCircle className="h-4 w-4" />
-                Add Employee
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Add New Employee</DialogTitle>
-                <DialogDescription>
-                  Enter the details of the new employee below.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleAddEmployee}>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Name
-                    </Label>
-                    <Input id="name" name="name" className="col-span-3" required />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="email" className="text-right">
-                      Email
-                    </Label>
-                    <Input id="email" name="email" type="email" className="col-span-3" required />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="contact" className="text-right">
-                      Contact
-                    </Label>
-                    <Input id="contact" name="contact" className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="department" className="text-right">
-                      Department
-                    </Label>
-                     <Select name="department" required>
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select a department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {departments.map(dept => (
-                             <SelectItem key={dept.slug} value={dept.slug}>{dept.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Save Employee</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="hidden w-[100px] sm:table-cell">
-                <span className="sr-only">Avatar</span>
-              </TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Department</TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {employees.map((employee) => (
-                <TableRow key={employee.record}>
-                  <TableCell className="hidden sm:table-cell">
-                    <div className="flex items-center justify-center h-16 w-16 rounded-full bg-secondary text-secondary-foreground font-bold text-2xl">
-                      {getFirstLetter(employee.name)}
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="font-headline text-2xl">Employees</CardTitle>
+              <CardDescription>Manage your company's employee records.</CardDescription>
+            </div>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="gap-1">
+                  <PlusCircle className="h-4 w-4" />
+                  Add Employee
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Add New Employee</DialogTitle>
+                  <DialogDescription>
+                    Enter the details of the new employee below.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddEmployee}>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="name" className="text-right">Name</Label>
+                      <Input id="name" name="name" className="col-span-3" required />
                     </div>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <div className="font-bold">{employee.name}</div>
-                    <div className="text-sm text-muted-foreground md:hidden">{employee.email}</div>
-                  </TableCell>
-                  <TableCell>{employee.email}</TableCell>
-                   <TableCell>{departments.find(d => d.slug === employee.department)?.name || employee.department}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              )
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-      <CardFooter>
-        <div className="text-xs text-muted-foreground">
-          Showing <strong>1-{employees.length}</strong> of <strong>{employees.length}</strong> employees
-        </div>
-        <div className="ml-auto">
-          <Button size="sm" variant="outline" className="gap-1">
-            <Download className="h-4 w-4" />
-            Download PDF
-          </Button>
-        </div>
-      </CardFooter>
-    </Card>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="email" className="text-right">Email</Label>
+                      <Input id="email" name="email" type="email" className="col-span-3" required />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="contact" className="text-right">Contact</Label>
+                      <Input id="contact" name="contact" className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="department" className="text-right">Department</Label>
+                      <Select name="department" required>
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder="Select a department" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {departments.map(dept => (
+                              <SelectItem key={dept.slug} value={dept.slug}>{dept.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                    <Button type="submit">Save Employee</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="hidden w-[100px] sm:table-cell">
+                  <span className="sr-only">Avatar</span>
+                </TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {employees.map((employee) => (
+                  <TableRow key={employee.record}>
+                    <TableCell className="hidden sm:table-cell">
+                      <div className="flex items-center justify-center h-16 w-16 rounded-full bg-secondary text-secondary-foreground font-bold text-2xl">
+                        {getFirstLetter(employee.name)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <div className="font-bold">{employee.name}</div>
+                      <div className="text-sm text-muted-foreground md:hidden">{employee.email}</div>
+                    </TableCell>
+                    <TableCell>{employee.email}</TableCell>
+                    <TableCell>{departments.find(d => d.slug === employee.department)?.name || employee.department}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => openEditDialog(employee)}>Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openDeleteDialog(employee)} className="text-red-600">Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                )
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <CardFooter>
+          <div className="text-xs text-muted-foreground">
+            Showing <strong>1-{employees.length}</strong> of <strong>{employees.length}</strong> employees
+          </div>
+          <div className="ml-auto">
+            <Button size="sm" variant="outline" className="gap-1">
+              <Download className="h-4 w-4" />
+              Download PDF
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
+      
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Employee</DialogTitle>
+            <DialogDescription>
+              Update the details for {selectedEmployee?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditEmployee}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-name" className="text-right">Name</Label>
+                <Input id="edit-name" name="name" defaultValue={selectedEmployee?.name} className="col-span-3" required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-email" className="text-right">Email</Label>
+                <Input id="edit-email" name="email" type="email" defaultValue={selectedEmployee?.email} className="col-span-3" required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-contact" className="text-right">Contact</Label>
+                <Input id="edit-contact" name="contact" defaultValue={selectedEmployee?.contact} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-department" className="text-right">Department</Label>
+                <Select name="department" defaultValue={selectedEmployee?.department} required>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select a department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departments.map(dept => (
+                      <SelectItem key={dept.slug} value={dept.slug}>{dept.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+              <Button type="submit">Save Changes</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the employee record for {selectedEmployee?.name}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteEmployee} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
