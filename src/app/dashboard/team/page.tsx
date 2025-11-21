@@ -1,8 +1,7 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { employees } from '@/lib/employees';
+import { useEmployees } from '@/context/EmployeeContext';
 import { Users, User, Crown } from 'lucide-react';
 
 const TeamMemberCard = ({ name, role }: { name: string; role: string; }) => {
@@ -45,19 +44,21 @@ const DepartmentSection = ({ title, icon, children }: { title: string; icon: Rea
 
 
 export default function TeamPage() {
+    const { employees } = useEmployees();
     const getEmployee = (name: string) => employees.find(e => e.name.toLowerCase() === name.toLowerCase());
+    const getEmployeesByDept = (deptSlug: string) => employees.filter(e => e.department === deptSlug);
 
-    const ceo = getEmployee('Isbah Hassan');
-    const hr = [getEmployee('Sobia'), getEmployee('Fiza')];
+    const ceo = getEmployeesByDept('ceo')[0];
+    const hr = getEmployeesByDept('hr');
     const architects = {
         lead: getEmployee('Asad'),
-        team: [getEmployee('Luqman'), getEmployee('Waleed'), getEmployee('Haseeb'), getEmployee('Kizzar')]
+        team: getEmployeesByDept('architects').filter(e => e.name.toLowerCase() !== 'asad')
     };
-    const finance = getEmployee('Waqar');
-    const softwareEngineers = [getEmployee('Rabiya Eman'), getEmployee('Imran Abbas')];
-    const quantityManagement = getEmployee('Noman');
-    const visualizer = getEmployee('Mosin');
-    const drafting = [getEmployee('Mujahid'), getEmployee('Jabbar'), getEmployee('Waqas')];
+    const finance = getEmployeesByDept('finance')[0];
+    const softwareEngineers = getEmployeesByDept('software-engineer');
+    const quantityManagement = getEmployeesByDept('quantity-management')[0];
+    const visualizer = getEmployeesByDept('3d-visualizer')[0];
+    const drafting = getEmployeesByDept('draftman');
 
   return (
     <div className="space-y-12">

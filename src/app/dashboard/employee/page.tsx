@@ -1,7 +1,5 @@
-
 'use client';
 
-import Image from 'next/image';
 import { MoreHorizontal, PlusCircle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,9 +43,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { employees as initialEmployees, type Employee } from '@/lib/employees';
+import { type Employee } from '@/lib/employees';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useEmployees } from '@/context/EmployeeContext';
 
 const departments = [
     { name: 'CEO', slug: 'ceo' },
@@ -66,7 +65,7 @@ function getFirstLetter(name: string) {
 }
 
 export default function EmployeePage() {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const { employees, addEmployee } = useEmployees();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
@@ -96,7 +95,7 @@ export default function EmployeePage() {
       avatarId: 'avatar-3', // Default avatar
     };
 
-    setEmployees([...employees, newEmployee]);
+    addEmployee(newEmployee);
     setIsDialogOpen(false);
     toast({
       title: "Employee Added",

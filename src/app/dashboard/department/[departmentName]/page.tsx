@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -13,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
-import { employeesByDepartment } from '@/lib/employees';
+import { useEmployees } from '@/context/EmployeeContext';
 import { useParams } from 'next/navigation';
 
 function formatDepartmentName(slug: string) {
@@ -33,6 +32,7 @@ function getInitials(name: string) {
 
 export default function DepartmentPage() {
   const params = useParams();
+  const { employeesByDepartment } = useEmployees();
   const departmentName = Array.isArray(params.departmentName) ? params.departmentName[0] : params.departmentName;
   const departmentEmployees = employeesByDepartment[departmentName as keyof typeof employeesByDepartment] || [];
   const formattedDeptName = formatDepartmentName(departmentName);

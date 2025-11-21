@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Card,
@@ -9,8 +8,8 @@ import {
 } from '@/components/ui/card';
 import { Users } from 'lucide-react';
 import Link from 'next/link';
-import { employeesByDepartment } from '@/lib/employees';
 import { useEffect, useState } from 'react';
+import { useEmployees } from '@/context/EmployeeContext';
 
 
 const departments = [
@@ -26,6 +25,7 @@ const departments = [
 ];
 
 export default function DashboardPage() {
+    const { employeesByDepartment } = useEmployees();
     const [departmentCounts, setDepartmentCounts] = useState<Record<string, number>>({});
 
     useEffect(() => {
@@ -34,7 +34,7 @@ export default function DashboardPage() {
             counts[dept.slug] = employeesByDepartment[dept.slug as keyof typeof employeesByDepartment]?.length || 0;
         }
         setDepartmentCounts(counts);
-    }, []);
+    }, [employeesByDepartment]);
 
 
   return (
