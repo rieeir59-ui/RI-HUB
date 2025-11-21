@@ -55,11 +55,11 @@ export default function TeamPage() {
         lead: getEmployee('Asad'),
         team: [getEmployee('Loaman'), getEmployee('Kizzar'), getEmployee('Wakeel'), getEmployee('Hareeb')]
     };
-    const finance = getEmployee('Waqar');
+    const finance = getEmployee('Waqas');
     const softwareEngineers = [getEmployee('Rabiya Eman'), getEmployee('Imran Abbas')];
     const quantityManagement = getEmployee('Noman');
     const visualizer = getEmployee('Mosin');
-    const drafting = [getEmployee('Mujahid'), getEmployee('Jabbar'), getEmployee('Waqas')];
+    const drafting = [getEmployee('Mujahid'), getEmployee('Jabbar'), getEmployee('Waqar')];
 
   return (
     <div className="space-y-12">

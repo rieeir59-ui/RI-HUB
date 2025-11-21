@@ -15,7 +15,7 @@ export const employees: Employee[] = [
   { name: 'Fiza', contact: '123-456-7890', email: 'fiza@ri-hub.com', record: 'EMP-003', avatarId: 'avatar-1', department: 'hr', password: 'password123' },
   { name: 'Rabiya Eman', contact: '03012345678', email: 'rabiya.eman@ri-hub.com', record: 'EMP-004', avatarId: 'avatar-1', department: 'software-engineer', password: 'password123' },
   { name: 'Imran Abbas', contact: '12343846574', email: 'imran.abbas@ri-hub.com', record: 'EMP-005', avatarId: 'avatar-2', department: 'software-engineer', password: 'password123' },
-  { name: 'Waqas', contact: '123-456-7890', email: 'waqas@ri-hub.com', record: 'EMP-006', avatarId: 'avatar-2', department: 'draftman', password: 'password123' },
+  { name: 'Waqas', contact: '123-456-7890', email: 'waqas@ri-hub.com', record: 'EMP-006', avatarId: 'avatar-2', department: 'finance', password: 'password123' },
   { name: 'Mujahid', contact: '123-456-7890', email: 'mujahid@ri-hub.com', record: 'EMP-007', avatarId: 'avatar-2', department: 'draftman', password: 'password123' },
   { name: 'Jabbar', contact: '123-456-7890', email: 'jabbar@ri-hub.com', record: 'EMP-008', avatarId: 'avatar-2', department: 'draftman', password: 'password123' },
   { name: 'Mosin', contact: '123-456-7890', email: 'mosin@ri-hub.com', record: 'EMP-009', avatarId: 'avatar-2', department: '3d-visualizer', password: 'password123' },
@@ -24,7 +24,7 @@ export const employees: Employee[] = [
   { name: 'Asad', contact: '123-456-7890', email: 'asad@ri-hub.com', record: 'EMP-012', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
   { name: 'Wakeel', contact: '123-456-7890', email: 'wakeel@ri-hub.com', record: 'EMP-013', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
   { name: 'Kizzar', contact: '123-456-7890', email: 'kizzar@ri-hub.com', record: 'EMP-014', avatarId: 'avatar-2', department: 'architects', password: 'password123' },
-  { name: 'Waqar', contact: '123-456-7890', email: 'waqar@ri-hub.com', record: 'EMP-015', avatarId: 'avatar-2', department: 'finance', password: 'password123' },
+  { name: 'Waqar', contact: '123-456-7890', email: 'waqar@ri-hub.com', record: 'EMP-015', avatarId: 'avatar-2', department: 'draftman', password: 'password123' },
   { name: 'Noman', contact: '123-456-7890', email: 'noman@ri-hub.com', record: 'EMP-016', avatarId: 'avatar-2', department: 'quantity-management', password: 'password123' },
 ];
 
