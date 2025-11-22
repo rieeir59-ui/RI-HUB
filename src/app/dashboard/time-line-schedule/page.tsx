@@ -113,8 +113,8 @@ export default function TimelinePage() {
 
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('TIME LINE SCHEDULE', 14, yPos);
-        yPos += 10;
+        doc.text('TIME LINE SCHEDULE', doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+        yPos += 15;
         
         doc.setFontSize(10);
         doc.text(`Project: ${project}`, 14, yPos);
@@ -130,7 +130,8 @@ export default function TimelinePage() {
             head: [['ID', 'Task Name', 'Duration', 'Start', 'Finish', 'Predecessor']],
             body: tasks.map(t => [t.taskId, t.taskName, t.duration, t.start, t.finish, t.predecessor]),
             startY: yPos,
-            didParseCell: function(data) {
+            theme: 'grid',
+            didParseCell: function(data: any) {
                 if (tasks[data.row.index]?.isHeader) {
                     data.cell.styles.fontStyle = 'bold';
                     data.cell.styles.fillColor = '#f0f0f0';
