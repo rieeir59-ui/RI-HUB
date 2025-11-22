@@ -92,11 +92,14 @@ export default function Page() {
     const handleDownloadPdf = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
         let yPos = 20;
+        const primaryColor = [45, 95, 51]; // HSL values for your primary color
 
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         doc.text("ARCHITECT'S SUPPLEMENTAL INSTRUCTIONS", doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
         yPos += 15;
+        doc.setTextColor(0,0,0);
         
         doc.setFontSize(10);
         doc.autoTable({
