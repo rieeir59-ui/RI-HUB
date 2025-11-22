@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -337,15 +336,6 @@ export default function ProjectChecklistPage() {
         const doc = new jsPDF() as jsPDFWithAutoTable;
         const selectedData = getSelectedItems();
     
-        if (selectedData.length === 0) {
-            toast({
-                variant: "destructive",
-                title: "Nothing to download",
-                description: "Please select at least one item to include in the PDF."
-            });
-            return;
-        }
-    
         // Main Title
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(14);
@@ -378,40 +368,48 @@ export default function ProjectChecklistPage() {
         doc.text(projectDate || '', 60, yPos);
         yPos += 14;
     
-        let lastMainTitle = '';
-    
-        selectedData.forEach(section => {
-            if (section.mainTitle !== lastMainTitle) {
-                if (lastMainTitle !== '') yPos += 7; // Add space between main sections
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(11);
-                doc.text(section.mainTitle, 14, yPos);
-                yPos += 7;
-                lastMainTitle = section.mainTitle;
-            }
-    
+        if (selectedData.length === 0) {
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(11);
-            doc.text(section.subTitle, 20, yPos, { 'decoration': 'underline' });
-            yPos += 7;
-    
-            const body = section.items.map((item, index) => [`${index + 1}.`, item]);
-    
-            doc.autoTable({
-                startY: yPos,
-                body: body,
-                theme: 'plain',
-                showHead: 'never',
-                columnStyles: {
-                    0: { cellWidth: 8, fontStyle: 'normal' },
-                    1: { cellWidth: 'auto', fontStyle: 'normal' },
-                },
-                styles: { fontSize: 11, cellPadding: {top: 0.5, right: 1, bottom: 0.5, left: 1} },
-                margin: { left: 20 }
+            doc.text('No services selected.', 14, yPos);
+        } else {
+            let lastMainTitle = '';
+            selectedData.forEach(section => {
+                if (yPos > 260) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                if (section.mainTitle !== lastMainTitle) {
+                    if (lastMainTitle !== '') yPos += 7; // Add space between main sections
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(11);
+                    doc.text(section.mainTitle, 14, yPos);
+                    yPos += 7;
+                    lastMainTitle = section.mainTitle;
+                }
+        
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11);
+                doc.text(section.subTitle, 20, yPos, { 'decoration': 'underline' });
+                yPos += 7;
+        
+                const body = section.items.map((item, index) => [`${index + 1}.`, item]);
+        
+                doc.autoTable({
+                    startY: yPos,
+                    body: body,
+                    theme: 'plain',
+                    showHead: 'never',
+                    columnStyles: {
+                        0: { cellWidth: 8, fontStyle: 'normal' },
+                        1: { cellWidth: 'auto', fontStyle: 'normal' },
+                    },
+                    styles: { fontSize: 11, cellPadding: {top: 0.5, right: 1, bottom: 0.5, left: 1} },
+                    margin: { left: 20 }
+                });
+        
+                yPos = (doc as any).lastAutoTable.finalY + 7;
             });
-    
-            yPos = (doc as any).lastAutoTable.finalY + 7;
-        });
+        }
     
         doc.save(`${projectName || 'project'}_checklist.pdf`);
     
