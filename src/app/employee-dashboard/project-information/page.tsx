@@ -63,7 +63,93 @@ export default function ProjectInformationPage() {
     const image = PlaceHolderImages.find(p => p.id === 'project-information');
     const { toast } = useToast();
     const [formData, setFormData] = useState<Record<string, any>>({
-        consultants: {}
+        project: '',
+        project_address: '',
+        project_no: '',
+        prepared_by: '',
+        prepared_date: '',
+        owner_name: '',
+        owner_office_address: '',
+        owner_res_address: '',
+        owner_office_phone: '',
+        owner_res_phone: '',
+        rep_name: '',
+        rep_office_address: '',
+        rep_res_address: '',
+        rep_office_phone: '',
+        rep_res_phone: '',
+        about_project_address: '',
+        reqt_arch: false,
+        reqt_interior: false,
+        reqt_landscaping: false,
+        reqt_turnkey: false,
+        reqt_other: false,
+        reqt_other_text: '',
+        type_commercial: false,
+        type_residential: false,
+        project_status: '',
+        project_area: '',
+        special_reqs: '',
+        cost_arch: false,
+        cost_interior: false,
+        cost_landscaping: false,
+        cost_construction: false,
+        cost_turnkey: false,
+        cost_other: false,
+        cost_other_text: '',
+        date_first_info: '',
+        date_first_meeting: '',
+        date_first_working: '',
+        date_proposal1_start: '',
+        date_proposal1_completion: '',
+        date_proposal2_start: '',
+        date_proposal2_completion: '',
+        date_final_proposal: '',
+        date_revised_presentation: '',
+        date_quotation: '',
+        date_drawings_start: '',
+        date_drawings_completion: '',
+        other_dates: '',
+        owner_program: false,
+        owner_schedule: false,
+        owner_legal: false,
+        owner_survey: false,
+        owner_geo: false,
+        owner_existing_drawings: false,
+        comp_initial: '',
+        comp_basic: '',
+        comp_schematic: '',
+        comp_dev: '',
+        comp_docs: '',
+        comp_bidding: '',
+        comp_admin: '',
+        comp_additional: '',
+        comp_reimbursable: '',
+        comp_other: '',
+        confidential_reqs: '',
+        misc_notes: '',
+        consultants: {},
+        req_residence: '',
+        req_nos: '',
+        req_plot_size: '',
+        req_bedrooms: '',
+        req_specifications: '',
+        req_dressing_rooms: '',
+        req_bathrooms: '',
+        req_living_rooms: '',
+        req_breakfast: '',
+        req_dining: '',
+        req_servant_kitchen: '',
+        req_self_kitchenette: '',
+        req_garage: '',
+        req_servant_quarters: '',
+        req_guard_room: '',
+        req_study_room: '',
+        req_stores: '',
+        req_entertainment: '',
+        req_patio: '',
+        req_atrium: '',
+        req_remarks: ''
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -116,7 +202,7 @@ export default function ProjectInformationPage() {
                 theme: 'grid',
                 headStyles: { fillColor: [45, 95, 51], fontStyle: 'bold' },
              });
-             yPos = (doc as any).lastAutoTable.finalY + 10;
+             yPos = (doc as any).autoTable.previous.finalY + 10;
         }
     
         // Main Title
@@ -246,7 +332,7 @@ export default function ProjectInformationPage() {
             styles: { halign: 'left', fontSize: 8 },
             headStyles: { fillColor: [45, 95, 51], textColor: 255, fontStyle: 'bold' }
         });
-        yPos = (doc as any).lastAutoTable.previous.finalY + 10;
+        yPos = (doc as any).autoTable.previous.finalY + 10;
         
         addTableSection("Requirements", [
             ['Residence', getVal('req_residence')],
