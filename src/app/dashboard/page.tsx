@@ -56,7 +56,9 @@ export default function DashboardPage() {
                 <CardContent>
                     <div className="flex items-center space-x-2 text-sidebar-foreground/80">
                     <Users className="h-5 w-5" />
-                    <span className="font-semibold">{departmentCounts[dept.slug] || 0} Employees</span>
+                     {dept.slug !== 'ceo' && (
+                        <span className="font-semibold">{departmentCounts[dept.slug] || 0} Employees</span>
+                     )}
                     </div>
                 </CardContent>
                 </Card>
@@ -67,3 +69,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
