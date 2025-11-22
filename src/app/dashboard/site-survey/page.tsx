@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -104,18 +103,163 @@ export default function SiteSurveyPage() {
     };
 
     const handleDownloadPdf = () => {
+        const form = document.getElementById('site-survey-form') as HTMLFormElement;
+        if (!form) {
+             toast({ variant: 'destructive', title: 'Error', description: 'Could not find form data.' });
+             return;
+        }
+
         const doc = new jsPDF() as jsPDFWithAutoTable;
-        // Logic to generate PDF will be complex, let's just show a toast for now.
-        // A full implementation would read form state and use jsPDF/autoTable to draw the PDF.
-        toast({
-            title: "PDF Generation",
-            description: "PDF download functionality is being implemented.",
-        });
+        let yPos = 20;
+        const pageHeight = doc.internal.pageSize.height;
+        const margin = 14;
+
+        const checkAndAddPage = () => {
+            if (yPos > pageHeight - 20) {
+                doc.addPage();
+                yPos = 20;
+            }
+        };
+
+        const getInputValue = (name: string) => (form.elements.namedItem(name) as HTMLInputElement)?.value || 'N/A';
+        const getRadioValue = (name: string) => (form.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || 'N/A';
+        const getCheckboxValue = (name: string) => (form.elements.namedItem(name) as HTMLInputElement)?.checked ? 'Yes' : 'No';
+
+        const addSection = (title: string, content: {label: string, value: string}[]) => {
+            checkAndAddPage();
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, margin, yPos);
+            yPos += 8;
+
+            content.forEach(item => {
+                checkAndAddPage();
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                doc.text(item.label + ':', margin, yPos);
+                doc.setFont('helvetica', 'normal');
+                const splitText = doc.splitTextToSize(item.value, doc.internal.pageSize.width - margin - 80);
+                doc.text(splitText, margin + 60, yPos);
+                yPos += (splitText.length * 5) + 3;
+            });
+            yPos += 5;
+        };
+
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Site Survey - Premises Review", doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+
+        addSection('Location', [
+            { label: 'Region', value: getInputValue('location_region') },
+            { label: 'Address', value: getInputValue('location_address') },
+            { label: 'City', value: getInputValue('location_city') },
+            { label: 'Purpose', value: getInputValue('location_purpose') },
+        ]);
+
+        addSection('Legal File', [
+            { label: 'Date', value: getInputValue('legal_date') },
+            { label: 'Name of Owner', value: getInputValue('legal_owner_name') },
+            { label: 'Is property leased?', value: getRadioValue('is_leased') },
+        ]);
+
+        addSection('Area', [
+            { label: 'Total Area in Sqft', value: getInputValue('area_total') },
+            { label: 'Max Frontage', value: getInputValue('area_max_frontage') },
+            { label: 'Max Depth', value: getInputValue('area_max_depth') },
+            { label: 'Plot Size', value: getInputValue('area_plot_size') },
+            { label: 'Covered Area', value: getInputValue('area_covered') },
+            { label: 'Attach as-built plan(s)', value: getCheckboxValue('area_attach_plan') },
+        ]);
+
+        addSection('Building Overview', [
+            { label: 'No. of Stories/Floors', value: getInputValue('building_stories') },
+            { label: 'Min Clear Height (ft)', value: getInputValue('building_clear_height') },
+            { label: 'Age of Premises', value: getRadioValue('building_age') },
+            { label: 'Type of Premises', value: getRadioValue('premises_type') },
+            { label: 'Interior of Premises', value: getRadioValue('interior_type') },
+            { label: 'Completion Certificate', value: getRadioValue('completion_cert') },
+            { label: 'Type of Construction', value: getRadioValue('construction_type') },
+            { label: 'Staircase', value: getRadioValue('staircase') },
+            { label: 'Roof Waterproofing', value: getRadioValue('roof_waterproofing') },
+            { label: 'Seepage', value: getRadioValue('seepage') },
+            { label: 'Area of Seepage', value: getInputValue('seepage_area') },
+            { label: 'Cause of Seepage', value: getInputValue('seepage_cause') },
+            { label: 'Retainable Elements', value: getInputValue('retainable_elements') },
+            { label: 'Plot Level from Road', value: getInputValue('plot_level') },
+            { label: 'Water Tank', value: getInputValue('water_tank') },
+        ]);
+
+        addSection('Property Utilization', [
+            { label: 'Status', value: getRadioValue('property_status') },
+            { label: 'Parking Available', value: getRadioValue('parking') },
+            { label: 'Approachable via', value: getRadioValue('road_access') },
+            { label: 'Building Violations', value: getRadioValue('violations') },
+            { label: 'Wall Masonry Material', value: getInputValue('wall_material') },
+        ]);
+
+        addSection('Utilities', [
+            { label: 'Piped Water', value: getRadioValue('piped_water') },
+            { label: 'Sewerage Connection', value: getRadioValue('sewerage') },
+            { label: 'Gas Connection', value: getRadioValue('gas') },
+            { label: 'Electrical Meter', value: getRadioValue('elec_meter') },
+            { label: 'Type of Electrical Load', value: getRadioValue('elec_load_type') },
+            { label: 'Sanctioned Load', value: getInputValue('elec_load_sanctioned') },
+            { label: 'Overhead Tank', value: getRadioValue('overhead_tank') },
+            { label: 'Type of Overhead Tank', value: getInputValue('overhead_tank_type') },
+            { label: 'Underground Tank', value: getRadioValue('underground_tank') },
+            { label: 'Type of Water', value: getInputValue('water_type') },
+        ]);
         
-        // Example of how it would start
-        doc.text("Site Survey - Premises Review", 14, 20);
-        // ... more drawing logic
-        doc.save("site-survey.pdf");
+        addSection('Bounded As', [
+            { label: 'Front', value: getInputValue('bounded_front') },
+            { label: 'Back', value: getInputValue('bounded_back') },
+            { label: 'Left', value: getInputValue('bounded_left') },
+            { label: 'Right', value: getInputValue('bounded_right') },
+        ]);
+
+        addSection('Rental Detail', [
+            { label: 'Acquisition', value: getRadioValue('rental_acquisition') },
+            { label: 'Expected Rental/month', value: getInputValue('rental_expected') },
+            { label: 'Annual Increase', value: getInputValue('rental_increase') },
+            { label: 'Lease Period', value: getInputValue('rental_lease_period') },
+            { label: 'Expected Advance', value: getInputValue('rental_advance') },
+        ]);
+        
+        checkAndAddPage();
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Survey Checklist', margin, yPos);
+        yPos += 8;
+
+        const tableData = [
+          { no: 1, title: "Existing Plan", id: "existing_plan" },
+          { no: 2, title: "Site Plan", id: "site_plan" },
+          { no: 3, title: "Basement Plan", id: "basement_plan" },
+          { no: 4, title: "Ground Floor Plan", id: "ground_floor_plan" },
+          { no: 5, title: "First Floor Plan", id: "first_floor_plan" },
+          { no: 6, title: "Second Floor Plan", id: "second_floor_plan" },
+          { no: 7, title: "Elevation 1- Material Structure", id: "elevation_1" },
+          { no: 8, title: "Elevation 2- Material Structure", id: "elevation_2" },
+          { no: 9, title: "Elevation 3- Material Structure", id: "elevation_3" },
+          { no: 10, title: "Elevation 4- Material Structure", id: "elevation_4" },
+          { no: 11, title: "Window Details Existing", id: "window_details" },
+          { no: 12, title: "Door Heights Existing", id: "door_heights" },
+          { no: 13, title: "Interior Finishes", id: "interior_finishes" },
+          { no: 14, title: "HVAC", id: "hvac" },
+        ];
+        
+        const remarksBody = tableData.map(row => [row.no, row.title, getInputValue(`${row.id}_remarks`)]);
+
+        doc.autoTable({
+            head: [['Sr.No', 'Drawing Title', 'Remarks']],
+            body: remarksBody,
+            startY: yPos,
+            theme: 'grid',
+        });
+
+
+        doc.save("site-survey-data.pdf");
+        toast({ title: 'Download Started', description: 'Your site survey data is being downloaded as a PDF.' });
     };
 
     return (
