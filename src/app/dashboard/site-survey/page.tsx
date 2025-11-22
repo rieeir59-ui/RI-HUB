@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -64,6 +65,25 @@ const structureDrawingItems = [
     { no: 6, title: 'Staircase' },
     { no: 7, title: 'Column Sizes / Locations' },
     { no: 8, title: 'Beams sizes / Locations' },
+];
+
+const plumbingDrawingItems = [
+    { no: 1, title: 'Sewage System' },
+    { no: 2, title: 'Water Supply & Gas Systems' },
+    { no: 3, title: 'Location of underground water tank' },
+    { no: 4, title: 'Location of underground septic tank' },
+    { no: 5, title: 'Main Water Supply Source' },
+];
+
+const electrificationDrawingItems = [
+    { no: 1, title: 'Illumination Layout Plan' },
+    { no: 2, title: 'Power Layout Plan' },
+    { no: 3, title: 'Legend & General Notes' },
+    { no: 4, title: 'Camera Dvr' },
+    { no: 5, title: 'Smoke Detector / fire fighting' },
+    { no: 6, title: 'PTCL Junction Box' },
+    { no: 7, title: 'Main DB Location' },
+    { no: 8, title: 'Sub DBs Location' },
 ];
 
 export default function ProjectDataPage() {
@@ -190,6 +210,47 @@ export default function ProjectDataPage() {
                         <Input placeholder="No. of Stories / floors (mention mezzanine, basement, roof parapet wall etc.) If any." />
                     </Section>
 
+                    <Section title="Bounded As">
+                        <FormRow label="Front:"><Input id="bounded_front" /></FormRow>
+                        <FormRow label="Back:"><Input id="bounded_back" /></FormRow>
+                        <FormRow label="Right:"><Input id="bounded_right" /></FormRow>
+                        <FormRow label="Left:"><Input id="bounded_left" /></FormRow>
+                    </Section>
+                    
+                    <Section title="Utilities">
+                        <FormRow label="Sanctioned electrical load">
+                            <div className="flex items-center justify-between">
+                                <Input id="sanctioned_load_text" />
+                                <div className="flex items-center space-x-2"><Checkbox id="sanctioned_load_na" /><Label htmlFor="sanctioned_load_na">N/A</Label></div>
+                            </div>
+                        </FormRow>
+                        <FormRow label="Type of electrical load">
+                             <RadioGroup name="electrical_load_type" className="flex flex-wrap gap-4">
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="commercial" id="elec_commercial" /><Label htmlFor="elec_commercial">Commercial</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="industrial" id="elec_industrial" /><Label htmlFor="elec_industrial">Industrial</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="residential" id="elec_residential" /><Label htmlFor="elec_residential">Residential</Label></div>
+                            </RadioGroup>
+                        </FormRow>
+                        <FormRow label="Electrical Meter (single phase / 3 phase)"><Input id="electrical_meter" /></FormRow>
+                        <FormRow label="Piped water available">
+                            <RadioGroup name="piped_water" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="water_yes" /><Label htmlFor="water_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="water_no" /><Label htmlFor="water_no">No</Label></div></RadioGroup>
+                        </FormRow>
+                        <FormRow label="Underground tank">
+                            <RadioGroup name="underground_tank" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="ug_tank_yes" /><Label htmlFor="ug_tank_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="ug_tank_no" /><Label htmlFor="ug_tank_no">No</Label></div></RadioGroup>
+                        </FormRow>
+                        <FormRow label="Overhead tank">
+                            <RadioGroup name="overhead_tank" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="oh_tank_yes" /><Label htmlFor="oh_tank_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="oh_tank_no" /><Label htmlFor="oh_tank_no">No</Label></div></RadioGroup>
+                        </FormRow>
+                        <FormRow label="Type of Overhead tank (RCC, Fiber etc.)"><Input id="overhead_tank_type" /></FormRow>
+                        <FormRow label="Type of water (boring or Line water)"><Input id="water_type" /></FormRow>
+                        <FormRow label="Gas Connection">
+                            <RadioGroup name="gas_connection" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="gas_yes" /><Label htmlFor="gas_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="gas_no" /><Label htmlFor="gas_no">No</Label></div></RadioGroup>
+                        </FormRow>
+                         <FormRow label="Connected to Sewerage line">
+                            <RadioGroup name="sewerage_connection" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="sewer_yes" /><Label htmlFor="sewer_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="sewer_no" /><Label htmlFor="sewer_no">No</Label></div></RadioGroup>
+                        </FormRow>
+                    </Section>
+
                      <Section title="Building overview">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center border-t border-b py-2">
                             <Label>Independent premises</Label>
@@ -283,47 +344,6 @@ export default function ProjectDataPage() {
                         </FormRow>
                     </Section>
 
-                     <Section title="Utilities">
-                        <FormRow label="Sanctioned electrical load">
-                            <div className="flex items-center justify-between">
-                                <Input id="sanctioned_load_text" />
-                                <div className="flex items-center space-x-2"><Checkbox id="sanctioned_load_na" /><Label htmlFor="sanctioned_load_na">N/A</Label></div>
-                            </div>
-                        </FormRow>
-                        <FormRow label="Type of electrical load">
-                             <RadioGroup name="electrical_load_type" className="flex flex-wrap gap-4">
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="commercial" id="elec_commercial" /><Label htmlFor="elec_commercial">Commercial</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="industrial" id="elec_industrial" /><Label htmlFor="elec_industrial">Industrial</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="residential" id="elec_residential" /><Label htmlFor="elec_residential">Residential</Label></div>
-                            </RadioGroup>
-                        </FormRow>
-                        <FormRow label="Electrical Meter (single phase / 3 phase)"><Input id="electrical_meter" /></FormRow>
-                        <FormRow label="Piped water available">
-                            <RadioGroup name="piped_water" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="water_yes" /><Label htmlFor="water_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="water_no" /><Label htmlFor="water_no">No</Label></div></RadioGroup>
-                        </FormRow>
-                        <FormRow label="Underground tank">
-                            <RadioGroup name="underground_tank" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="ug_tank_yes" /><Label htmlFor="ug_tank_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="ug_tank_no" /><Label htmlFor="ug_tank_no">No</Label></div></RadioGroup>
-                        </FormRow>
-                        <FormRow label="Overhead tank">
-                            <RadioGroup name="overhead_tank" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="oh_tank_yes" /><Label htmlFor="oh_tank_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="oh_tank_no" /><Label htmlFor="oh_tank_no">No</Label></div></RadioGroup>
-                        </FormRow>
-                        <FormRow label="Type of Overhead tank (RCC, Fiber etc.)"><Input id="overhead_tank_type" /></FormRow>
-                        <FormRow label="Type of water (boring or Line water)"><Input id="water_type" /></FormRow>
-                        <FormRow label="Gas Connection">
-                            <RadioGroup name="gas_connection" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="gas_yes" /><Label htmlFor="gas_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="gas_no" /><Label htmlFor="gas_no">No</Label></div></RadioGroup>
-                        </FormRow>
-                         <FormRow label="Connected to Sewerage line">
-                            <RadioGroup name="sewerage_connection" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="sewer_yes" /><Label htmlFor="sewer_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="sewer_no" /><Label htmlFor="sewer_no">No</Label></div></RadioGroup>
-                        </FormRow>
-                    </Section>
-
-                    <Section title="Bounded As">
-                        <FormRow label="Front:"><Input id="bounded_front" /></FormRow>
-                        <FormRow label="Back:"><Input id="bounded_back" /></FormRow>
-                        <FormRow label="Right:"><Input id="bounded_right" /></FormRow>
-                        <FormRow label="Left:"><Input id="bounded_left" /></FormRow>
-                    </Section>
-
                      <Section title="Rental Detail">
                         <FormRow label="Acquisition"><Input id="rental_acquisition" /></FormRow>
                         <FormRow label="Expected Rental /month"><Input id="rental_expected_rent" /></FormRow>
@@ -365,6 +385,26 @@ export default function ProjectDataPage() {
                                         <TableCell>{item.no}</TableCell>
                                         <TableCell>{item.title}</TableCell>
                                         <TableCell><Textarea name={`structure_remarks_${item.no}`} rows={1} /></TableCell>
+                                    </TableRow>
+                                ))}
+                                 <TableRow className="bg-muted font-bold">
+                                    <TableCell colSpan={3} className="text-center text-lg">Plumbing Drawings</TableCell>
+                                </TableRow>
+                                {plumbingDrawingItems.map(item => (
+                                    <TableRow key={item.no}>
+                                        <TableCell>{item.no}</TableCell>
+                                        <TableCell>{item.title}</TableCell>
+                                        <TableCell><Textarea name={`plumbing_remarks_${item.no}`} rows={1} /></TableCell>
+                                    </TableRow>
+                                ))}
+                                <TableRow className="bg-muted font-bold">
+                                    <TableCell colSpan={3} className="text-center text-lg">Electrification Drawings</TableCell>
+                                </TableRow>
+                                {electrificationDrawingItems.map(item => (
+                                    <TableRow key={item.no}>
+                                        <TableCell>{item.no}</TableCell>
+                                        <TableCell>{item.title}</TableCell>
+                                        <TableCell><Textarea name={`electrification_remarks_${item.no}`} rows={1} /></TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
