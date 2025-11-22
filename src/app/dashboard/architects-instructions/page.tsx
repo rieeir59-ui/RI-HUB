@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -19,6 +18,16 @@ import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 interface jsPDFWithAutoTable extends jsPDF {
     autoTable: (options: any) => jsPDF;
@@ -29,6 +38,8 @@ export default function Page() {
     const { toast } = useToast();
     const { firestore } = useFirebase();
     const { user: currentUser } = useCurrentUser();
+    const [isSaveOpen, setIsSaveOpen] = useState(false);
+    const [projectName, setProjectName] = useState('');
 
     const [formState, setFormState] = useState({
         projectName: '',
@@ -51,7 +62,11 @@ export default function Page() {
     });
     
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormState(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+        setFormState(prev => ({ ...prev, [e.target.name]: value }));
+        if (name === 'projectName') {
+            setProjectName(value);
+        }
     };
 
     const handleCheckboxChange = (field: string) => {
@@ -74,7 +89,7 @@ export default function Page() {
             employeeId: currentUser.record,
             employeeName: currentUser.name,
             fileName: "Architect's Supplemental Instructions",
-            projectName: formState.projectName || 'Untitled Instruction',
+            projectName: projectName || 'Untitled Instruction',
             data: {
                 category: "Architect's Supplemental Instructions",
                 items: Object.entries(formState).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
@@ -85,6 +100,7 @@ export default function Page() {
         addDoc(collection(firestore, 'savedRecords'), dataToSave)
             .then(() => {
                 toast({ title: 'Record Saved', description: "The supplemental instruction has been saved." });
+                setIsSaveOpen(false);
             })
             .catch(serverError => {
                 const permissionError = new FirestorePermissionError({
@@ -230,7 +246,27 @@ export default function Page() {
                     </div>
 
                     <div className="flex justify-end gap-4 mt-8">
-                        <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                         <Dialog open={isSaveOpen} onOpenChange={setIsSaveOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Save Record</DialogTitle>
+                                    <DialogDescription>
+                                        Please provide a name for this record.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-2">
+                                    <Label htmlFor="recordName">File Name</Label>
+                                    <Input id="recordName" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+                                </div>
+                                <DialogFooter>
+                                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                                    <Button onClick={handleSave}>Save</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                         <Button onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
                     </div>
                 </CardContent>
@@ -238,5 +274,3 @@ export default function Page() {
         </div>
     );
 }
-
-    

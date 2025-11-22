@@ -18,6 +18,16 @@ import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 interface jsPDFWithAutoTable extends jsPDF {
   autoTable: (options: any) => jsPDF;
@@ -28,6 +38,8 @@ export default function Page() {
     const { toast } = useToast();
     const { firestore } = useFirebase();
     const { user: currentUser } = useCurrentUser();
+    const [isSaveOpen, setIsSaveOpen] = useState(false);
+    const [recordName, setRecordName] = useState('');
 
     const [formState, setFormState] = useState({
         project: '',
@@ -58,6 +70,9 @@ export default function Page() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormState(prev => ({ ...prev, [name]: value }));
+        if (name === 'project') {
+            setRecordName(value);
+        }
     };
     
     const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,7 +106,7 @@ export default function Page() {
             employeeId: currentUser.record,
             employeeName: currentUser.name,
             fileName: 'Change Order',
-            projectName: formState.project || 'Untitled Change Order',
+            projectName: recordName || 'Untitled Change Order',
             data: {
                 category: 'Change Order',
                 items: [
@@ -106,6 +121,7 @@ export default function Page() {
         addDoc(collection(firestore, 'savedRecords'), dataToSave)
             .then(() => {
                 toast({ title: 'Record Saved', description: 'The change order has been saved.' });
+                setIsSaveOpen(false);
             })
             .catch(serverError => {
                 const permissionError = new FirestorePermissionError({
@@ -277,7 +293,27 @@ export default function Page() {
 
 
                 <div className="flex justify-end gap-4 mt-8">
-                    <Button type="button" onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                    <Dialog open={isSaveOpen} onOpenChange={setIsSaveOpen}>
+                        <DialogTrigger asChild>
+                            <Button type="button" variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Save Record</DialogTitle>
+                                <DialogDescription>
+                                    Please provide a name for this record.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-2">
+                                <Label htmlFor="recordName">File Name</Label>
+                                <Input id="recordName" value={recordName} onChange={(e) => setRecordName(e.target.value)} />
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                                <Button onClick={handleSave}>Save</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                     <Button type="button" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
                 </div>
             </form>

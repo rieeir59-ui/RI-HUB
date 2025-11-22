@@ -16,6 +16,16 @@ import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 interface jsPDFWithAutoTable extends jsPDF {
     autoTable: (options: any) => jsPDF;
@@ -51,6 +61,12 @@ export default function ContinuationSheetPage() {
     const [applicationDate, setApplicationDate] = useState('');
     const [periodTo, setPeriodTo] = useState('');
     const [architectsProjectNo, setArchitectsProjectNo] = useState('');
+    const [isSaveOpen, setIsSaveOpen] = useState(false);
+    const [projectName, setProjectName] = useState('');
+
+    useEffect(() => {
+        setProjectName(`App #${applicationNumber}`);
+    }, [applicationNumber]);
 
     const handleRowChange = (id: number, field: keyof Row, value: string | number) => {
         setRows(rows.map(row => row.id === id ? { ...row, [field]: value } : row));
@@ -92,11 +108,12 @@ export default function ContinuationSheetPage() {
                 employeeId: currentUser.record,
                 employeeName: currentUser.name,
                 fileName: 'Continuation Sheet',
-                projectName: `App #${applicationNumber}`,
+                projectName: projectName,
                 data: [dataToSave],
                 createdAt: serverTimestamp(),
             });
             toast({ title: 'Record Saved', description: 'The continuation sheet has been saved.' });
+            setIsSaveOpen(false);
         } catch (error) {
             console.error("Error saving document: ", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
@@ -228,7 +245,27 @@ export default function ContinuationSheetPage() {
                     <div className="flex justify-between items-center mt-4">
                         <Button onClick={addRow}><PlusCircle className="mr-2 h-4 w-4" /> Add Item</Button>
                         <div className="flex gap-4">
-                            <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                             <Dialog open={isSaveOpen} onOpenChange={setIsSaveOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Save Record</DialogTitle>
+                                        <DialogDescription>
+                                            Please provide a name for this record.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="recordName">File Name</Label>
+                                        <Input id="recordName" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+                                    </div>
+                                    <DialogFooter>
+                                        <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                                        <Button onClick={handleSave}>Save</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                             <Button onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
                         </div>
                     </div>

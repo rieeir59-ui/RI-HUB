@@ -17,6 +17,17 @@ import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 interface BillItem {
     id: number;
@@ -113,6 +124,8 @@ export default function Page() {
   const { user: currentUser } = useCurrentUser();
 
   const [items, setItems] = useState<BillItem[]>(initialData);
+  const [isSaveOpen, setIsSaveOpen] = useState(false);
+  const [projectName, setProjectName] = useState('Project BOQ');
 
   const handleItemChange = (id: number, field: keyof BillItem, value: string | number) => {
     setItems(items.map(item => item.id === id ? { ...item, [field]: value } : item));
@@ -141,7 +154,7 @@ export default function Page() {
         employeeId: currentUser.record,
         employeeName: currentUser.name,
         fileName: 'Bill of Quantity',
-        projectName: 'Project BOQ', // You might want to make this dynamic
+        projectName: projectName,
         data: {
             category: 'Bill of Quantity',
             items: items.map(item => JSON.stringify(item)),
@@ -152,6 +165,7 @@ export default function Page() {
     addDoc(collection(firestore, 'savedRecords'), dataToSave)
         .then(() => {
             toast({ title: 'Record Saved', description: 'The Bill of Quantity has been saved.' });
+            setIsSaveOpen(false);
         })
         .catch(serverError => {
             const permissionError = new FirestorePermissionError({
@@ -263,7 +277,27 @@ export default function Page() {
                 <Button onClick={addItem}><PlusCircle className="mr-2 h-4 w-4" /> Add Item</Button>
                 <div className="text-lg font-bold">TOTAL AMOUNT RS: ${totalAmount.toFixed(2)}</div>
                 <div className="flex gap-4">
-                    <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                     <Dialog open={isSaveOpen} onOpenChange={setIsSaveOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Save Record</DialogTitle>
+                                <DialogDescription>
+                                    Please provide a name for this record.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-2">
+                                <Label htmlFor="recordName">File Name</Label>
+                                <Input id="recordName" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                                <Button onClick={handleSave}>Save</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                     <Button onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
                 </div>
             </div>
