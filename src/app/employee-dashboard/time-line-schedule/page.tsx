@@ -13,6 +13,7 @@ import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
+import { addDays, subDays, differenceInDays, format, parseISO } from 'date-fns';
 
 interface Task {
   id: number;
@@ -98,12 +99,38 @@ export default function TimelinePage() {
     const [projectDate, setProjectDate] = useState('');
 
     const handleTaskChange = (id: number, field: keyof Task, value: string) => {
-        setTasks(tasks.map(t => (t.id === id ? { ...t, [field]: value } : t)));
+        setTasks(currentTasks => {
+            const newTasks = [...currentTasks];
+            const taskIndex = newTasks.findIndex(t => t.id === id);
+            if (taskIndex === -1) return currentTasks;
+
+            const updatedTask = { ...newTasks[taskIndex], [field]: value };
+
+            const duration = parseInt(updatedTask.duration, 10);
+            const start = updatedTask.start ? parseISO(updatedTask.start) : null;
+            const finish = updatedTask.finish ? parseISO(updatedTask.finish) : null;
+            
+            if (field === 'duration' || field === 'start') {
+                if (!isNaN(duration) && start) {
+                    updatedTask.finish = format(addDays(start, duration), 'yyyy-MM-dd');
+                }
+            } else if (field === 'finish') {
+                if (start && finish) {
+                     const diff = differenceInDays(finish, start);
+                     updatedTask.duration = diff >= 0 ? String(diff) : '0';
+                } else if (!isNaN(duration) && finish) {
+                    updatedTask.start = format(subDays(finish, duration), 'yyyy-MM-dd');
+                }
+            }
+
+            newTasks[taskIndex] = updatedTask;
+            return newTasks;
+        });
     };
 
     const addTask = () => {
         const newId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
-        const newTaskId = tasks.length > 0 ? String(parseInt(tasks[tasks.length - 1].taskId) + 1) : '1';
+        const newTaskId = tasks.length > 0 ? String(parseFloat(tasks[tasks.length - 1].taskId) + 0.1) : '1';
         const newTask: Task = { id: newId, taskId: newTaskId, taskName: '', duration: '', start: '', finish: '', predecessor: '', isHeader: false };
         setTasks([...tasks, newTask]);
     };
@@ -223,7 +250,7 @@ export default function TimelinePage() {
                                 <TableCell>
                                     <Input value={task.taskName} onChange={e => handleTaskChange(task.id, 'taskName', e.target.value)} className={task.isHeader ? 'font-bold' : ''} />
                                 </TableCell>
-                                <TableCell><Input value={task.duration} onChange={e => handleTaskChange(task.id, 'duration', e.target.value)} /></TableCell>
+                                <TableCell><Input type="number" value={task.duration} onChange={e => handleTaskChange(task.id, 'duration', e.target.value)} /></TableCell>
                                 <TableCell><Input type="date" value={task.start} onChange={e => handleTaskChange(task.id, 'start', e.target.value)} /></TableCell>
                                 <TableCell><Input type="date" value={task.finish} onChange={e => handleTaskChange(task.id, 'finish', e.target.value)} /></TableCell>
                                 <TableCell><Input value={task.predecessor} onChange={e => handleTaskChange(task.id, 'predecessor', e.target.value)} /></TableCell>
