@@ -50,10 +50,10 @@ const ConsultantRow = ({ type, data, onChange }: { type: string; data: any; onCh
     return (
         <TableRow>
             <TableCell className="font-medium">{type}</TableCell>
-            <TableCell><Input name={`${slug}_basic`} value={data.basic} onChange={(e) => onChange(slug, 'basic', e.target.value)} className="w-full" /></TableCell>
-            <TableCell><Input name={`${slug}_additional`} value={data.additional} onChange={(e) => onChange(slug, 'additional', e.target.value)} className="w-full" /></TableCell>
-            <TableCell><Input name={`${slug}_architect`} value={data.architect} onChange={(e) => onChange(slug, 'architect', e.target.value)} className="w-full" /></TableCell>
-            <TableCell><Input name={`${slug}_owner`} value={data.owner} onChange={(e) => onChange(slug, 'owner', e.target.value)} className="w-full" /></TableCell>
+            <TableCell><Input name={`${slug}_basic`} value={data.basic || ''} onChange={(e) => onChange(slug, 'basic', e.target.value)} className="w-full" /></TableCell>
+            <TableCell><Input name={`${slug}_additional`} value={data.additional || ''} onChange={(e) => onChange(slug, 'additional', e.target.value)} className="w-full" /></TableCell>
+            <TableCell><Input name={`${slug}_architect`} value={data.architect || ''} onChange={(e) => onChange(slug, 'architect', e.target.value)} className="w-full" /></TableCell>
+            <TableCell><Input name={`${slug}_owner`} value={data.owner || ''} onChange={(e) => onChange(slug, 'owner', e.target.value)} className="w-full" /></TableCell>
         </TableRow>
     );
 };
@@ -62,7 +62,9 @@ const ConsultantRow = ({ type, data, onChange }: { type: string; data: any; onCh
 export default function ProjectInformationPage() {
     const image = PlaceHolderImages.find(p => p.id === 'project-information');
     const { toast } = useToast();
-    const [formData, setFormData] = useState<Record<string, any>>({});
+    const [formData, setFormData] = useState<Record<string, any>>({
+        consultants: {}
+    });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -434,7 +436,7 @@ export default function ProjectInformationPage() {
                         <Section title="Miscellaneous Notes">
                             <Textarea id="misc_notes" name="misc_notes" value={formData['misc_notes'] || ''} onChange={handleChange} className="min-h-[100px]" />
                         </Section>
-
+                        
                         <Section title="Consultants">
                              <Table>
                                 <TableHeader>
