@@ -15,6 +15,8 @@ import 'jspdf-autotable';
 import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface BillItem {
     id: number;
@@ -129,31 +131,35 @@ export default function Page() {
     return items.reduce((sum, item) => sum + (item.qty * item.rate), 0);
   }, [items]);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!firestore || !currentUser) {
       toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
       return;
     }
 
     const dataToSave = {
-        category: 'Bill of Quantity',
-        items: items.map(item => JSON.stringify(item)),
-    };
-
-    try {
-      await addDoc(collection(firestore, 'savedRecords'), {
         employeeId: currentUser.record,
         employeeName: currentUser.name,
         fileName: 'Bill of Quantity',
         projectName: 'Project BOQ', // You might want to make this dynamic
-        data: [dataToSave],
+        data: {
+            category: 'Bill of Quantity',
+            items: items.map(item => JSON.stringify(item)),
+        },
         createdAt: serverTimestamp(),
-      });
-      toast({ title: 'Record Saved', description: 'The Bill of Quantity has been saved.' });
-    } catch (error) {
-      console.error("Error saving document: ", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
-    }
+    };
+
+    addDoc(collection(firestore, 'savedRecords'), dataToSave)
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: 'savedRecords',
+                operation: 'create',
+                requestResourceData: dataToSave,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
+
+    toast({ title: 'Record Saved', description: 'The Bill of Quantity has been saved.' });
   };
 
   const handleDownloadPdf = () => {

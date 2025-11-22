@@ -16,6 +16,8 @@ import 'jspdf-autotable';
 import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface jsPDFWithAutoTable extends jsPDF {
   autoTable: (options: any) => jsPDF;
@@ -79,35 +81,39 @@ export default function Page() {
     }, [formState.originalSum, formState.netChange, formState.changeType, formState.changeAmount]);
 
 
-    const handleSave = async () => {
+    const handleSave = () => {
          if (!firestore || !currentUser) {
             toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
             return;
         }
         
         const dataToSave = {
-            category: 'Change Order',
-            items: [
-                ...Object.entries(formState).map(([key, value]) => `${key}: ${value}`),
-                `priorSum: ${calculatedSums.priorSum}`,
-                `newSum: ${calculatedSums.newSum}`,
-            ],
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: 'Change Order',
+            projectName: formState.project || 'Untitled Change Order',
+            data: {
+                category: 'Change Order',
+                items: [
+                    ...Object.entries(formState).map(([key, value]) => `${key}: ${value}`),
+                    `priorSum: ${calculatedSums.priorSum}`,
+                    `newSum: ${calculatedSums.newSum}`,
+                ],
+            },
+            createdAt: serverTimestamp(),
         };
 
-        try {
-            await addDoc(collection(firestore, 'savedRecords'), {
-                employeeId: currentUser.record,
-                employeeName: currentUser.name,
-                fileName: 'Change Order',
-                projectName: formState.project || 'Untitled Change Order',
-                data: [dataToSave],
-                createdAt: serverTimestamp(),
+        addDoc(collection(firestore, 'savedRecords'), dataToSave)
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: 'savedRecords',
+                    operation: 'create',
+                    requestResourceData: dataToSave,
+                });
+                errorEmitter.emit('permission-error', permissionError);
             });
-            toast({ title: 'Record Saved', description: 'The change order has been saved.' });
-        } catch (error) {
-            console.error("Error saving document: ", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
-        }
+        
+        toast({ title: 'Record Saved', description: 'The change order has been saved.' });
     };
     
     const handleDownloadPdf = () => {
@@ -134,7 +140,7 @@ export default function Page() {
                 headStyles: { fillColor: [45, 95, 51] },
             }
         });
-        y = doc.autoTable.previous.finalY + 10;
+        y = (doc as any).autoTable.previous.finalY + 10;
         
         doc.text('This Contract is changed as follows:', 14, y);
         y += 7;
@@ -159,7 +165,7 @@ export default function Page() {
                 ['The date of Substantial Completion as the date of this Change Order therefore is:', ''],
             ]
         });
-        y = doc.autoTable.previous.finalY + 5;
+        y = (doc as any).autoTable.previous.finalY + 5;
 
         doc.setFontSize(8);
         const noteText = 'NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Construction Change Directive.';
