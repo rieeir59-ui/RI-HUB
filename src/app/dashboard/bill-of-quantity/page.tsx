@@ -224,20 +224,24 @@ export default function Page() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Sr. No</TableHead>
+                            <TableHead className="w-24">Sr. No</TableHead>
                             <TableHead>Description</TableHead>
-                            <TableHead>Unit</TableHead>
-                            <TableHead>Qty</TableHead>
-                            <TableHead>Rate</TableHead>
-                            <TableHead>Amount (Rs)</TableHead>
-                            <TableHead>Action</TableHead>
+                            <TableHead className="w-24">Unit</TableHead>
+                            <TableHead className="w-32">Qty</TableHead>
+                            <TableHead className="w-32">Rate</TableHead>
+                            <TableHead className="w-40">Amount (Rs)</TableHead>
+                            <TableHead className="w-20">Action</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {items.map(item => (
-                            <TableRow key={item.id} className={item.isHeader ? 'bg-muted font-bold' : ''}>
-                                <TableCell><Input value={item.srNo} onChange={e => handleItemChange(item.id, 'srNo', e.target.value)} /></TableCell>
-                                <TableCell><Textarea value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} rows={item.isHeader ? 1 : 4}/></TableCell>
+                            <TableRow key={item.id} className={item.isHeader ? 'bg-muted' : ''}>
+                                <TableCell>
+                                    <Input value={item.srNo} onChange={e => handleItemChange(item.id, 'srNo', e.target.value)} className={item.isHeader ? 'font-bold' : ''} />
+                                </TableCell>
+                                <TableCell>
+                                    <Textarea value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} rows={item.isHeader ? 1 : 4} className={item.isHeader ? 'font-bold' : ''}/>
+                                </TableCell>
                                 <TableCell><Input value={item.unit} onChange={e => handleItemChange(item.id, 'unit', e.target.value)} /></TableCell>
                                 <TableCell><Input type="number" value={item.qty} onChange={e => handleItemChange(item.id, 'qty', parseFloat(e.target.value) || 0)} /></TableCell>
                                 <TableCell><Input type="number" value={item.rate} onChange={e => handleItemChange(item.id, 'rate', parseFloat(e.target.value) || 0)} /></TableCell>
