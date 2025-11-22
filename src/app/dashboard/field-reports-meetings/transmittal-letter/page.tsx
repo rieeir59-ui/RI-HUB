@@ -53,7 +53,7 @@ export default function TransmittalLetterPage() {
         doc.text('ISBAH HASSAN & ASSOCIATES', doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
         yPos += 5;
         doc.setFontSize(8);
-        doc.text('ARCHITECTS – ENGINEERS – REAL ESTATE – CONTRACTORS – DEVELOPERS', doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+        doc.text('ARCHITECTURAL - ENGINEERING - CONSTRUCTIONS', doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
         yPos += 10;
         
         doc.setFontSize(14);
@@ -156,7 +156,7 @@ export default function TransmittalLetterPage() {
         <Card>
             <CardHeader className="text-center">
                 <p className="font-bold">ISBAH HASSAN & ASSOCIATES</p>
-                <p className="text-sm text-muted-foreground uppercase">ARCHITECTS – ENGINEERS – REAL ESTATE – CONTRACTORS – DEVELOPERS</p>
+                <p className="text-sm text-muted-foreground uppercase">ARCHITECTURAL - ENGINEERING - CONSTRUCTIONS</p>
                 <CardTitle className="font-headline text-3xl text-primary pt-4">Transmittal Letter</CardTitle>
             </CardHeader>
             <CardContent>
