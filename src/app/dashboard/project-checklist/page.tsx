@@ -334,11 +334,14 @@ export default function ProjectChecklistPage() {
     
     const handleDownload = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
+        const primaryColor = [45, 95, 51];
     
         // Main Title
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(14);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         doc.text('PROJECT CHECKLIST', doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
+        doc.setTextColor(0, 0, 0); // Reset color
     
         // Project Info
         doc.setFont('helvetica', 'bold');
@@ -375,7 +378,9 @@ export default function ProjectChecklistPage() {
             }
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(11);
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
             doc.text(mainSection.title, 14, yPos);
+            doc.setTextColor(0, 0, 0);
             yPos += 7;
 
             for (const subKey in mainSection.sections) {
