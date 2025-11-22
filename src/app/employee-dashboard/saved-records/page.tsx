@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useFirebase } from '@/firebase/provider';
-import { collection, query, where, getDocs, orderBy, type Timestamp, FirestoreError, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, type Timestamp, FirestoreError } from 'firebase/firestore';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -11,8 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/context/UserContext';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 import { onAuthStateChanged } from 'firebase/auth';
 
 
@@ -34,21 +32,18 @@ type SavedRecord = {
 export default function SavedRecordsPage() {
     const image = PlaceHolderImages.find(p => p.id === 'saved-records');
     const { firestore, auth } = useFirebase();
-    const { user: currentUser, isUserLoading: isAuthLoading } = useCurrentUser();
+    const { user: currentUser } = useCurrentUser();
     const { toast } = useToast();
 
     const [records, setRecords] = useState<SavedRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
-    useEffect(() => {
-        if (!firestore || !auth || isAuthLoading) {
-            setIsLoading(false);
-            return;
-        }
+     useEffect(() => {
+        if (!firestore || !auth) return;
 
-        const authUnsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user && currentUser) { 
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user && currentUser) {
                 const recordsCollection = collection(firestore, 'savedRecords');
                 const q = query(
                     recordsCollection,
@@ -56,28 +51,22 @@ export default function SavedRecordsPage() {
                     orderBy('createdAt', 'desc')
                 );
 
-                const snapshotUnsubscribe = onSnapshot(q, 
-                    (querySnapshot) => {
+                getDocs(q)
+                    .then((querySnapshot) => {
                         const fetchedRecords = querySnapshot.docs.map(doc => ({
                             id: doc.id,
                             ...doc.data()
                         } as SavedRecord));
                         setRecords(fetchedRecords);
                         setError(null);
+                    })
+                    .catch((serverError: FirestoreError) => {
+                        console.error("Firestore Error:", serverError);
+                        setError(serverError);
+                    })
+                    .finally(() => {
                         setIsLoading(false);
-                    },
-                    (serverError) => {
-                        const permissionError = new FirestorePermissionError({
-                            path: recordsCollection.path,
-                            operation: 'list'
-                        });
-                        setError(permissionError);
-                        errorEmitter.emit('permission-error', permissionError);
-                        setIsLoading(false);
-                    }
-                );
-                
-                return () => snapshotUnsubscribe();
+                    });
 
             } else {
                 setIsLoading(false);
@@ -85,8 +74,8 @@ export default function SavedRecordsPage() {
             }
         });
         
-        return () => authUnsubscribe();
-    }, [firestore, auth, currentUser, isAuthLoading, toast]);
+        return () => unsubscribe();
+    }, [firestore, auth, currentUser]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
@@ -113,7 +102,7 @@ export default function SavedRecordsPage() {
         URL.revokeObjectURL(url);
     };
 
-    if (isLoading || isAuthLoading) {
+    if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -137,7 +126,8 @@ export default function SavedRecordsPage() {
                         <CardTitle className="text-destructive">Error</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-destructive/90">Could not fetch saved records due to a permission issue.</p>
+                        <p className="text-destructive/90">Could not fetch saved records. Please check your permissions and network connection.</p>
+                        <p className="text-xs text-muted-foreground mt-2">{error.message}</p>
                     </CardContent>
                 </Card>
             )}
@@ -148,7 +138,7 @@ export default function SavedRecordsPage() {
                         <CardTitle>No Saved Records Found</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground">You haven't saved any records yet. Go to the "Project Checklist" to save your first one.</p>
+                        <p className="text-muted-foreground">You haven't saved any records yet. Save a document from another page to see it here.</p>
                     </CardContent>
                 </Card>
             )}

@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -16,11 +17,21 @@ service cloud.firestore {
     }
 
     match /savedRecords/{docId} {
-      allow read, list: if isSignedIn() && (
-        resource.data.employeeId == request.auth.uid || 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.department in ['admin', 'software-engineer', 'ceo']
-      );
+      // Only authenticated users can create records.
+      // They can only create records for themselves.
       allow create: if isSignedIn() && request.resource.data.employeeId == request.auth.uid;
+      
+      // Users can read their own records.
+      // Users in specific roles (admin, software-engineer, ceo) can read all records.
+      allow read: if isSignedIn() && 
+        (resource.data.employeeId == request.auth.uid || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.department in ['admin', 'software-engineer', 'ceo']);
+
+      // Admins and software engineers can list all records.
+      allow list: if isSignedIn() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.department in ['admin', 'software-engineer', 'ceo'];
+        
+      // Nobody can update or delete records directly.
       allow update, delete: if false;
     }
     

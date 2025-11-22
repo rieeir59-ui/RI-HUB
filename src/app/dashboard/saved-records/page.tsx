@@ -3,15 +3,13 @@
 
 import { useEffect, useState } from 'react';
 import { useFirebase } from '@/firebase/provider';
-import { collection, query, getDocs, orderBy, type Timestamp, FirestoreError, onSnapshot } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, type Timestamp, FirestoreError } from 'firebase/firestore';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 import { useCurrentUser } from '@/context/UserContext';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -34,7 +32,7 @@ type SavedRecord = {
 export default function SavedRecordsPage() {
     const image = PlaceHolderImages.find(p => p.id === 'saved-records');
     const { firestore, auth } = useFirebase();
-    const { user: currentUser, isUserLoading: isAuthLoading } = useCurrentUser();
+    const { user: currentUser } = useCurrentUser();
     const { toast } = useToast();
 
     const [records, setRecords] = useState<SavedRecord[]>([]);
@@ -42,59 +40,46 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        if (!firestore || !auth || isAuthLoading) {
-            setIsLoading(false);
-            return;
-        }
-
-        const authUnsubscribe = onAuthStateChanged(auth, (user) => {
+        if (!firestore || !auth) return;
+    
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user && currentUser) {
                 const isAuthorized = currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo';
                 
                 if (!isAuthorized) {
                     setIsLoading(false);
+                    setRecords([]);
                     return;
                 }
 
                 const recordsCollection = collection(firestore, 'savedRecords');
-                const q = query(
-                    recordsCollection,
-                    orderBy('createdAt', 'desc')
-                );
+                const q = query(recordsCollection, orderBy('createdAt', 'desc'));
 
-                const snapshotUnsubscribe = onSnapshot(q, 
-                    (querySnapshot) => {
+                getDocs(q)
+                    .then((querySnapshot) => {
                         const fetchedRecords = querySnapshot.docs.map(doc => ({
                             id: doc.id,
                             ...doc.data()
                         } as SavedRecord));
                         setRecords(fetchedRecords);
                         setError(null);
+                    })
+                    .catch((serverError: FirestoreError) => {
+                        console.error("Firestore Error:", serverError);
+                        setError(serverError);
+                    })
+                    .finally(() => {
                         setIsLoading(false);
-                    },
-                    (serverError) => {
-                        const permissionError = new FirestorePermissionError({
-                            path: recordsCollection.path,
-                            operation: 'list'
-                        });
-                        setError(permissionError);
-                        errorEmitter.emit('permission-error', permissionError);
-                        setIsLoading(false);
-                    }
-                );
-                
-                // Return the snapshot listener's unsubscribe function
-                return () => snapshotUnsubscribe();
-
+                    });
             } else {
                 setIsLoading(false);
                 setRecords([]);
             }
         });
 
-        return () => authUnsubscribe();
+        return () => unsubscribe();
             
-    }, [firestore, auth, currentUser, isAuthLoading, toast]);
+    }, [firestore, auth, currentUser]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
@@ -121,18 +106,18 @@ export default function SavedRecordsPage() {
         URL.revokeObjectURL(url);
     };
 
-    if (isAuthLoading) {
+    if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin" />
-                <span className="ml-4">Verifying access...</span>
+                <span className="ml-4">Verifying access and loading records...</span>
             </div>
         )
     }
     
     const isAuthorized = currentUser && (currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo');
 
-    if (!isAuthorized) {
+    if (!isAuthorized && !isLoading) {
         return (
              <div className="space-y-8">
                 <DashboardPageHeader
@@ -162,20 +147,14 @@ export default function SavedRecordsPage() {
                 imageHint={image?.imageHint || ''}
             />
 
-            {isLoading && (
-                 <div className="flex justify-center items-center h-64">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                    <span className="ml-4">Loading Records...</span>
-                </div>
-            )}
-
-            {!isLoading && error && (
+            {error && (
                  <Card className="text-center py-12 bg-destructive/10 border-destructive">
                     <CardHeader>
                         <CardTitle className="text-destructive">Error</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-destructive/90">Could not fetch saved records due to a permission issue.</p>
+                        <p className="text-destructive/90">Could not fetch saved records. Please check your permissions and network connection.</p>
+                        <p className="text-xs text-muted-foreground mt-2">{error.message}</p>
                     </CardContent>
                 </Card>
             )}
