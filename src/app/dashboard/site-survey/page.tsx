@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Save, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
@@ -37,6 +38,33 @@ const FormRow = ({ label, children, htmlFor }: { label: string, children: React.
     </div>
 );
 
+const checklistItems = [
+    { no: 1, title: 'Existing Plan' },
+    { no: 2, title: 'Site Plan' },
+    { no: 3, title: 'Basement Plan' },
+    { no: 4, title: 'Ground Floor Plan' },
+    { no: 5, title: 'First Floor Plan' },
+    { no: 6, title: 'Second Floor Plan' },
+    { no: 7, title: 'Elevation 1 - Material Structure' },
+    { no: 8, title: 'Elevation 2 - Material Structure' },
+    { no: 9, title: 'Elevation 3 - Material Structure' },
+    { no: 10, title: 'Elevation 4 - Material Structure' },
+    { no: 11, title: 'Window Details Existing' },
+    { no: 12, title: 'Door Heights Existing' },
+    { no: 13, title: 'Interior Finishes' },
+    { no: 14, title: 'HVAC' },
+];
+
+const structureDrawingItems = [
+    { no: 1, title: 'Ground Floor Slab' },
+    { no: 2, title: 'First Floor Plan' },
+    { no: 3, title: 'Second floor Plan' },
+    { no: 4, title: 'Wall Elevation & Slab Sec' },
+    { no: 5, title: 'Wall Sections & Details' },
+    { no: 6, title: 'Staircase' },
+    { no: 7, title: 'Column Sizes / Locations' },
+    { no: 8, title: 'Beams sizes / Locations' },
+];
 
 export default function ProjectDataPage() {
     const { toast } = useToast();
@@ -303,6 +331,46 @@ export default function ProjectDataPage() {
                         <FormRow label="Expected period of lease"><Input id="rental_lease_period" /></FormRow>
                         <FormRow label="Annual increase in rental"><Input id="rental_annual_increase" /></FormRow>
                     </Section>
+
+                     <Section title="Survey Checklist">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                           <Input id="survey_project" placeholder="Project" />
+                           <Input id="survey_location" placeholder="Location" />
+                           <Input id="survey_contract_date" type="date" placeholder="Contract Date" />
+                           <Input id="survey_project_number" placeholder="Project Number" />
+                           <Input id="survey_start_date" type="date" placeholder="Start Date" />
+                           <Input id="survey_project_incharge" placeholder="Project Incharge" />
+                        </div>
+                         <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-16">Sr.No</TableHead>
+                                    <TableHead>Drawing Title</TableHead>
+                                    <TableHead>Remarks</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {checklistItems.map(item => (
+                                    <TableRow key={item.no}>
+                                        <TableCell>{item.no}</TableCell>
+                                        <TableCell>{item.title}</TableCell>
+                                        <TableCell><Textarea name={`checklist_remarks_${item.no}`} rows={1} /></TableCell>
+                                    </TableRow>
+                                ))}
+                                <TableRow className="bg-muted font-bold">
+                                    <TableCell colSpan={3} className="text-center text-lg">Structure Drawings</TableCell>
+                                </TableRow>
+                                {structureDrawingItems.map(item => (
+                                    <TableRow key={item.no}>
+                                        <TableCell>{item.no}</TableCell>
+                                        <TableCell>{item.title}</TableCell>
+                                        <TableCell><Textarea name={`structure_remarks_${item.no}`} rows={1} /></TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                         </Table>
+                    </Section>
+
 
                     <div className="flex justify-end gap-4 mt-12">
                         <Button type="button" onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save Record</Button>
