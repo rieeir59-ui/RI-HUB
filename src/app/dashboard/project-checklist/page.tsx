@@ -247,7 +247,7 @@ const initializeState = (): ChecklistState => {
 
 const ChecklistItem = ({ item, checked, onCheckedChange }: { item: string, checked: boolean, onCheckedChange: (checked: boolean) => void }) => {
     return (
-        <div className={`flex items-start space-x-3 py-1 item-container ${!checked ? 'print-hide' : ''}`}>
+        <div className={`flex items-start space-x-3 py-1 item-container`}>
             <Checkbox checked={checked} onCheckedChange={onCheckedChange} className="mt-1" />
             <div className="flex-grow">{item}</div>
         </div>
@@ -334,7 +334,6 @@ export default function ProjectChecklistPage() {
     
     const handleDownload = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
-        const selectedData = getSelectedItems();
     
         // Main Title
         doc.setFont('helvetica', 'bold');
@@ -368,32 +367,33 @@ export default function ProjectChecklistPage() {
         doc.text(projectDate || '', 60, yPos);
         yPos += 14;
     
-        if (selectedData.length === 0) {
-            doc.setFont('helvetica', 'normal');
-            doc.text('No services selected.', 14, yPos);
-        } else {
-            let lastMainTitle = '';
-            selectedData.forEach(section => {
+        for (const mainKey in checklistData) {
+            const mainSection = checklistData[mainKey as keyof typeof checklistData];
+            if (yPos > 260) {
+                doc.addPage();
+                yPos = 20;
+            }
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text(mainSection.title, 14, yPos);
+            yPos += 7;
+
+            for (const subKey in mainSection.sections) {
+                const subSection = mainSection.sections[subKey as keyof typeof mainSection.sections];
                 if (yPos > 260) {
                     doc.addPage();
                     yPos = 20;
                 }
-                if (section.mainTitle !== lastMainTitle) {
-                    if (lastMainTitle !== '') yPos += 7; // Add space between main sections
-                    doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(11);
-                    doc.text(section.mainTitle, 14, yPos);
-                    yPos += 7;
-                    lastMainTitle = section.mainTitle;
-                }
-        
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(11);
-                doc.text(section.subTitle, 20, yPos, { 'decoration': 'underline' });
+                doc.text(subSection.title, 20, yPos, { 'decoration': 'underline' });
                 yPos += 7;
-        
-                const body = section.items.map((item, index) => [`${index + 1}.`, item]);
-        
+
+                const body = subSection.items.map((item, index) => {
+                    const isChecked = checkedItems[mainKey]?.[subKey]?.[index] ?? false;
+                    return [`[${isChecked ? 'X' : ' '}]`, item];
+                });
+
                 doc.autoTable({
                     startY: yPos,
                     body: body,
@@ -406,9 +406,8 @@ export default function ProjectChecklistPage() {
                     styles: { fontSize: 11, cellPadding: {top: 0.5, right: 1, bottom: 0.5, left: 1} },
                     margin: { left: 20 }
                 });
-        
                 yPos = (doc as any).lastAutoTable.finalY + 7;
-            });
+            }
         }
     
         doc.save(`${projectName || 'project'}_checklist.pdf`);
