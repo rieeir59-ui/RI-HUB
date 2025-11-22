@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -123,10 +124,14 @@ export default function InstructionSheetPage() {
     yPos = (doc as any).autoTable.previous.finalY + 10;
 
     doc.text('TO:', 14, yPos);
-    header.to.forEach((recipient, index) => {
-        doc.text(`[X] ${recipient}`, 25, yPos + (index * 6));
+    const recipients = ['Owner', 'Architect', 'Contractor', 'Field', 'Other'];
+    recipients.forEach((recipient) => {
+        const isChecked = header.to.includes(recipient);
+        doc.text(`${isChecked ? '[X]' : '[ ]'} ${recipient}`, 25, yPos);
+        yPos += 6;
     });
-    yPos += 40;
+
+    yPos += 10; // Adjust spacing after recipient list
 
     const signatures = ['Owner', 'Architect', 'Contractor', 'Field', 'Other'];
     signatures.forEach((sig, i) => {
