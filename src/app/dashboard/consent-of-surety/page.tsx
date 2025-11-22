@@ -12,6 +12,14 @@ import { Save, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { useFirebase } from '@/firebase/provider';
+import { useCurrentUser } from '@/context/UserContext';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => jsPDF;
+}
+
 
 const Section = ({ title, children, className }: { title?: string; children: React.ReactNode, className?: string }) => (
   <div className={`mb-6 ${className}`}>
@@ -33,73 +41,115 @@ const FormCard = ({ title, children }: { title: string, children: React.ReactNod
 
 const RetainageForm = () => {
     const { toast } = useToast();
+    const { firestore } = useFirebase();
+    const { user: currentUser } = useCurrentUser();
     
-    const handleSave = () => toast({ title: 'Saved', description: 'Consent for retainage release saved.'});
+    const handleSave = async () => {
+        if (!firestore || !currentUser) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
+            return;
+        }
+
+        const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value || '';
+
+        const dataToSave = {
+            category: 'Consent of Surety to Reduction in or Partial Release of Retainage',
+            items: [
+                `Project Name: ${getVal('retain_project_name')}`,
+                `Architects Project No: ${getVal('retain_architect_no')}`,
+                `Contract For: ${getVal('retain_contract_for')}`,
+                `Contract Date: ${getVal('retain_contract_date')}`,
+                `To (Owner): ${getVal('retain_owner_to')}`,
+                `Surety Name: ${getVal('retain_surety_name')}`,
+                `Contractor Name: ${getVal('retain_contractor_name')}`,
+                `Approval Details: ${getVal('retain_approval_details')}`,
+                `Owner Name (in agreement): ${getVal('retain_owner_name')}`,
+                `Witness Day: ${getVal('retain_day')}`,
+                `Witness Year: ${getVal('retain_year')}`,
+            ],
+        };
+
+         try {
+            await addDoc(collection(firestore, 'savedRecords'), {
+                employeeId: currentUser.record,
+                employeeName: currentUser.name,
+                fileName: 'Consent of Surety (Retainage)',
+                projectName: getVal('retain_project_name') || 'Untitled Retainage Consent',
+                data: [dataToSave],
+                createdAt: serverTimestamp(),
+            });
+            toast({ title: 'Record Saved', description: 'The retainage consent has been saved.' });
+        } catch (error) {
+            console.error("Error saving document: ", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
+        }
+    };
     const handleDownload = () => {
-        const doc = new jsPDF();
-        let y = 20;
+        const doc = new jsPDF() as jsPDFWithAutoTable;
+        let yPos = 20;
 
         const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value || '________________';
         
-        doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('CONSENT OF SURETY TO REDUCTION IN OR PARTIAL RELEASE OF RETAINAGE', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
-        y += 15;
+        doc.setFontSize(12);
+        doc.setTextColor(45, 95, 51); // Primary color
+        doc.text('CONSENT OF SURETY TO REDUCTION IN OR PARTIAL RELEASE OF RETAINAGE', doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+        yPos += 15;
+        doc.setTextColor(0,0,0);
 
         doc.setFontSize(10);
-        doc.text(`Project: ${getVal('retain_project_name')}`, 14, y);
-        doc.text(`Architects Project No: ${getVal('retain_architect_no')}`, 120, y);
-        y += 7;
-        doc.text(`(Name, Address): ${getVal('retain_project_address')}`, 14, y);
-        y += 7;
-        doc.text(`Contract For: ${getVal('retain_contract_for')}`, 14, y);
-        doc.text(`Contract Date: ${getVal('retain_contract_date')}`, 120, y);
-        y += 10;
+        doc.autoTable({
+            startY: yPos,
+            theme: 'plain',
+            body: [
+                [`Project: ${getVal('retain_project_name')}`, `Architects Project No: ${getVal('retain_architect_no')}`],
+                [`(Name, Address): ${getVal('retain_project_address')}`, `Contract For: ${getVal('retain_contract_for')}`],
+                ['', `Contract Date: ${getVal('retain_contract_date')}`],
+            ],
+        });
+        yPos = doc.autoTable.previous.finalY + 5;
         
-        doc.text('To (Owner):', 14, y);
-        y += 5;
-        doc.rect(14, y, 90, 25);
-        doc.text(doc.splitTextToSize(getVal('retain_owner_to'), 85), 16, y + 5);
-        y += 35;
+        doc.text('To (Owner):', 14, yPos);
+        yPos += 5;
+        doc.rect(14, yPos, 90, 25);
+        doc.text(doc.splitTextToSize(getVal('retain_owner_to'), 85), 16, yPos + 5);
+        yPos += 35;
         
         const bodyText1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (here insert named and address of Surety as it appears in the bond).`;
-        doc.text(doc.splitTextToSize(bodyText1, 182), 14, y);
-        y += 14;
-        doc.text(getVal('retain_surety_name'), 14, y);
-        y += 7;
-        doc.text(', SURETY,', 14, y);
-        y += 10;
+        const bodyText2 = `On bond of (here insert named and address of Contractor as it appears in the bond).`;
+        const bodyText3 = `Hereby approves the reduction in or partial release of retainage to the Contractor as follows:`;
+        const bodyText4 = `The Surety agrees that such reduction in or partial release of retainage to the Contractor shall not relieve the Surety of any of its obligations to (here insert named and address of Owner).`;
+        const bodyText5 = `As set forth in the said Surety's bond.`;
+
+        doc.autoTable({
+            startY: yPos,
+            theme: 'plain',
+            styles: { fontSize: 10, cellPadding: 1 },
+            body: [
+                [bodyText1],
+                [{ content: getVal('retain_surety_name'), styles: { fontStyle: 'bold' } }],
+                [', SURETY,'],
+                [bodyText2],
+                [{ content: getVal('retain_contractor_name'), styles: { fontStyle: 'bold' } }],
+                [', CONTRACTOR,'],
+                [bodyText3],
+                [{ content: getVal('retain_approval_details'), styles: { fontStyle: 'italic' } }],
+                [bodyText4],
+                [{ content: getVal('retain_owner_name'), styles: { fontStyle: 'bold' } }],
+                [', OWNER,'],
+                [bodyText5],
+            ],
+        });
+        yPos = doc.autoTable.previous.finalY + 10;
         
-        doc.text(`On bond of (here insert named and address of Contractor as it appears in the bond).`, 14, y);
-        y += 7;
-        doc.text(getVal('retain_contractor_name'), 14, y);
-        y += 7;
-        doc.text(', CONTRACTOR,', 14, y);
-        y += 10;
+        doc.text(`In Witness Whereof, The Surety has hereunto set its hand this day of ${getVal('retain_day')} , 20 ${getVal('retain_year')}`, 14, yPos);
+        yPos += 20;
 
-        doc.text('Hereby approves the reduction in or partial release of retainage to the Contractor as follows:', 14, y);
-        y += 10;
-        doc.text(getVal('retain_approval_details'), 14, y);
-        y += 14;
-
-        const bodyText2 = `The Surety agrees that such reduction in or partial release of retainage to the Contractor shall not relieve the Surety of any of its obligations to (here insert named and address of Owner).`;
-        doc.text(doc.splitTextToSize(bodyText2, 182), 14, y);
-        y += 14;
-        doc.text(getVal('retain_owner_name'), 14, y);
-        y += 7;
-        doc.text(', OWNER,', 14, y);
-        y += 7;
-        doc.text('As set forth in the said Surety\'s bond.', 14, y);
-        y += 14;
-        
-        doc.text(`In Witness Whereof, The Surety has hereunto set its hand this day of ${getVal('retain_day')} , 20 ${getVal('retain_year')}`, 14, y);
-        y += 14;
-
-        doc.text(`Surety: ${getVal('retain_surety_final')}`, 14, y);
-        y += 10;
-        doc.text(`Signature of Authorized Representative: ____________________`, 14, y);
-        y += 7;
-        doc.text(`Title: ${getVal('retain_title')}`, 14, y);
+        doc.text(`Surety: ____________________`, 14, yPos);
+        yPos += 10;
+        doc.text(`Signature of Authorized Representative: ____________________`, 14, yPos);
+        yPos += 10;
+        doc.text(`Title: ____________________`, 14, yPos);
 
         doc.save('Consent-Retainage.pdf');
         toast({ title: 'Download Started', description: 'Consent for Retainage PDF is being generated.' });
@@ -144,68 +194,112 @@ const RetainageForm = () => {
 
 const FinalPaymentForm = () => {
     const { toast } = useToast();
+    const { firestore } = useFirebase();
+    const { user: currentUser } = useCurrentUser();
     
-    const handleSave = () => toast({ title: 'Saved', description: 'Consent for final payment saved.'});
+    const handleSave = async () => {
+        if (!firestore || !currentUser) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
+            return;
+        }
+
+        const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value || '';
+
+        const dataToSave = {
+            category: 'Consent of Surety Company to Final Payment',
+            items: [
+                `Project Name: ${getVal('final_project_name')}`,
+                `Architects Project No: ${getVal('final_architect_no')}`,
+                `Contract For: ${getVal('final_contract_for')}`,
+                `Contract Date: ${getVal('final_contract_date')}`,
+                `To (Owner): ${getVal('final_owner_to')}`,
+                `Surety Name: ${getVal('final_surety_name')}`,
+                `Contractor Name: ${getVal('final_contractor_name')}`,
+                `Owner Name (in agreement): ${getVal('final_owner_name')}`,
+                 `Witness Day: ${getVal('final_day')}`,
+                `Witness Year: ${getVal('final_year')}`,
+            ],
+        };
+
+        try {
+            await addDoc(collection(firestore, 'savedRecords'), {
+                employeeId: currentUser.record,
+                employeeName: currentUser.name,
+                fileName: 'Consent of Surety (Final Payment)',
+                projectName: getVal('final_project_name') || 'Untitled Final Payment Consent',
+                data: [dataToSave],
+                createdAt: serverTimestamp(),
+            });
+            toast({ title: 'Record Saved', description: 'The final payment consent has been saved.' });
+        } catch (error) {
+            console.error("Error saving document: ", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
+        }
+    };
+
     const handleDownload = () => {
-         const doc = new jsPDF();
-        let y = 20;
+         const doc = new jsPDF() as jsPDFWithAutoTable;
+        let yPos = 20;
 
         const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value || '________________';
         
-        doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('CONSENT OF SURETY COMPANY TO FINAL PAYMENT', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
-        y += 15;
+        doc.setFontSize(12);
+        doc.setTextColor(45, 95, 51); // Primary color
+        doc.text('CONSENT OF SURETY COMPANY TO FINAL PAYMENT', doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+        yPos += 15;
+        doc.setTextColor(0,0,0);
 
         doc.setFontSize(10);
-        doc.text(`Project: ${getVal('final_project_name')}`, 14, y);
-        doc.text(`Architects Project No: ${getVal('final_architect_no')}`, 120, y);
-        y += 7;
-        doc.text(`(Name, Address): ${getVal('final_project_address')}`, 14, y);
-        y += 7;
-        doc.text(`Contract For: ${getVal('final_contract_for')}`, 14, y);
-        doc.text(`Contract Date: ${getVal('final_contract_date')}`, 120, y);
-        y += 10;
+        doc.autoTable({
+            startY: yPos,
+            theme: 'plain',
+            body: [
+                [`Project: ${getVal('final_project_name')}`, `Architects Project No: ${getVal('final_architect_no')}`],
+                [`(Name, Address): ${getVal('final_project_address')}`, `Contract For: ${getVal('final_contract_for')}`],
+                ['', `Contract Date: ${getVal('final_contract_date')}`],
+            ]
+        });
+        yPos = doc.autoTable.previous.finalY + 5;
         
-        doc.text('To (Owner):', 14, y);
-        y += 5;
-        doc.rect(14, y, 90, 25);
-        doc.text(doc.splitTextToSize(getVal('final_owner_to'), 85), 16, y + 5);
-        y += 35;
+        doc.text('To (Owner):', 14, yPos);
+        yPos += 5;
+        doc.rect(14, yPos, 90, 25);
+        doc.text(doc.splitTextToSize(getVal('final_owner_to'), 85), 16, yPos + 5);
+        yPos += 35;
         
         const bodyText1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the`;
-        doc.text(doc.splitTextToSize(bodyText1, 182), 14, y);
-        y += 7;
-        doc.text(getVal('final_surety_name'), 14, y);
-        y += 7;
-        doc.text(', SURETY COMPANY,', 14, y);
-        y += 10;
-        
-        doc.text(`On bond of`, 14, y);
-        y += 7;
-        doc.text(getVal('final_contractor_name'), 14, y);
-        y += 7;
-        doc.text(', CONTRACTOR,', 14, y);
-        y += 10;
+        const bodyText2 = `On bond of`;
+        const bodyText3 = `Hereby approves the final payment to the Contractor, and agrees that final payment to the Contractor shall not relieve the Surety Company of any of its obligations to`;
+        const bodyText4 = `As set forth in the said Surety's bond.`;
 
-        const bodyText2 = `Hereby approves the final payment to the Contractor, and agrees that final payment to the Contractor shall not relieve the Surety Company of any of its obligations to`;
-        doc.text(doc.splitTextToSize(bodyText2, 182), 14, y);
-        y += 14;
-        doc.text(getVal('final_owner_name'), 14, y);
-        y += 7;
-        doc.text(', OWNER,', 14, y);
-        y += 7;
-        doc.text('As set forth in the said Surety\'s bond.', 14, y);
-        y += 14;
+        doc.autoTable({
+            startY: yPos,
+            theme: 'plain',
+            styles: { fontSize: 10, cellPadding: 1 },
+            body: [
+                [bodyText1],
+                [{ content: getVal('final_surety_name'), styles: { fontStyle: 'bold' } }],
+                [', SURETY COMPANY,'],
+                [bodyText2],
+                [{ content: getVal('final_contractor_name'), styles: { fontStyle: 'bold' } }],
+                [', CONTRACTOR,'],
+                [bodyText3],
+                [{ content: getVal('final_owner_name'), styles: { fontStyle: 'bold' } }],
+                [', OWNER,'],
+                [bodyText4],
+            ]
+        });
+        yPos = doc.autoTable.previous.finalY + 10;
         
-        doc.text(`In Witness Whereof, The Surety has hereunto set its hand this day of ${getVal('final_day')} , 20 ${getVal('final_year')}`, 14, y);
-        y += 14;
+        doc.text(`In Witness Whereof, The Surety has hereunto set its hand this day of ${getVal('final_day')} , 20 ${getVal('final_year')}`, 14, yPos);
+        yPos += 20;
 
-        doc.text(`Surety Company: ${getVal('final_surety_final')}`, 14, y);
-        y += 10;
-        doc.text(`Signature of Authorized Representative: ____________________`, 14, y);
-        y += 7;
-        doc.text(`Title: ${getVal('final_title')}`, 14, y);
+        doc.text(`Surety Company: ____________________`, 14, yPos);
+        yPos += 10;
+        doc.text(`Signature of Authorized Representative: ____________________`, 14, yPos);
+        yPos += 10;
+        doc.text(`Title: ____________________`, 14, yPos);
 
         doc.save('Consent-FinalPayment.pdf');
         toast({ title: 'Download Started', description: 'Consent for Final Payment PDF is being generated.' });
