@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -131,92 +130,115 @@ export default function Page() {
     
     const handleDownloadPdf1 = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
-        let y = 15;
+        let yPos = 15;
+        const primaryColor = [45, 95, 51]; 
+    
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('PROJECT APPLICATION AND PROJECT CERTIFICATE FOR PAYMENT', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
-        y += 10;
-
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.text('PROJECT APPLICATION AND PROJECT CERTIFICATE FOR PAYMENT', doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+        yPos += 10;
+        doc.setTextColor(0, 0, 0); 
+    
         doc.setFontSize(10);
         doc.autoTable({
-            startY: y,
+            startY: yPos,
             theme: 'plain',
             body: [
                 [`To (Owner): ${form1State.toOwner}`, `Project: ${form1State.project}`],
                 [`Attention: ${form1State.attention}`, `Construction Manager: ${form1State.constructionManager}`],
             ],
-            styles: { cellPadding: 1 }
+            styles: { cellPadding: 1 },
+            columnStyles: { 0: { cellWidth: 100 } }
         });
-        y = (doc as any).autoTable.previous.finalY;
-
+        
+        const lastY = (doc as any).autoTable.previous.finalY;
+    
         doc.autoTable({
-            startY: y,
+            startY: yPos,
             theme: 'plain',
             body: [
-                [{ content: '', styles: { cellWidth: 100 } }, `Application Number: ${form1State.applicationNumber}`],
-                ['', `Period From: ${form1State.periodFrom} To: ${form1State.periodTo}`],
-                ['', `Architect's Project No: ${form1State.architectsProjectNo}`],
+                [`Application Number: ${form1State.applicationNumber}`],
+                [`Period From: ${form1State.periodFrom} To: ${form1State.periodTo}`],
+                [`Architect's Project No: ${form1State.architectsProjectNo}`],
+            ],
+            styles: { cellPadding: 1 },
+            margin: { left: 115 }
+        });
+    
+        yPos = Math.max(lastY, (doc as any).autoTable.previous.finalY) + 5;
+    
+        const appText = "The undersigned Construction Manager certifies that the best of the Construction Manager's knowledge, information and belief Work covered by this Project Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractors for Work for which previous Project Certificates for Payments were issued and payments received from the Owner, and that Current Payment shown herein is now due.";
+        const summaryText = "Application is made for Payment, as shown below, in connection with the Project. Project Application Summary, is attached. The present status for the account for all Contractors is for this Project is as follows:";
+    
+        doc.autoTable({
+            startY: yPos,
+            theme: 'plain',
+            body: [
+                [
+                    { content: 'Project Application for Payment:', styles: { fontStyle: 'bold' } },
+                    { content: 'Application is made for Payment, as shown below...', styles: { fontStyle: 'normal' } }
+                ],
+                [
+                    { content: doc.splitTextToSize(appText, 90), styles: { fontSize: 9 } },
+                    { content: doc.splitTextToSize(summaryText, 80), styles: { fontSize: 9 } }
+                ]
             ],
             styles: { cellPadding: 1 }
         });
-
-        y = (doc as any).autoTable.previous.finalY + 5;
-        
-        const distributedText = form1State.distributedTo.map(d => `[X] ${d}`).join('\n');
-        doc.text('Distributed to:\n' + distributedText, 150, y - 10);
-        
-        const appText = "The undersigned Construction Manager certifies that the best of the Construction Manager's knowledge, information and belief Work covered by this Project Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractors for Work for which previous Project Certificates for Payments were issued and payments received from the Owner, and that Current Payment shown herein is now due.";
-        doc.setFontSize(9);
-        const splitAppText = doc.splitTextToSize(appText, 90);
-        doc.setFont('helvetica', 'bold');
-        doc.text("Project Application for Payment:", 14, y);
-        doc.setFont('helvetica', 'normal');
-        doc.text(splitAppText, 14, y + 5);
-        
-        const summaryText = "Application is made for Payment, as shown below, in connection with the Project. Project Application Summary, is attached.\nThe present status for the account for all Contractors is for this Project is as follows:";
-        const splitSummaryText = doc.splitTextToSize(summaryText, 90);
-        doc.text(splitSummaryText, 110, y + 5);
-
-        y += 40;
-
+        yPos = (doc as any).autoTable.previous.finalY + 5;
+    
         doc.autoTable({
-            startY: y, theme: 'plain', columnStyles: { 0: { cellWidth: 100 } }, body: [['', `Total Contract Sum (Item A Totals).................... Rs. ${form1State.totalContractSum.toFixed(2)}`], ['', `Total Net Changes by Change Order (Item B Totals)..... Rs. ${form1State.netChanges.toFixed(2)}`], ['', `Total Contract Sum to Date (Item C Totals)................ Rs. ${contractSumToDate1.toFixed(2)}`]], styles: { cellPadding: 1 }
+            startY: yPos, theme: 'plain', body: [
+                ['Total Contract Sum (Item A Totals)', `Rs. ${form1State.totalContractSum.toFixed(2)}`],
+                ['Total Net Changes by Change Order (Item B Totals)', `Rs. ${form1State.netChanges.toFixed(2)}`],
+                ['Total Contract Sum to Date (Item C Totals)', `Rs. ${contractSumToDate1.toFixed(2)}`],
+            ],
+            styles: { cellPadding: 1 },
+            columnStyles: { 0: { cellWidth: 100 } }
         });
-        y = (doc as any).autoTable.previous.finalY + 5;
-
+        yPos = (doc as any).autoTable.previous.finalY + 5;
+    
         doc.autoTable({
-            startY: y, theme: 'plain', body: [['', `Total Completed & Stored to Date (Item F Totals)............ Rs. ${form1State.totalCompleted.toFixed(2)}`], ['', `Retainage (Item H Totals)..................................... Rs. ${form1State.retainage.toFixed(2)}`], ['', `Less Previous Totals Payments (Item I Total)............. Rs. ${form1State.previousPayments.toFixed(2)}`], ['', `Current Payment Due (Item J Totals)......................... Rs. ${form1State.currentPaymentDue.toFixed(2)}`]], styles: { cellPadding: 1 }
+            startY: yPos, theme: 'plain', body: [
+                ['Total Completed & Stored to Date (Item F Totals)', `Rs. ${form1State.totalCompleted.toFixed(2)}`],
+                ['Retainage (Item H Totals)', `Rs. ${form1State.retainage.toFixed(2)}`],
+                ['Less Previous Totals Payments (Item I Total)', `Rs. ${form1State.previousPayments.toFixed(2)}`],
+                ['Current Payment Due (Item J Totals)', `Rs. ${form1State.currentPaymentDue.toFixed(2)}`],
+            ],
+            styles: { cellPadding: 1, fontStyle: 'bold' },
+            columnStyles: { 0: { cellWidth: 100, fontStyle: 'normal' } }
         });
-        y = (doc as any).autoTable.previous.finalY + 5;
-        
-        doc.text(`Construction Manager: \nBy: ${form1State.constructionManagerBy} \nDate: ${form1State.constructionManagerDate}`, 14, y);
-        doc.text(`Status of: ${form1State.statusOf}`, 14, y + 20);
-        doc.text(`County of: ${form1State.countyOf}`, 80, y + 20);
-        y += 27;
-        doc.text(`Subscribed and sworn to before me this Day of: ${form1State.subscribedDay}`, 14, y);
-        y += 7;
-        doc.text(`Notary Public: ${form1State.notaryPublic}`, 14, y);
-        y += 7;
-        doc.text(`My Commission expires: ${form1State.commissionExpires}`, 14, y);
-
+        yPos = (doc as any).autoTable.previous.finalY + 5;
+    
         const certText = "In accordance with the Contract Documents, based on on-site observations and the data comprising the above Application, the Architect certifies to the Owner that Work has progressed as indicated; that to the best of the Architect's knowledge, information and belief the quality of the Work is in accordance with the Contract Documents; the quality of the Contractors are entitled to payment of the AMOUNTS CERTIFIED.";
-        const splitCertText = doc.splitTextToSize(certText, 90);
-        doc.setFont('helvetica', 'bold');
-        doc.text("Architect's Project Certificate for Payment:", 110, y - 28);
-        doc.setFont('helvetica', 'normal');
-        doc.text(splitCertText, 110, y - 23);
-        
-        y = Math.max(y, 110 + splitCertText.length * 5 + 5);
-
-        doc.text(`Total of Amounts Certified ................................... Rs. ${form1State.totalCertified.toFixed(2)}\n(Attach explanation if amount certified differs from the amount applies for.)`, 110, y-10);
-        y+=10;
-        doc.text(`Architect:\nBy: ${form1State.architectBy}\nDate: ${form1State.architectDate}`, 110, y + 5);
-        y += 20;
-
+    
+        doc.autoTable({
+            startY: yPos,
+            theme: 'plain',
+            body: [
+                [
+                    { content: `Construction Manager:\nBy: ${form1State.constructionManagerBy} \nDate: ${form1State.constructionManagerDate}` },
+                    { content: "Architect's Project Certificate for Payment:", styles: { fontStyle: 'bold' } }
+                ],
+                [
+                    { content: `\nStatus of: ${form1State.statusOf}\nCounty of: ${form1State.countyOf}` },
+                    { content: doc.splitTextToSize(certText, 80), styles: { fontSize: 9 } }
+                ],
+                [
+                    { content: `Subscribed and sworn to before me this Day of: ${form1State.subscribedDay}\nNotary Public: ${form1State.notaryPublic}\nMy Commission expires: ${form1State.commissionExpires}`},
+                    { content: `Total of Amounts Certified: Rs. ${form1State.totalCertified.toFixed(2)}\nArchitect:\nBy: ${form1State.architectBy}\nDate: ${form1State.architectDate}` }
+                ],
+            ],
+            styles: { cellPadding: 1, valign: 'top' },
+            columnStyles: { 0: { fontStyle: 'bold' }, 1: { fontStyle: 'normal'} }
+        });
+        yPos = (doc as any).autoTable.previous.finalY + 5;
+    
         const footerText = "This Certificate is not negotiable. The AMOUNTS CERTIFIED are payable on to the Contractors named in Contract Document attached. Issuance, payment and acceptance of payment are without prejudice to any rights of the Owner of the Contractor under this Contract.";
-        const splitFooterText = doc.splitTextToSize(footerText, doc.internal.pageSize.width - 28);
-        doc.text(splitFooterText, 14, y > 260 ? 260 : y);
-
+        doc.setFontSize(8);
+        doc.text(doc.splitTextToSize(footerText, 180), 14, yPos);
+    
         doc.save('project-payment-certificate.pdf');
         toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
     };
@@ -485,7 +507,7 @@ export default function Page() {
                         </div>
                          <div>
                             <div className="flex items-center gap-2"><Label className="flex-1">Total of Amounts Certified</Label><Input type="number" name="totalCertified" value={form1State.totalCertified} onChange={handleForm1NumberChange} className="w-40" /></div>
-                            <Textarea name="explanation" placeholder="Attach explanation if amount certified differs from the amount applied for." className="text-xs mt-2" />
+                            <Textarea name="explanation" placeholder="Attach explanation if amount certified differs from the amount applies for." className="text-xs mt-2" />
                              <div className="mt-4 space-y-2">
                                 <h4 className="font-semibold">Architect:</h4>
                                 <div className="flex gap-4">
