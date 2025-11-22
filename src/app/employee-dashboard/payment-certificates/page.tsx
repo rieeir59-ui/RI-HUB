@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Save, Download, PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
@@ -351,7 +352,7 @@ export default function Page() {
                         </div>
                          <div>
                             <div className="flex items-center gap-2"><Label className="flex-1">Total of Amounts Certified</Label><Input type="number" name="totalCertified" value={form1State.totalCertified} onChange={handleForm1NumberChange} className="w-40" /></div>
-                            <Textarea name="explanation" placeholder="Attach explanation if amount certified differs from the amount applies for." className="text-xs mt-2" />
+                            <Textarea name="explanation" placeholder="Attach explanation if amount certified differs from the amount applied for." className="text-xs mt-2" />
                              <div className="mt-4 space-y-2">
                                 <h4 className="font-semibold">Architect:</h4>
                                 <div className="flex gap-4">
