@@ -223,9 +223,9 @@ service cloud.firestore {
     }
 
     match /savedRecords/{docId} {
-      allow create: if true;
-      allow list: if isSignedIn();
-      allow read, update, delete: if false;
+        allow create: if isSignedIn();
+        allow list, read: if isAdmin() || (isSignedIn() && request.query.where.employeeId == request.auth.uid);
+        allow update, delete: if false;
     }
   }
 }
