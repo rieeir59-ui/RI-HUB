@@ -183,14 +183,14 @@ export default function Page() {
         ];
     });
 
-    doc.autoTable({
+    (doc as any).autoTable({
         head: head,
         body: body,
         startY: yPos,
         theme: 'grid',
         styles: { fontSize: 8, cellPadding: 1.5, overflow: 'linebreak' },
         headStyles: { fillColor: [45, 95, 51] },
-        didParseCell: (data) => {
+        didParseCell: (data: any) => {
             const row = items[data.row.index];
             if (row?.isHeader) {
                 data.cell.styles.fontStyle = 'bold';

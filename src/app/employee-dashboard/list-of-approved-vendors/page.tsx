@@ -316,6 +316,7 @@ export default function Page() {
             body: body,
             startY: yPos,
             theme: 'grid',
+            headStyles: { fillColor: [45, 95, 51] },
         });
 
         yPos = (doc as any).autoTable.previous.finalY + 15;
@@ -361,6 +362,7 @@ export default function Page() {
         body: body,
         startY: 25,
         theme: 'grid',
+        headStyles: { fillColor: [45, 95, 51] },
     });
 
     doc.save(`${title.replace(/ /g, '_')}.pdf`);
