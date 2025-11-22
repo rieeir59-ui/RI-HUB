@@ -16,6 +16,8 @@ import 'jspdf-autotable';
 import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface jsPDFWithAutoTable extends jsPDF {
   autoTable: (options: any) => jsPDF;
@@ -71,31 +73,36 @@ export default function Page() {
     setFormState(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!firestore || !currentUser) {
         toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
         return;
     }
 
     const dataToSave = {
-        category: 'Construction Change Directive',
-        items: Object.entries(formState).map(([key, value]) => `${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: ${value}`)
+        employeeId: currentUser.record,
+        employeeName: currentUser.name,
+        fileName: 'Construction Change Directive',
+        projectName: formState.project || 'Untitled Directive',
+        data: [{
+            category: 'Construction Change Directive',
+            items: Object.entries(formState).map(([key, value]) => `${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: ${value}`)
+        }],
+        createdAt: serverTimestamp(),
     };
 
-    try {
-        await addDoc(collection(firestore, 'savedRecords'), {
-            employeeId: currentUser.record,
-            employeeName: currentUser.name,
-            fileName: 'Construction Change Directive',
-            projectName: formState.project || 'Untitled Directive',
-            data: [dataToSave],
-            createdAt: serverTimestamp(),
+    addDoc(collection(firestore, 'savedRecords'), dataToSave)
+        .then(() => {
+            toast({ title: 'Record Saved', description: 'The directive has been saved.' });
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: 'savedRecords',
+                operation: 'create',
+                requestResourceData: dataToSave,
+            });
+            errorEmitter.emit('permission-error', permissionError);
         });
-        toast({ title: 'Record Saved', description: 'The directive has been saved.' });
-    } catch (error) {
-        console.error("Error saving document: ", error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
-    }
   };
 
   const handleDownloadPdf = () => {

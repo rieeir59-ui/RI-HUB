@@ -150,6 +150,9 @@ export default function Page() {
     };
 
     addDoc(collection(firestore, 'savedRecords'), dataToSave)
+        .then(() => {
+            toast({ title: 'Record Saved', description: 'The Bill of Quantity has been saved.' });
+        })
         .catch(serverError => {
             const permissionError = new FirestorePermissionError({
                 path: 'savedRecords',
@@ -158,8 +161,6 @@ export default function Page() {
             });
             errorEmitter.emit('permission-error', permissionError);
         });
-
-    toast({ title: 'Record Saved', description: 'The Bill of Quantity has been saved.' });
   };
 
   const handleDownloadPdf = () => {
@@ -260,7 +261,7 @@ export default function Page() {
             </div>
             <div className="flex justify-between items-center mt-4">
                 <Button onClick={addItem}><PlusCircle className="mr-2 h-4 w-4" /> Add Item</Button>
-                <div className="text-lg font-bold">TOTAL AMOUNT RS: {totalAmount.toFixed(2)}</div>
+                <div className="text-lg font-bold">TOTAL AMOUNT RS: ${totalAmount.toFixed(2)}</div>
                 <div className="flex gap-4">
                     <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
                     <Button onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>

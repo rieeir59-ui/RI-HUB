@@ -11,18 +11,7 @@ service cloud.firestore {
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-
-    function getUserRole() {
-      // This assumes you have a 'users' collection where roles are stored.
-      // Make sure this path is correct for your data structure.
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
-    }
-
-    function isAuthorizedAdmin() {
-      // Check if user is signed in before trying to get their role.
-      return isSignedIn() && getUserRole() in ['admin', 'software-engineer', 'ceo'];
-    }
-
+    
     match /users/{userId} {
       allow read, write: if isSignedIn() && isOwner(userId);
     }
@@ -32,16 +21,16 @@ service cloud.firestore {
       // This rule enforces that the employeeId in the document MUST match the UID of the person creating it.
       allow create: if isSignedIn() && request.resource.data.employeeId == request.auth.uid;
       
-      // Users can read their own records.
-      // Users with specific roles (admin, etc.) can read any record.
+      // A user can read their own records.
+      // Admins (software-engineer, ceo) can read any record.
       allow read: if isSignedIn() && 
-        (resource.data.employeeId == request.auth.uid || isAuthorizedAdmin());
+        (resource.data.employeeId == request.auth.uid || 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'software-engineer', 'ceo']);
 
-      // Any authenticated user can list records. The app logic will filter them.
+      // Any authenticated user can list records. The app logic will then filter by employeeId or role.
       allow list: if isSignedIn();
         
-      // To ensure data is permanent as requested, update and delete are disabled for now.
-      // This prevents accidental deletion or modification.
+      // Update and delete are disabled to make records permanent, as requested.
       allow update, delete: if false;
     }
     

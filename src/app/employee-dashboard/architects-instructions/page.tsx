@@ -82,6 +82,9 @@ export default function Page() {
         };
         
         addDoc(collection(firestore, 'savedRecords'), dataToSave)
+            .then(() => {
+                toast({ title: 'Record Saved', description: "The supplemental instruction has been saved." });
+            })
             .catch(serverError => {
                 const permissionError = new FirestorePermissionError({
                     path: `savedRecords`,
@@ -90,8 +93,6 @@ export default function Page() {
                 });
                 errorEmitter.emit('permission-error', permissionError);
             });
-
-        toast({ title: 'Record Saved', description: "The supplemental instruction has been saved." });
     };
     
     const handleDownloadPdf = () => {

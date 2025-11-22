@@ -15,6 +15,8 @@ import 'jspdf-autotable';
 import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface jsPDFWithAutoTable extends jsPDF {
   autoTable: (options: any) => jsPDF;
@@ -44,7 +46,7 @@ const RetainageForm = () => {
     const { firestore } = useFirebase();
     const { user: currentUser } = useCurrentUser();
     
-    const handleSave = async () => {
+    const handleSave = () => {
         if (!firestore || !currentUser) {
             toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
             return;
@@ -53,36 +55,41 @@ const RetainageForm = () => {
         const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value || '';
 
         const dataToSave = {
-            category: 'Consent of Surety to Reduction in or Partial Release of Retainage',
-            items: [
-                `Project Name: ${getVal('retain_project_name')}`,
-                `Architects Project No: ${getVal('retain_architect_no')}`,
-                `Contract For: ${getVal('retain_contract_for')}`,
-                `Contract Date: ${getVal('retain_contract_date')}`,
-                `To (Owner): ${getVal('retain_owner_to')}`,
-                `Surety Name: ${getVal('retain_surety_name')}`,
-                `Contractor Name: ${getVal('retain_contractor_name')}`,
-                `Approval Details: ${getVal('retain_approval_details')}`,
-                `Owner Name (in agreement): ${getVal('retain_owner_name')}`,
-                `Witness Day: ${getVal('retain_day')}`,
-                `Witness Year: ${getVal('retain_year')}`,
-            ],
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: 'Consent of Surety (Retainage)',
+            projectName: getVal('retain_project_name') || 'Untitled Retainage Consent',
+            data: [{
+                category: 'Consent of Surety to Reduction in or Partial Release of Retainage',
+                items: [
+                    `Project Name: ${getVal('retain_project_name')}`,
+                    `Architects Project No: ${getVal('retain_architect_no')}`,
+                    `Contract For: ${getVal('retain_contract_for')}`,
+                    `Contract Date: ${getVal('retain_contract_date')}`,
+                    `To (Owner): ${getVal('retain_owner_to')}`,
+                    `Surety Name: ${getVal('retain_surety_name')}`,
+                    `Contractor Name: ${getVal('retain_contractor_name')}`,
+                    `Approval Details: ${getVal('retain_approval_details')}`,
+                    `Owner Name (in agreement): ${getVal('retain_owner_name')}`,
+                    `Witness Day: ${getVal('retain_day')}`,
+                    `Witness Year: ${getVal('retain_year')}`,
+                ],
+            }],
+            createdAt: serverTimestamp(),
         };
 
-         try {
-            await addDoc(collection(firestore, 'savedRecords'), {
-                employeeId: currentUser.record,
-                employeeName: currentUser.name,
-                fileName: 'Consent of Surety (Retainage)',
-                projectName: getVal('retain_project_name') || 'Untitled Retainage Consent',
-                data: [dataToSave],
-                createdAt: serverTimestamp(),
+        addDoc(collection(firestore, 'savedRecords'), dataToSave)
+            .then(() => {
+                toast({ title: 'Record Saved', description: 'The retainage consent has been saved.' });
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: 'savedRecords',
+                    operation: 'create',
+                    requestResourceData: dataToSave,
+                });
+                errorEmitter.emit('permission-error', permissionError);
             });
-            toast({ title: 'Record Saved', description: 'The retainage consent has been saved.' });
-        } catch (error) {
-            console.error("Error saving document: ", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
-        }
     };
     const handleDownload = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
@@ -197,7 +204,7 @@ const FinalPaymentForm = () => {
     const { firestore } = useFirebase();
     const { user: currentUser } = useCurrentUser();
     
-    const handleSave = async () => {
+    const handleSave = () => {
         if (!firestore || !currentUser) {
             toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
             return;
@@ -206,35 +213,40 @@ const FinalPaymentForm = () => {
         const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value || '';
 
         const dataToSave = {
-            category: 'Consent of Surety Company to Final Payment',
-            items: [
-                `Project Name: ${getVal('final_project_name')}`,
-                `Architects Project No: ${getVal('final_architect_no')}`,
-                `Contract For: ${getVal('final_contract_for')}`,
-                `Contract Date: ${getVal('final_contract_date')}`,
-                `To (Owner): ${getVal('final_owner_to')}`,
-                `Surety Name: ${getVal('final_surety_name')}`,
-                `Contractor Name: ${getVal('final_contractor_name')}`,
-                `Owner Name (in agreement): ${getVal('final_owner_name')}`,
-                 `Witness Day: ${getVal('final_day')}`,
-                `Witness Year: ${getVal('final_year')}`,
-            ],
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: 'Consent of Surety (Final Payment)',
+            projectName: getVal('final_project_name') || 'Untitled Final Payment Consent',
+            data: [{
+                category: 'Consent of Surety Company to Final Payment',
+                items: [
+                    `Project Name: ${getVal('final_project_name')}`,
+                    `Architects Project No: ${getVal('final_architect_no')}`,
+                    `Contract For: ${getVal('final_contract_for')}`,
+                    `Contract Date: ${getVal('final_contract_date')}`,
+                    `To (Owner): ${getVal('final_owner_to')}`,
+                    `Surety Name: ${getVal('final_surety_name')}`,
+                    `Contractor Name: ${getVal('final_contractor_name')}`,
+                    `Owner Name (in agreement): ${getVal('final_owner_name')}`,
+                    `Witness Day: ${getVal('final_day')}`,
+                    `Witness Year: ${getVal('final_year')}`,
+                ],
+            }],
+            createdAt: serverTimestamp(),
         };
 
-        try {
-            await addDoc(collection(firestore, 'savedRecords'), {
-                employeeId: currentUser.record,
-                employeeName: currentUser.name,
-                fileName: 'Consent of Surety (Final Payment)',
-                projectName: getVal('final_project_name') || 'Untitled Final Payment Consent',
-                data: [dataToSave],
-                createdAt: serverTimestamp(),
+        addDoc(collection(firestore, 'savedRecords'), dataToSave)
+            .then(() => {
+                toast({ title: 'Record Saved', description: 'The final payment consent has been saved.' });
+            })
+            .catch(serverError => {
+                 const permissionError = new FirestorePermissionError({
+                    path: 'savedRecords',
+                    operation: 'create',
+                    requestResourceData: dataToSave,
+                });
+                errorEmitter.emit('permission-error', permissionError);
             });
-            toast({ title: 'Record Saved', description: 'The final payment consent has been saved.' });
-        } catch (error) {
-            console.error("Error saving document: ", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
-        }
     };
 
     const handleDownload = () => {
