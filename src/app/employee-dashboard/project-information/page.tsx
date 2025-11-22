@@ -88,6 +88,7 @@ export default function ProjectInformationPage() {
         const getRadioValue = (name: string) => (form.elements.namedItem(name) as HTMLInputElement)?.value || '';
         
         const addSectionTitle = (title: string) => {
+            if (yPos > 260) { doc.addPage(); yPos = 20; }
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(12);
             doc.text(title, margin, yPos);
@@ -95,20 +96,24 @@ export default function ProjectInformationPage() {
         };
     
         const addKeyValuePair = (label: string, value: string, indent = 0) => {
+            if (yPos > 270) { doc.addPage(); yPos = 20; }
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(10);
             doc.text(label, margin + indent, yPos);
             doc.setFont('helvetica', 'normal');
-            doc.text(value, margin + 50 + indent, yPos);
-            yPos += 7;
+            const splitValue = doc.splitTextToSize(value, pageWidth - margin * 2 - (50 + indent));
+            doc.text(splitValue, margin + 50 + indent, yPos);
+            yPos += (splitValue.length * 5) + 2;
         };
 
         const addCheckboxGroup = (label: string, items: {label: string, id: string}[]) => {
+            if (yPos > 260) { doc.addPage(); yPos = 20; }
             doc.setFont('helvetica', 'bold');
             doc.text(label, margin, yPos);
             yPos += 7;
             items.forEach(item => {
                 if(getCheckboxValue(item.id)) {
+                    if (yPos > 270) { doc.addPage(); yPos = 20; }
                     doc.setFont('helvetica', 'normal');
                     doc.text(`- ${item.label}`, margin + 5, yPos);
                     yPos += 6;
@@ -118,6 +123,7 @@ export default function ProjectInformationPage() {
         }
 
         const addRadioGroup = (label: string, name: string, options: {label: string, value: string}[]) => {
+            if (yPos > 270) { doc.addPage(); yPos = 20; }
             const selectedValue = getRadioValue(name);
             const selectedOption = options.find(opt => opt.value === selectedValue);
              doc.setFont('helvetica', 'bold');
@@ -130,7 +136,8 @@ export default function ProjectInformationPage() {
         }
 
         const addTextArea = (label: string, id: string) => {
-             doc.setFont('helvetica', 'bold');
+            if (yPos > 260) { doc.addPage(); yPos = 20; }
+            doc.setFont('helvetica', 'bold');
             doc.text(label, margin, yPos);
             yPos += 7;
             doc.setFont('helvetica', 'normal');
@@ -141,6 +148,7 @@ export default function ProjectInformationPage() {
         }
 
         const addSeparator = () => {
+             if (yPos > 270) { doc.addPage(); yPos = 20; }
              doc.setLineDash([1,1], 0);
              doc.line(margin, yPos, pageWidth - margin, yPos);
              doc.setLineDash([], 0);
@@ -150,7 +158,7 @@ export default function ProjectInformationPage() {
         // Main Title
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(14);
-        doc.text('PROJECT INFORMATION', pageWidth / 2, 15, { align: 'center' });
+        doc.text('REQUIREMENT PERFORMA FOR RESIDENTIAL AND COMMERCIAL', pageWidth / 2, 15, { align: 'center' });
     
         // Project Information
         addSectionTitle("PROJECT INFORMATION");
@@ -174,9 +182,6 @@ export default function ProjectInformationPage() {
         addKeyValuePair('Phone (Office):', getInputValue('rep_office_phone'));
         addKeyValuePair('Phone (Res.):', getInputValue('rep_res_phone'));
         addSeparator();
-
-        // New page for overflow
-        if (yPos > 250) { doc.addPage(); yPos = 20; }
     
         // About Project
         addSectionTitle("About Project");
@@ -217,8 +222,6 @@ export default function ProjectInformationPage() {
         addTextArea('Other Major Projects Milestone Dates:', 'other_dates');
         addSeparator();
 
-        if (yPos > 250) { doc.addPage(); yPos = 20; }
-    
         // Provided by Owner
         addSectionTitle("Provided by Owner");
          addCheckboxGroup('', [
@@ -244,8 +247,6 @@ export default function ProjectInformationPage() {
         addTextArea('Special Confidential Requirements:', 'confidential_reqs');
         addSeparator();
 
-        if (yPos > 250) { doc.addPage(); yPos = 20; }
-
         // Miscellaneous Notes
         addSectionTitle("Miscellaneous Notes");
         addTextArea('', 'misc_notes');
@@ -253,8 +254,8 @@ export default function ProjectInformationPage() {
 
         // Consultants Table
         addSectionTitle("Consultants");
-        const consultantTypes = ["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other", "...", "...", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"];
-        const head = [['Type', 'Basic', 'Additional', 'Architect', 'Owner']];
+        const consultantTypes = ["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Construction Cost", "Other", "...", "...", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"];
+        const head = [['Type', 'Within Basic Fee', 'Additional Fee', 'Architect', 'Owner']];
         const body = consultantTypes.map(type => {
             const slug = type.toLowerCase().replace(/ /g, '_');
             return [
@@ -269,13 +270,11 @@ export default function ProjectInformationPage() {
             head: head,
             body: body,
             startY: yPos,
-            styles: { halign: 'left' },
-            headStyles: { fillColor: [22, 160, 133] }
+            styles: { halign: 'left', fontSize: 8 },
+            headStyles: { fillColor: [45, 95, 51], textColor: 255, fontStyle: 'bold' }
         });
         yPos = doc.autoTable.previous.finalY + 10;
         addSeparator();
-
-        if (yPos > 250) { doc.addPage(); yPos = 20; }
 
         // Requirements
         addSectionTitle("Requirements");
@@ -311,7 +310,7 @@ export default function ProjectInformationPage() {
     return (
         <div className="space-y-8">
             <DashboardPageHeader
-                title="Project Information"
+                title="Requirement Performa for Residential and Commercial"
                 description="View and manage project information."
                 imageUrl={image?.imageUrl || ''}
                 imageHint={image?.imageHint || ''}
@@ -408,7 +407,6 @@ export default function ProjectInformationPage() {
                                     <InputRow label="Completion" id="date_proposal2_completion" type="date" />
                                 </div>
                             </div>
-                            <InputRow label="First Information:" id="date_first_information" type="date" />
                             <InputRow label="Working on Finalized Proposal:" id="date_final_proposal" type="date" />
                             <InputRow label="Revised Presentation:" id="date_revised_presentation" type="date" />
                             <InputRow label="Quotation:" id="date_quotation" type="date" />
@@ -476,7 +474,7 @@ export default function ProjectInformationPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other", "...", "...", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"].map((c, index) => <ConsultantRow key={`${c}-${index}`} type={c} />)}
+                                    {["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Construction Cost", "Other", "...", "...", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"].map((c, index) => <ConsultantRow key={`${c}-${index}`} type={c} />)}
                                 </TableBody>
                              </Table>
                         </Section>

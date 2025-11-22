@@ -68,7 +68,6 @@ const menuItems = [
     { href: '/employee-dashboard/project-data', label: 'Project Data', icon: Database },
     { href: '/employee-dashboard/project-agreement', label: 'Project Agreement', icon: FileSignature },
     { href: '/employee-dashboard/list-of-services', label: 'List of Services', icon: ClipboardList },
-    { href: '/employee-dashboard/requirement-performa', label: 'Requirement Performa', icon: FilePlus },
     { href: '/employee-dashboard/site-survey', label: 'Site Survey', icon: Compass },
     { href: '/employee-dashboard/project-bylaws', label: 'Project Bylaws', icon: FileKey },
     { href: '/employee-dashboard/proposal-request', label: 'Proposal Request', icon: Briefcase },
