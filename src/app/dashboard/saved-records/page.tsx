@@ -23,7 +23,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import Link from 'next/link';
 import { getFormUrlFromFileName } from '@/lib/utils';
-
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 type SavedRecordData = {
     category: string;
@@ -107,35 +108,56 @@ export default function SavedRecordsPage() {
     }, [firestore, currentUser, isUserLoading]);
 
     const handleDownload = (record: SavedRecord) => {
-        let content = `Project: ${record.projectName}\n`;
-        content += `File: ${record.fileName}\n`;
-        content += `Saved by: ${record.employeeName}\n`;
-        content += `Date: ${record.createdAt.toDate().toLocaleDateString()}\n\n`;
+        const doc = new jsPDF();
+        let yPos = 20;
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text(record.projectName, doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+        yPos += 10;
+        
+        doc.setFontSize(10);
+        doc.text(`File: ${record.fileName}`, 14, yPos);
+        yPos += 7;
+        doc.text(`Saved by: ${record.employeeName}`, 14, yPos);
+        yPos += 7;
+        doc.text(`Date: ${record.createdAt.toDate().toLocaleDateString()}`, 14, yPos);
+        yPos += 10;
 
         record.data.forEach(section => {
-            content += `${section.category}\n`;
-            section.items.forEach(item => {
+            if (yPos > 260) {
+                doc.addPage();
+                yPos = 20;
+            }
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(section.category, 14, yPos);
+            yPos += 10;
+
+            const body = section.items.map(item => {
                 try {
-                  const parsedItem = JSON.parse(item);
-                  Object.entries(parsedItem).forEach(([key, value]) => {
-                    content += `- ${key}: ${value}\n`;
-                  });
-                } catch (e) {
-                  content += `- ${item}\n`;
+                    const parsed = JSON.parse(item);
+                    return Object.entries(parsed).map(([key, value]) => [key, String(value)]);
+                } catch {
+                    const parts = item.split(':');
+                    if (parts.length > 1) {
+                        return [parts[0], parts.slice(1).join(':').trim()];
+                    }
+                    return [item, ''];
                 }
+            }).flat();
+
+            (doc as any).autoTable({
+                startY: yPos,
+                body: body,
+                theme: 'plain',
+                styles: { fontSize: 9 }
             });
-            content += '\n';
+
+            yPos = (doc as any).autoTable.previous.finalY + 10;
         });
 
-        const blob = new Blob([content], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${record.projectName.replace(/\s+/g, '_')}_${record.fileName.replace(/\s+/g, '_')}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        doc.save(`${record.projectName.replace(/\s+/g, '_')}_${record.fileName.replace(/\s+/g, '_')}.pdf`);
     };
 
     const openDeleteDialog = (record: SavedRecord) => {
@@ -256,7 +278,7 @@ export default function SavedRecordsPage() {
                                     </div>
                                     <Button onClick={() => handleDownload(record)} variant="outline" className="w-full">
                                         <Download className="mr-2 h-4 w-4" />
-                                        Download Raw Data
+                                        Download PDF
                                     </Button>
                                 </CardFooter>
                             </Card>
