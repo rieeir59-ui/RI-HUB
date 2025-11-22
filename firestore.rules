@@ -12,26 +12,32 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAuthorizedAdmin() {
+      let userRole = getUserRole();
+      return userRole in ['admin', 'software-engineer', 'ceo'];
+    }
+
     match /users/{userId} {
       allow read, write: if isSignedIn() && isOwner(userId);
     }
 
     match /savedRecords/{docId} {
-      // Only authenticated users can create records.
-      // They can only create records for themselves.
+      // Only authenticated users can create records for themselves.
       allow create: if isSignedIn() && request.resource.data.employeeId == request.auth.uid;
       
       // Users can read their own records.
-      // Users in specific roles (admin, software-engineer, ceo) can read all records.
+      // Admin, software-engineer, or ceo can read all records.
       allow read: if isSignedIn() && 
-        (resource.data.employeeId == request.auth.uid || 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.department in ['admin', 'software-engineer', 'ceo']);
+        (resource.data.employeeId == request.auth.uid || isAuthorizedAdmin());
 
-      // Admins and software engineers can list all records.
-      allow list: if isSignedIn() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.department in ['admin', 'software-engineer', 'ceo'];
+      // Only authorized admins can list all records.
+      allow list: if isSignedIn() && isAuthorizedAdmin();
         
-      // Nobody can update or delete records directly.
+      // Nobody can update or delete records directly for now.
       allow update, delete: if false;
     }
     

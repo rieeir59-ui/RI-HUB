@@ -9,10 +9,9 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/context/UserContext';
-import { onAuthStateChanged } from 'firebase/auth';
-
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 type SavedRecordData = {
     category: string;
@@ -31,55 +30,59 @@ type SavedRecord = {
 
 export default function SavedRecordsPage() {
     const image = PlaceHolderImages.find(p => p.id === 'saved-records');
-    const { firestore, auth } = useFirebase();
-    const { user: currentUser } = useCurrentUser();
-    const { toast } = useToast();
+    const { firestore } = useFirebase();
+    const { user: currentUser, isUserLoading } = useCurrentUser();
 
     const [records, setRecords] = useState<SavedRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<FirestoreError | Error | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!firestore || !auth) return;
-    
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user && currentUser) {
-                const isAuthorized = currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo';
-                
-                if (!isAuthorized) {
-                    setIsLoading(false);
-                    setRecords([]);
-                    return;
-                }
+        if (isUserLoading || !firestore) {
+            return;
+        }
 
-                const recordsCollection = collection(firestore, 'savedRecords');
-                const q = query(recordsCollection, orderBy('createdAt', 'desc'));
+        if (!currentUser) {
+            setIsLoading(false);
+            setError("You must be logged in to view records.");
+            return;
+        }
 
-                getDocs(q)
-                    .then((querySnapshot) => {
-                        const fetchedRecords = querySnapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                        } as SavedRecord));
-                        setRecords(fetchedRecords);
-                        setError(null);
-                    })
-                    .catch((serverError: FirestoreError) => {
-                        console.error("Firestore Error:", serverError);
-                        setError(serverError);
-                    })
-                    .finally(() => {
-                        setIsLoading(false);
-                    });
-            } else {
+        const isAuthorized = ['admin', 'software-engineer', 'ceo'].includes(currentUser.department);
+
+        if (!isAuthorized) {
+            setIsLoading(false);
+            setError("You do not have permission to view this page.");
+            setRecords([]);
+            return;
+        }
+
+        const recordsCollection = collection(firestore, 'savedRecords');
+        const q = query(recordsCollection, orderBy('createdAt', 'desc'));
+
+        getDocs(q)
+            .then((querySnapshot) => {
+                const fetchedRecords = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                } as SavedRecord));
+                setRecords(fetchedRecords);
+                setError(null);
+            })
+            .catch((serverError: FirestoreError) => {
+                console.error("Firestore Error:", serverError);
+                const permissionError = new FirestorePermissionError({
+                    path: recordsCollection.path,
+                    operation: 'list'
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                setError(permissionError.message);
+            })
+            .finally(() => {
                 setIsLoading(false);
-                setRecords([]);
-            }
-        });
-
-        return () => unsubscribe();
+            });
             
-    }, [firestore, auth, currentUser]);
+    }, [firestore, currentUser, isUserLoading]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
@@ -90,7 +93,14 @@ export default function SavedRecordsPage() {
         record.data.forEach(section => {
             content += `${section.category}\n`;
             section.items.forEach(item => {
-                content += `- ${item}\n`;
+                try {
+                  const parsedItem = JSON.parse(item);
+                  Object.entries(parsedItem).forEach(([key, value]) => {
+                    content += `- ${key}: ${value}\n`;
+                  });
+                } catch (e) {
+                  content += `- ${item}\n`;
+                }
             });
             content += '\n';
         });
@@ -114,29 +124,6 @@ export default function SavedRecordsPage() {
             </div>
         )
     }
-    
-    const isAuthorized = currentUser && (currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo');
-
-    if (!isAuthorized && !isLoading) {
-        return (
-             <div className="space-y-8">
-                <DashboardPageHeader
-                    title="Saved Records"
-                    description="Access all saved project checklists and documents."
-                    imageUrl={image?.imageUrl || ''}
-                    imageHint={image?.imageHint || ''}
-                />
-                 <Card className="text-center py-12">
-                    <CardHeader>
-                        <CardTitle>Access Denied</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">You do not have permission to view this page.</p>
-                    </CardContent>
-                </Card>
-            </div>
-        )
-    }
 
     return (
         <div className="space-y-8">
@@ -150,11 +137,10 @@ export default function SavedRecordsPage() {
             {error && (
                  <Card className="text-center py-12 bg-destructive/10 border-destructive">
                     <CardHeader>
-                        <CardTitle className="text-destructive">Error</CardTitle>
+                        <CardTitle className="text-destructive">Access Denied</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-destructive/90">Could not fetch saved records. Please check your permissions and network connection.</p>
-                        <p className="text-xs text-muted-foreground mt-2">{error.message}</p>
+                        <p className="text-destructive/90">{error}</p>
                     </CardContent>
                 </Card>
             )}
@@ -187,9 +173,16 @@ export default function SavedRecordsPage() {
                                     <div key={index}>
                                       <h4 className="font-semibold">{section.category}</h4>
                                       <ul className="list-disc list-inside text-sm text-muted-foreground">
-                                        {section.items.slice(0, 3).map((item, itemIndex) => (
-                                          <li key={itemIndex}>{item}</li>
-                                        ))}
+                                        {section.items.slice(0, 3).map((item, itemIndex) => {
+                                           try {
+                                                const parsedItem = JSON.parse(item);
+                                                return Object.entries(parsedItem).slice(0,1).map(([key, value]) => (
+                                                    <li key={`${itemIndex}-${key}`}>{`${key}: ${String(value).substring(0,20)}...`}</li>
+                                                ));
+                                            } catch(e) {
+                                                return <li key={itemIndex}>{String(item).substring(0,30)}...</li>
+                                            }
+                                        })}
                                          {section.items.length > 3 && <li>...and more</li>}
                                       </ul>
                                     </div>
