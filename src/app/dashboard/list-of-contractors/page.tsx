@@ -13,6 +13,7 @@ import { Save, Download, PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 
 interface jsPDFWithAutoTable extends jsPDF {
     autoTable: (options: any) => jsPDF;
@@ -42,6 +43,8 @@ export default function ListOfContractorsPage() {
     const [date, setDate] = useState('');
     const [toContractor, setToContractor] = useState('');
     const [rows, setRows] = useState<ContractorRow[]>([{ id: 1, ...initialRow }]);
+    const [isSaveOpen, setIsSaveOpen] = useState(false);
+    const [recordName, setRecordName] = useState('');
 
     const addRow = () => {
         setRows([...rows, { id: Date.now(), ...initialRow }]);
@@ -56,7 +59,15 @@ export default function ListOfContractorsPage() {
     };
 
     const handleSave = () => {
-        toast({ title: 'Record Saved', description: 'The list of contractors has been saved.' });
+        // Here you would typically save to a database.
+        // For this example, we'll just show a toast.
+        console.log({
+            recordName,
+            projectName, projectAddress, architect, architectsProjectNo, date, toContractor,
+            rows
+        });
+        toast({ title: 'Record Saved', description: `The list of contractors has been saved as "${recordName}".` });
+        setIsSaveOpen(false);
     };
 
     const handleDownloadPdf = () => {
@@ -123,7 +134,7 @@ export default function ListOfContractorsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <div>
                                 <Label htmlFor="project_name">Project (Name)</Label>
-                                <Input id="project_name" value={projectName} onChange={e => setProjectName(e.target.value)} />
+                                <Input id="project_name" value={projectName} onChange={e => {setProjectName(e.target.value); setRecordName(e.target.value)}} />
                            </div>
                            <div>
                                 <Label htmlFor="project_address">Project (Address)</Label>
@@ -180,7 +191,27 @@ export default function ListOfContractorsPage() {
                     <div className="flex justify-between items-center mt-4">
                         <Button onClick={addRow}><PlusCircle className="mr-2 h-4 w-4" /> Add Row</Button>
                         <div className="flex gap-4">
-                            <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                            <Dialog open={isSaveOpen} onOpenChange={setIsSaveOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Save Record</DialogTitle>
+                                        <DialogDescription>
+                                            Please provide a name for this record.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="recordName">File Name</Label>
+                                        <Input id="recordName" value={recordName} onChange={(e) => setRecordName(e.target.value)} />
+                                    </div>
+                                    <DialogFooter>
+                                        <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                                        <Button onClick={handleSave}>Save</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                             <Button onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
                         </div>
                     </div>
