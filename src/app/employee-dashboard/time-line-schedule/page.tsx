@@ -1,11 +1,9 @@
-
 'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Trash2, Save, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
@@ -13,169 +11,93 @@ import 'jspdf-autotable';
 import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
 
 interface Task {
   id: number;
-  text: string;
+  taskId: string;
+  taskName: string;
+  duration: string;
+  start: string;
+  finish: string;
+  predecessor: string;
+  isHeader: boolean;
 }
 
-interface Phase {
-  id: number;
-  title: string;
-  tasks: Task[];
-}
-
-const initialTimelineData: Phase[] = [
-    {
-        id: 1,
-        phase: 'Project Initiation & Site Studies',
-        tasks: [
-            { id: 1, text: 'Client Brief' },
-            { id: 2, text: 'Project Scope and Area Statements' },
-            { id: 3, text: 'Topographic / Preliminary Survey' },
-            { id: 4, text: 'Geotechnical Investigation and Report' },
-        ],
-    },
-    {
-        id: 2,
-        phase: 'Concept Design Stage',
-        tasks: [
-            { id: 1, text: 'Concept Design Development' },
-            { id: 2, text: 'Concept Plans and Supporting Drawings' },
-            { id: 3, text: 'Interior Design Concept Development' },
-            { id: 4, text: 'Finalization of Concept Design Report' },
-            { id: 5, text: 'Client Approval on Concept Design' },
-        ],
-    },
-    {
-        id: 3,
-        phase: 'Preliminary Design Stage',
-        tasks: [
-            { id: 1, text: 'Preliminary Design and Layout Plan – Cycle 1' },
-            { id: 2, text: 'Initial Engineering Coordination (Structural / MEP)' },
-            { id: 3, text: 'Layout Plan – Cycle 2 (Refined Based on Feedback)' },
-            { id: 4, text: 'Environmental Study (if applicable)' },
-            { id: 5, text: 'Authority Pre-Consultation / Coordination (LDA, CDA, etc.)' },
-            { id: 6, text: '3D Model Development' },
-            { id: 7, text: 'Elevations and Sections' },
-            { id: 8, text: 'Preliminary Interior Layout' },
-            { id: 9, text: 'Preliminary Engineering Design' },
-            { id: 10, text: 'Finalization of Preliminary Design Report' },
-            { id: 11, text: 'Client Comments / Approval on Preliminary Design' },
-        ],
-    },
-    {
-        id: 4,
-        phase: 'Authority Submission Stage',
-        tasks: [
-            { id: 1, text: 'Preparation of Submission Drawings' },
-            { id: 2, text: 'Submission to LDA / CDA / Other Relevant Authority' },
-            { id: 3, text: 'Application for Stage-1 Approval' },
-            { id: 4, text: 'Authority Approval Process (Review, Comments, Compliance)' },
-            { id: 5, text: 'Receipt of Authority Approval (Stage-1)' },
-        ],
-    },
-    {
-        id: 5,
-        phase: 'Detailed Design and Tender Preparation Stage',
-        tasks: [
-            { id: 1, text: 'Detailed Architectural Design' },
-            { id: 2, text: 'Detailed Interior Layout' },
-            { id: 3, text: 'Detailed Engineering Designs (Structural / MEP)' },
-            { id: 4, text: 'Draft Conditions of Contract' },
-            { id: 5, text: 'Draft BOQs and Technical Specifications' },
-            { id: 6, text: 'Client Comments and Approvals on Detailed Design' },
-            { id: 7, text: 'Finalization of Detailed Design' },
-        ],
-    },
-    {
-        id: 6,
-        phase: 'Construction Design and Tender Finalization Stage',
-        tasks: [
-            { id: 1, text: 'Construction Design and Final Tender Preparation' },
-            { id: 2, text: 'Architectural Construction Drawings' },
-            { id: 3, text: 'Engineering Construction Drawings' },
-            { id: 4, text: 'Final Tender Documents' },
-            { id: 5, text: 'Client Comments / Approval on Final Tender Documents' },
-            { id: 6, text: 'Tender Documents Ready for Issue' },
-        ],
-    },
-    {
-        id: 7,
-        phase: 'Interior Design Development Stage',
-        tasks: [
-            { id: 1, text: 'Final Interior Design Development' },
-            { id: 2, text: 'Interior Layout Working Details' },
-            { id: 3, text: 'Interior Thematic Mood Board and Color Scheme' },
-            { id: 4, text: 'Ceiling Detail Design Drawings' },
-            { id: 5, text: 'Built-in Feature Details' },
-            { id: 6, text: 'Partition and Pattern Detail Drawings' },
-            { id: 7, text: 'Draft Interior Design Tender' },
-            { id: 8, text: 'Client Comments / Approval on Interior Design Development' },
-            { id: 9, text: 'Client Comments / Approval on Interior Design Tender' },
-            { id: 10, text: 'Finalization of Interior Design Tender' },
-        ],
-    },
-    {
-        id: 8,
-        phase: 'Procurement & Appointment Stage',
-        tasks: [
-            { id: 1, text: 'Procurement of Main Contractor' },
-            { id: 2, text: 'Contract Award / Mobilization' },
-        ],
-    },
-].map(p => ({ ...p, title: p.phase })));
-
+const initialTasks: Task[] = [
+    { id: 1, taskId: '1', taskName: 'Project Name:', duration: '', start: '', finish: '', predecessor: '', isHeader: true },
+    { id: 2, taskId: '2', taskName: 'Conceptual Design', duration: '', start: '', finish: '', predecessor: '', isHeader: true },
+    { id: 3, taskId: '3', taskName: 'Client Brief', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 4, taskId: '4', taskName: 'Topographic Survey', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 5, taskId: '5', taskName: 'Project Scope and Area Statements', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 6, taskId: '6', taskName: 'Conceptual Plans and Supporting Drawings', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 7, taskId: '7', taskName: 'Concept Engineering', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 8, taskId: '8', taskName: 'Geotechnical Investigation and Report', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 9, taskId: '9', taskName: 'Conceptual Interior Brief', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 10, taskId: '10', taskName: 'Finalize Concept Design / Report', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 11, taskId: '11', taskName: 'Client Comments / Approval on Concept Design', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 12, taskId: '12', taskName: 'Preliminary Design', duration: '', start: '', finish: '', predecessor: '', isHeader: true },
+    { id: 13, taskId: '13', taskName: 'Layout Plans-Cycle 1', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 14, taskId: '14', taskName: 'Initial Engineering', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 15, taskId: '15', taskName: 'Preliminary Design Workshop', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 16, taskId: '16', taskName: 'Layout Plans-Cycle 2', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 17, taskId: '17', taskName: 'Environmental Study and Authority Approval', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 18, taskId: '18', taskName: '3-D Model', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 19, taskId: '19', taskName: 'External Elevation', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 20, taskId: '20', taskName: 'Building Section', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 21, taskId: '21', taskName: 'Preliminary Interior Layouts', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 22, taskId: '22', taskName: 'Preliminary Engineering Design', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 23, taskId: '23', taskName: 'Finalize Preliminary Design / Report', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+    { id: 24, taskId: '24', taskName: 'Client Comments / Approval on Preliminary Design', duration: '', start: '', finish: '', predecessor: '', isHeader: false },
+];
 
 export default function TimelinePage() {
     const { toast } = useToast();
     const { firestore } = useFirebase();
     const { user: currentUser } = useCurrentUser();
-    const [timelineData, setTimelineData] = useState<Phase[]>(initialTimelineData);
-
-    const handlePhaseChange = (id: number, newTitle: string) => {
-        setTimelineData(timelineData.map(p => p.id === id ? { ...p, title: newTitle } : p));
-    };
-
-    const handleTaskChange = (phaseId: number, taskId: number, newText: string) => {
-        setTimelineData(timelineData.map(p => p.id === phaseId ? { ...p, tasks: p.tasks.map(t => t.id === taskId ? { ...t, text: newText } : t) } : p));
-    };
-
-    const addPhase = () => {
-        const newPhase: Phase = { id: Date.now(), title: 'New Phase', tasks: [{ id: Date.now(), text: 'New Task' }] };
-        setTimelineData([...timelineData, newPhase]);
-    };
-
-    const removePhase = (id: number) => {
-        setTimelineData(timelineData.filter(p => p.id !== id));
-    };
-
-    const addTask = (phaseId: number) => {
-        setTimelineData(timelineData.map(p => p.id === phaseId ? { ...p, tasks: [...p.tasks, { id: Date.now(), text: 'New Task' }] } : p));
-    };
-
-    const removeTask = (phaseId: number, taskId: number) => {
-        setTimelineData(timelineData.map(p => p.id === phaseId ? { ...p, tasks: p.tasks.filter(t => t.id !== taskId) } : p));
-    };
     
+    const [tasks, setTasks] = useState<Task[]>(initialTasks);
+    const [project, setProject] = useState('');
+    const [architect, setArchitect] = useState('IH&SA');
+    const [projectNo, setProjectNo] = useState('');
+    const [projectDate, setProjectDate] = useState('');
+
+    const handleTaskChange = (id: number, field: keyof Task, value: string) => {
+        setTasks(tasks.map(t => (t.id === id ? { ...t, [field]: value } : t)));
+    };
+
+    const addTask = () => {
+        const newId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+        const newTaskId = tasks.length > 0 ? String(parseInt(tasks[tasks.length - 1].taskId) + 1) : '1';
+        const newTask: Task = { id: newId, taskId: newTaskId, taskName: '', duration: '', start: '', finish: '', predecessor: '', isHeader: false };
+        setTasks([...tasks, newTask]);
+    };
+
+    const removeTask = (id: number) => {
+        setTasks(tasks.filter(t => t.id !== id));
+    };
+
     const handleSave = async () => {
         if (!firestore || !currentUser) {
             toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
             return;
         }
 
-        const dataToSave = timelineData.map(phase => ({
-            category: phase.title,
-            items: phase.tasks.map(task => task.text),
-        }));
-
+        const dataToSave = {
+            category: 'Timeline Schedule',
+            items: tasks.map(task =>
+                `ID: ${task.taskId}, Task: ${task.taskName}, Duration: ${task.duration}, Start: ${task.start}, Finish: ${task.finish}, Predecessor: ${task.predecessor}`
+            ),
+        };
+        
         try {
             await addDoc(collection(firestore, 'savedRecords'), {
                 employeeId: currentUser.record,
                 employeeName: currentUser.name,
                 fileName: 'Timeline Schedule',
-                projectName: 'Timeline Schedule',
-                data: dataToSave,
+                projectName: project || 'Untitled Timeline',
+                data: [dataToSave],
                 createdAt: serverTimestamp(),
             });
             toast({ title: 'Record Saved', description: 'The timeline schedule has been saved.' });
@@ -189,32 +111,31 @@ export default function TimelinePage() {
         const doc = new jsPDF();
         let yPos = 20;
 
-        doc.setFontSize(16);
+        doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('Architectural Project Timeline', doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
-        yPos += 15;
-
-        timelineData.forEach((phase, index) => {
-            if (yPos > 260) {
-                doc.addPage();
-                yPos = 20;
-            }
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${index + 1}. ${phase.title}`, 14, yPos);
-            yPos += 8;
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            phase.tasks.forEach(task => {
-                if (yPos > 270) {
-                    doc.addPage();
-                    yPos = 20;
+        doc.text('TIME LINE SCHEDULE', 14, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(10);
+        doc.text(`Project: ${project}`, 14, yPos);
+        doc.text(`Architect: ${architect}`, 120, yPos);
+        yPos += 7;
+        doc.text(`(Name, Address)`, 14, yPos);
+        doc.text(`Architects Project No: ${projectNo}`, 120, yPos);
+        yPos += 7;
+        doc.text(`Project Date: ${projectDate}`, 120, yPos);
+        yPos += 10;
+        
+        (doc as any).autoTable({
+            head: [['ID', 'Task Name', 'Duration', 'Start', 'Finish', 'Predecessor']],
+            body: tasks.map(t => [t.taskId, t.taskName, t.duration, t.start, t.finish, t.predecessor]),
+            startY: yPos,
+            didParseCell: function(data) {
+                if (tasks[data.row.index]?.isHeader) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = '#f0f0f0';
                 }
-                doc.text(`- ${task.text}`, 20, yPos);
-                yPos += 6;
-            });
-            yPos += 5;
+            }
         });
 
         doc.save('timeline-schedule.pdf');
@@ -224,44 +145,67 @@ export default function TimelinePage() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="text-3xl md:text-4xl font-headline text-primary text-center">
-                    Architectural Project Timeline
-                </CardTitle>
+                <CardTitle className="text-2xl font-bold text-center">TIME LINE SCHEDULE</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-                {timelineData.map((phase, index) => (
-                    <Card key={phase.id} className="p-4 bg-muted/30">
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="text-lg font-bold text-primary">{index + 1}.</span>
-                            <Input 
-                                value={phase.title}
-                                onChange={(e) => handlePhaseChange(phase.id, e.target.value)}
-                                className="text-lg font-bold border-0 bg-transparent focus-visible:ring-1"
-                            />
-                            <Button variant="ghost" size="icon" onClick={() => removePhase(phase.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
-                        <div className="space-y-2 pl-6">
-                            {phase.tasks.map(task => (
-                                <div key={task.id} className="flex items-center gap-2">
-                                    <Textarea
-                                        value={task.text}
-                                        onChange={(e) => handleTaskChange(phase.id, task.id, e.target.value)}
-                                        className="flex-grow"
-                                        rows={1}
-                                    />
-                                    <Button variant="ghost" size="icon" onClick={() => removeTask(phase.id, task.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                </div>
-                            ))}
-                             <Button variant="outline" size="sm" onClick={() => addTask(phase.id)}><PlusCircle className="mr-2 h-4 w-4" /> Add Task</Button>
-                        </div>
-                    </Card>
-                ))}
+            <CardContent>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <Label htmlFor="project">Project (Name, Address)</Label>
+                        <Input id="project" value={project} onChange={e => setProject(e.target.value)} />
+                    </div>
+                     <div>
+                        <Label htmlFor="architect">Architect</Label>
+                        <Input id="architect" value={architect} onChange={e => setArchitect(e.target.value)} />
+                    </div>
+                     <div>
+                        <Label htmlFor="projectNo">Architects Project No</Label>
+                        <Input id="projectNo" value={projectNo} onChange={e => setProjectNo(e.target.value)} />
+                    </div>
+                    <div>
+                        <Label htmlFor="projectDate">Project Date</Label>
+                        <Input id="projectDate" type="date" value={projectDate} onChange={e => setProjectDate(e.target.value)} />
+                    </div>
+                </div>
 
-                <Button onClick={addPhase}><PlusCircle className="mr-2 h-4 w-4" /> Add Phase</Button>
-                
-                 <div className="flex justify-end gap-4 mt-8 pt-4 border-t">
-                    <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save Record</Button>
-                    <Button onClick={handleDownloadPdf} variant="outline"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-16">ID</TableHead>
+                            <TableHead>Task Name</TableHead>
+                            <TableHead>Duration</TableHead>
+                            <TableHead>Start</TableHead>
+                            <TableHead>Finish</TableHead>
+                            <TableHead>Predecessor</TableHead>
+                            <TableHead>Action</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {tasks.map(task => (
+                            <TableRow key={task.id} className={task.isHeader ? 'bg-muted' : ''}>
+                                <TableCell>
+                                    <Input value={task.taskId} onChange={e => handleTaskChange(task.id, 'taskId', e.target.value)} className="font-bold" />
+                                </TableCell>
+                                <TableCell>
+                                    <Input value={task.taskName} onChange={e => handleTaskChange(task.id, 'taskName', e.target.value)} className={task.isHeader ? 'font-bold' : ''} />
+                                </TableCell>
+                                <TableCell><Input value={task.duration} onChange={e => handleTaskChange(task.id, 'duration', e.target.value)} /></TableCell>
+                                <TableCell><Input type="date" value={task.start} onChange={e => handleTaskChange(task.id, 'start', e.target.value)} /></TableCell>
+                                <TableCell><Input type="date" value={task.finish} onChange={e => handleTaskChange(task.id, 'finish', e.target.value)} /></TableCell>
+                                <TableCell><Input value={task.predecessor} onChange={e => handleTaskChange(task.id, 'predecessor', e.target.value)} /></TableCell>
+                                <TableCell>
+                                    <Button variant="destructive" size="icon" onClick={() => removeTask(task.id)}><Trash2 className="h-4 w-4" /></Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+
+                <div className="flex justify-between items-center mt-4">
+                     <Button onClick={addTask}><PlusCircle className="mr-2 h-4 w-4" /> Add Task</Button>
+                    <div className="flex gap-4">
+                        <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                        <Button onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+                    </div>
                 </div>
             </CardContent>
         </Card>
