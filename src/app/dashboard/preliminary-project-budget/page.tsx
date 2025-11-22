@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -211,22 +212,29 @@ export default function Page() {
     const renderTableSection = (title: string, filter: (item: BudgetItem) => boolean, hasRateCol: boolean) => (
         <div>
             <h3 className="text-lg font-semibold my-4">{title}</h3>
-            <div className="grid grid-cols-4 gap-4 font-bold border-b pb-2">
-                <div>Item</div>
+            <div className={`grid ${hasRateCol ? 'grid-cols-5' : 'grid-cols-3'} gap-4 font-bold border-b pb-2`}>
+                <div className="col-span-2">Item</div>
                 {hasRateCol && <div>Rs. per sft.</div>}
-                <div className={hasRateCol ? "" : "col-span-2"}>Total Rs.</div>
+                {hasRateCol && <div>Gross Area</div>}
+                <div className={!hasRateCol ? "col-start-3" : ""}>Total Rs.</div>
             </div>
             {items.filter(filter).map(item => (
-                 <div key={item.id} className="grid grid-cols-4 items-center gap-4 py-2 border-b">
-                    <Label>{item.description}</Label>
+                 <div key={item.id} className={`grid ${hasRateCol ? 'grid-cols-5' : 'grid-cols-3'} items-center gap-4 py-2 border-b`}>
+                    <Label className="col-span-2">{item.description}</Label>
                     {hasRateCol ? (
-                        <Input type="number" value={item.rate} onChange={e => handleItemChange(item.id, 'rate', parseFloat(e.target.value) || 0)} />
+                        <>
+                            <Input type="number" value={item.rate} onChange={e => handleItemChange(item.id, 'rate', parseFloat(e.target.value) || 0)} />
+                            <div className="text-right font-medium">{header.grossArea || 0}</div>
+                            <div className="text-right font-medium">
+                                {(item.rate * (header.grossArea || 0)).toFixed(2)}
+                            </div>
+                        </>
                     ) : (
-                         <Input type="number" value={item.fixedAmount} onChange={e => handleItemChange(item.id, 'fixedAmount', parseFloat(e.target.value) || 0)} className="col-start-3" />
+                        <>
+                            <Input type="number" value={item.fixedAmount} onChange={e => handleItemChange(item.id, 'fixedAmount', parseFloat(e.target.value) || 0)} className="col-start-3" />
+                            <div className="text-right font-medium">{(item.fixedAmount || 0).toFixed(2)}</div>
+                        </>
                     )}
-                    <div className="text-right font-medium">
-                        {hasRateCol ? (item.rate * (header.grossArea || 0)).toFixed(2) : (item.fixedAmount || 0).toFixed(2)}
-                    </div>
                 </div>
             ))}
         </div>
