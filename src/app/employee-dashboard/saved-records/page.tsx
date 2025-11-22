@@ -32,7 +32,7 @@ type SavedRecord = {
 export default function SavedRecordsPage() {
     const image = PlaceHolderImages.find(p => p.id === 'saved-records');
     const { firestore } = useFirebase();
-    const { user: currentUser } = useCurrentUser();
+    const { user: currentUser, isUserLoading: isAuthLoading } = useCurrentUser();
     const { toast } = useToast();
 
     const [records, setRecords] = useState<SavedRecord[]>([]);
@@ -40,10 +40,13 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
+        // Wait until authentication status is resolved
+        if (isAuthLoading) {
+            return;
+        }
+
         if (!firestore || !currentUser) {
-             if (currentUser === null) {
-                setIsLoading(false);
-            }
+            setIsLoading(false);
             return;
         }
         
@@ -75,7 +78,7 @@ export default function SavedRecordsPage() {
                 setIsLoading(false);
             });
 
-    }, [firestore, currentUser, toast]);
+    }, [firestore, currentUser, isAuthLoading, toast]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
@@ -102,7 +105,7 @@ export default function SavedRecordsPage() {
         URL.revokeObjectURL(url);
     };
 
-    if (isLoading) {
+    if (isLoading || isAuthLoading) {
         return (
             <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin" />
