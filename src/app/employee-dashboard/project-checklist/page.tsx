@@ -1,17 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Download, Save } from 'lucide-react';
+import { Download, Save, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { useCurrentUser } from '@/context/UserContext';
+import { useSearchParams } from 'next/navigation';
 
 const checklistData = {
   predesign: {
@@ -256,18 +257,76 @@ const ChecklistItem = ({ item, checked, onCheckedChange }: { item: string, check
 
 export default function ProjectChecklistPage() {
     const { toast } = useToast();
+    const searchParams = useSearchParams();
+    const recordId = searchParams.get('id');
+
     const [checkedItems, setCheckedItems] = useState<ChecklistState>(initializeState());
     const [projectName, setProjectName] = useState('');
     const [architectName, setArchitectName] = useState('');
     const [projectNo, setProjectNo] = useState('');
     const [projectDate, setProjectDate] = useState('');
+    const [isLoading, setIsLoading] = useState(!!recordId);
+
     const { firestore } = useFirebase();
     const { user: currentUser } = useCurrentUser();
 
+    useEffect(() => {
+        if (recordId && firestore) {
+            const fetchRecord = async () => {
+                setIsLoading(true);
+                try {
+                    const docRef = doc(firestore, 'savedRecords', recordId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const record = docSnap.data();
+                        
+                        // Basic project info
+                        setProjectName(record.projectName || '');
+                        
+                        // Find header info from saved data
+                        const headerInfo = record.data?.find((d: any) => d.category === 'Project Header');
+                        if (headerInfo) {
+                            setArchitectName(headerInfo.architectName || '');
+                            setProjectNo(headerInfo.projectNo || '');
+                            setProjectDate(headerInfo.projectDate || '');
+                        }
+
+                        // Reconstruct checked state
+                        const newCheckedState = initializeState();
+                        record.data?.forEach((section: any) => {
+                             for (const mainKey in checklistData) {
+                                const mainSection = checklistData[mainKey as keyof typeof checklistData];
+                                for (const subKey in mainSection.sections) {
+                                    const subSection = mainSection.sections[subKey as keyof typeof mainSection.sections];
+                                    if (`${mainSection.title} - ${subSection.title}` === section.category) {
+                                        section.items.forEach((savedItem: string) => {
+                                            const itemIndex = subSection.items.indexOf(savedItem);
+                                            if (itemIndex > -1) {
+                                                newCheckedState[mainKey][subKey][itemIndex] = true;
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                        setCheckedItems(newCheckedState);
+                    } else {
+                        toast({ variant: "destructive", title: "Error", description: "Record not found."});
+                    }
+                } catch (e) {
+                     toast({ variant: "destructive", title: "Error", description: "Failed to load record."});
+                     console.error("Error fetching document:", e);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            fetchRecord();
+        }
+    }, [recordId, firestore, toast]);
 
     const handleCheckboxChange = (mainKey: string, subKey: string, itemIndex: number, checked: boolean) => {
         setCheckedItems(prevState => {
-            const newState = { ...prevState };
+            const newState = JSON.parse(JSON.stringify(prevState)); // Deep copy
             newState[mainKey][subKey][itemIndex] = checked;
             return newState;
         });
@@ -302,26 +361,50 @@ export default function ProjectChecklistPage() {
             category: `${s.mainTitle} - ${s.subTitle}`,
             items: s.items
         }));
+        
+        const headerData = {
+            category: "Project Header",
+            architectName: architectName,
+            projectNo: projectNo,
+            projectDate: projectDate,
+            items: [],
+        }
+        selectedDataForSave.unshift(headerData);
 
-        if (selectedDataForSave.length === 0) {
+        if (selectedDataForSave.length <= 1) { // Only header data
             toast({ variant: "destructive", title: "Nothing to save", description: "Please select at least one item."});
             return;
         }
 
-        try {
-            await addDoc(collection(firestore, 'savedRecords'), {
-                employeeId: currentUser.record,
-                employeeName: currentUser.name,
-                fileName: 'Project Checklist',
-                projectName: projectName || 'Untitled Project',
-                data: selectedDataForSave,
-                createdAt: serverTimestamp(),
-            });
+        const recordToSave = {
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: 'Project Checklist',
+            projectName: projectName || 'Untitled Project',
+            data: selectedDataForSave,
+            createdAt: serverTimestamp(),
+        };
 
-            toast({
-                title: "Record Saved",
-                description: "Your project checklist has been saved to the central database.",
-            });
+        try {
+            if (recordId) {
+                // Update existing record
+                const docRef = doc(firestore, 'savedRecords', recordId);
+                await updateDoc(docRef, {
+                    projectName: projectName || 'Untitled Project',
+                    data: selectedDataForSave,
+                });
+                 toast({
+                    title: "Record Updated",
+                    description: "Your project checklist has been updated.",
+                });
+            } else {
+                // Create new record
+                await addDoc(collection(firestore, 'savedRecords'), recordToSave);
+                toast({
+                    title: "Record Saved",
+                    description: "Your project checklist has been saved to the central database.",
+                });
+            }
         } catch (error) {
             console.error("Error saving document: ", error);
             toast({
@@ -334,6 +417,16 @@ export default function ProjectChecklistPage() {
     
     const handleDownload = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
+        const selectedData = getSelectedItems();
+    
+        if (selectedData.length === 0) {
+            toast({
+                variant: "destructive",
+                title: "Nothing to download",
+                description: "Please select at least one item to include in the PDF."
+            });
+            return;
+        }
     
         // Main Title
         doc.setFont('helvetica', 'bold');
@@ -367,48 +460,42 @@ export default function ProjectChecklistPage() {
         doc.text(projectDate || '', 60, yPos);
         yPos += 14;
     
-        for (const mainKey in checklistData) {
-            const mainSection = checklistData[mainKey as keyof typeof checklistData];
-            if (yPos > 260) {
-                doc.addPage();
-                yPos = 20;
-            }
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(11);
-            doc.text(mainSection.title, 14, yPos);
-            yPos += 7;
-
-            for (const subKey in mainSection.sections) {
-                const subSection = mainSection.sections[subKey as keyof typeof mainSection.sections];
-                if (yPos > 260) {
-                    doc.addPage();
-                    yPos = 20;
-                }
-                doc.setFont('helvetica', 'normal');
+        let lastMainTitle = '';
+    
+        selectedData.forEach(section => {
+            if (section.mainTitle !== lastMainTitle) {
+                if (lastMainTitle !== '') yPos += 7; // Add space between main sections
+                if (yPos > 260) { doc.addPage(); yPos = 20; }
+                doc.setFont('helvetica', 'bold');
                 doc.setFontSize(11);
-                doc.text(subSection.title, 20, yPos, { 'decoration': 'underline' });
+                doc.text(section.mainTitle, 14, yPos);
                 yPos += 7;
-
-                const body = subSection.items.map((item, index) => {
-                    const isChecked = checkedItems[mainKey]?.[subKey]?.[index] ?? false;
-                    return [`[${isChecked ? 'X' : ' '}]`, item];
-                });
-
-                doc.autoTable({
-                    startY: yPos,
-                    body: body,
-                    theme: 'plain',
-                    showHead: 'never',
-                    columnStyles: {
-                        0: { cellWidth: 8, fontStyle: 'normal' },
-                        1: { cellWidth: 'auto', fontStyle: 'normal' },
-                    },
-                    styles: { fontSize: 11, cellPadding: {top: 0.5, right: 1, bottom: 0.5, left: 1} },
-                    margin: { left: 20 }
-                });
-                yPos = (doc as any).lastAutoTable.finalY + 7;
+                lastMainTitle = section.mainTitle;
             }
-        }
+    
+            if (yPos > 260) { doc.addPage(); yPos = 20; }
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(11);
+            doc.text(section.subTitle, 20, yPos, { 'decoration': 'underline' });
+            yPos += 7;
+    
+            const body = section.items.map((item, index) => [`${index + 1}.`, item]);
+    
+            doc.autoTable({
+                startY: yPos,
+                body: body,
+                theme: 'plain',
+                showHead: 'never',
+                columnStyles: {
+                    0: { cellWidth: 8, fontStyle: 'normal' },
+                    1: { cellWidth: 'auto', fontStyle: 'normal' },
+                },
+                styles: { fontSize: 11, cellPadding: {top: 0.5, right: 1, bottom: 0.5, left: 1} },
+                margin: { left: 20 }
+            });
+    
+            yPos = (doc as any).lastAutoTable.finalY + 7;
+        });
     
         doc.save(`${projectName || 'project'}_checklist.pdf`);
     
@@ -417,6 +504,15 @@ export default function ProjectChecklistPage() {
             description: "Your checklist PDF is being generated.",
         });
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-4">Loading record...</span>
+            </div>
+        )
+    }
 
     return (
         <div className="bg-white p-8 md:p-12 lg:p-16 text-black rounded-lg shadow-lg">
