@@ -441,25 +441,25 @@ export default function ProjectChecklistPage() {
         doc.text('Project:', 14, yPos);
         doc.setFont('helvetica', 'normal');
         doc.text(projectName || '', 60, yPos);
-        yPos += 10;
+        yPos += 15;
     
         doc.setFont('helvetica', 'bold');
         doc.text('Name, Address: Architect:', 14, yPos);
         doc.setFont('helvetica', 'normal');
         doc.text(architectName || '', 60, yPos);
-        yPos += 10;
+        yPos += 15;
     
         doc.setFont('helvetica', 'bold');
         doc.text('Architect Project No:', 14, yPos);
         doc.setFont('helvetica', 'normal');
         doc.text(projectNo || '', 60, yPos);
-        yPos += 10;
+        yPos += 15;
     
         doc.setFont('helvetica', 'bold');
         doc.text('Project Date:', 14, yPos);
         doc.setFont('helvetica', 'normal');
         doc.text(projectDate || '', 60, yPos);
-        yPos += 14;
+        yPos += 15;
     
         let lastMainTitle = '';
     
