@@ -222,7 +222,7 @@ export default function Page() {
     };
 
     // State for Form 2
-    const [changeOrders, setChangeOrders] = useState([{ id: 1, number: '', date: '', approved: '' }]);
+    const [changeOrders, setChangeOrders] = useState([{ id: 1 }]);
     const [form2State, setForm2State] = useState({
         toOwner: '', fromContractor: '', contractFor: '', project: '', viaArchitect: '',
         applicationNumber: '', periodTo: '', architectsProjectNo: '', contractDate: '',
@@ -236,7 +236,7 @@ export default function Page() {
         amountsCertified: 0, explanation: '', architectBy: '', architectDate: ''
     });
 
-    const addChangeOrder = () => setChangeOrders(prev => [...prev, { id: Date.now(), number: '', date: '', approved: '' }]);
+    const addChangeOrder = () => setChangeOrders(prev => [...prev, { id: Date.now() }]);
     const removeChangeOrder = (id: number) => setChangeOrders(prev => prev.filter(co => co.id !== id));
     
     const handleForm2Change = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -267,8 +267,131 @@ export default function Page() {
         return { contractSumToDate, totalRetainage, totalEarnedLessRetainage, currentPaymentDue, balanceToFinish };
     }, [form2State]);
 
-    const handleSave2 = async () => { /* Logic to save form 2 */ };
-    const handleDownloadPdf2 = () => { /* Logic to download form 2 */ };
+    const handleSave2 = async () => {
+        if (!firestore || !currentUser) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
+            return;
+        }
+
+        const changeOrderData = changeOrders.map((co, index) => {
+            const form = document.getElementById('payment-cert-form-2') as HTMLFormElement;
+            return {
+                number: (form.elements.namedItem(`co_number_${co.id}`) as HTMLInputElement)?.value,
+                date: (form.elements.namedItem(`co_date_${co.id}`) as HTMLInputElement)?.value,
+                additions: (form.elements.namedItem(`co_additions_${co.id}`) as HTMLInputElement)?.value,
+                deductions: (form.elements.namedItem(`co_deductions_${co.id}`) as HTMLInputElement)?.value,
+            };
+        });
+
+        const dataToSave = {
+            category: 'Application and Certificate for Payment (Contractor)',
+            items: [
+                ...Object.entries(form2State).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`),
+                'Change Orders: ' + JSON.stringify(changeOrderData)
+            ],
+        };
+
+        try {
+            await addDoc(collection(firestore, 'savedRecords'), {
+                employeeId: currentUser.record,
+                employeeName: currentUser.name,
+                fileName: 'Application for Payment (Contractor)',
+                projectName: form2State.project || 'Untitled Payment Certificate',
+                data: [dataToSave],
+                createdAt: serverTimestamp(),
+            });
+            toast({ title: 'Record Saved', description: 'The payment application has been saved.' });
+        } catch (error) {
+            console.error("Error saving document: ", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
+        }
+    };
+    const handleDownloadPdf2 = () => {
+         const doc = new jsPDF() as jsPDFWithAutoTable;
+        let y = 15;
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('APPLICATION AND CERTIFICATE FOR PAYMENT', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
+        y += 10;
+
+        doc.setFontSize(10);
+        doc.autoTable({
+            startY: y,
+            theme: 'plain',
+            body: [
+                [`To (Owner): ${form2State.toOwner}`, `Project: ${form2State.project}`],
+                [`From (Contractor): ${form2State.fromContractor}`, `VIA (Architect): ${form2State.viaArchitect}`],
+                [`Contract For: ${form2State.contractFor}`],
+            ],
+            styles: { cellPadding: 1 }
+        });
+        y = (doc as any).autoTable.previous.finalY;
+
+        doc.autoTable({
+            startY: y, theme: 'plain',
+            body: [[{ content: '', styles: { cellWidth: 100 } }, `Application Number: ${form2State.applicationNumber}`], ['', `Period To: ${form2State.periodTo}`], ['', `Architect's Project No: ${form2State.architectsProjectNo}`], ['', `Contract Date: ${form2State.contractDate}`]],
+            styles: { cellPadding: 1 }
+        });
+        y = (doc as any).autoTable.previous.finalY;
+        
+        doc.text('Distributed to: ' + form2State.distributedTo.join(', '), 14, y);
+        y += 10;
+        
+        doc.autoTable({
+            startY: y, theme: 'grid', head: [['Number', 'Date', 'Additions', 'Deductions']],
+            body: changeOrders.map(co => {
+                const form = document.getElementById('payment-cert-form-2') as HTMLFormElement;
+                return [
+                    (form.elements.namedItem(`co_number_${co.id}`) as HTMLInputElement)?.value,
+                    (form.elements.namedItem(`co_date_${co.id}`) as HTMLInputElement)?.value,
+                    (form.elements.namedItem(`co_additions_${co.id}`) as HTMLInputElement)?.value,
+                    (form.elements.namedItem(`co_deductions_${co.id}`) as HTMLInputElement)?.value
+                ];
+            }),
+            foot: [['Net change by Change Orders', '', '', form2State.netChangeOrders.toFixed(2)]]
+        });
+        y = (doc as any).autoTable.previous.finalY + 10;
+        
+        const financialBody = [
+            ['1. Original Contract Sum', `Rs. ${form2State.originalContractSum.toFixed(2)}`],
+            ['2. Total Net Changes by Change Order', `Rs. ${form2State.netChangeOrders.toFixed(2)}`],
+            ['3. Total Contract Sum to Date', `Rs. ${calculatedForm2.contractSumToDate.toFixed(2)}`],
+            ['4. Total Completed & Stored to Date', `Rs. ${form2State.totalCompleted.toFixed(2)}`],
+            ['5. Retainage:', ''],
+            [`   a. ${form2State.retainagePercentCompleted}% of Completed Works`, `Rs. ${form2State.retainageAmountCompleted.toFixed(2)}`],
+            [`   b. ${form2State.retainagePercentStored}% of Stored Material`, `Rs. ${form2State.retainageAmountStored.toFixed(2)}`],
+            ['   Total Retainage', `Rs. ${calculatedForm2.totalRetainage.toFixed(2)}`],
+            ['6. Total Earned Less Retainage', `Rs. ${calculatedForm2.totalEarnedLessRetainage.toFixed(2)}`],
+            ['7. Less Previous Certificates for Payments', `Rs. ${form2State.previousPayments.toFixed(2)}`],
+            ['8. Current Payment Due', `Rs. ${calculatedForm2.currentPaymentDue.toFixed(2)}`],
+            ['9. Balance to Finish, Plus Retainage', `Rs. ${calculatedForm2.balanceToFinish.toFixed(2)}`],
+        ];
+        doc.autoTable({ startY: y, head: [['Contractor\'s Application for Payment', '']], body: financialBody, theme: 'grid' });
+        y = (doc as any).autoTable.previous.finalY + 10;
+        
+        doc.text(`Contractor: By: ${form2State.contractorBy} Date: ${form2State.contractorDate}`, 14, y);
+        y += 15;
+
+        doc.setFont('helvetica', 'bold');
+        doc.text("Architect's Project Certificate for Payment", 14, y);
+        y += 10;
+
+        doc.autoTable({
+            startY: y, theme: 'plain', body: [
+                [`State of: ${form2State.stateOf}`, `County of: ${form2State.countyOf}`],
+                [`Subscribed and sworn to before me this ${form2State.subscribedDay} day of ${form2State.subscribedMonth}, 20${form2State.subscribedYear}`],
+                [`Notary Public: ${form2State.notaryPublic}`],
+                [`My Commission expires: ${form2State.commissionExpires}`],
+            ]
+        });
+        y = (doc as any).autoTable.previous.finalY + 5;
+        doc.text(`Amounts Certified: Rs. ${form2State.amountsCertified.toFixed(2)}`, 14, y);
+        y += 7;
+        doc.text(`Architect: By: ${form2State.architectBy} Date: ${form2State.architectDate}`, 14, y);
+
+        doc.save('contractor-payment-certificate.pdf');
+        toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
+    };
 
     return (
         <div className="space-y-8">
@@ -370,7 +493,7 @@ export default function Page() {
                 </CardContent>
             </Card>
 
-            <Card className="mt-12">
+            <Card className="mt-12" id="payment-cert-form-2">
                  <CardHeader>
                     <CardTitle className="text-center font-headline text-2xl text-primary">APPLICATION AND CERTIFICATE FOR PAYMENT (Contractor)</CardTitle>
                 </CardHeader>
