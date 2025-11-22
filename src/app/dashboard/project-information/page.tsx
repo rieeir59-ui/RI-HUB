@@ -79,184 +79,142 @@ export default function ProjectInformationPage() {
         }
     
         const doc = new jsPDF() as jsPDFWithAutoTable;
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const margin = 14;
         let yPos = 22;
         
-        const getInputValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.value || '';
+        const getInputValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.value || 'N/A';
         const getCheckboxValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.checked;
-        const getRadioValue = (name: string) => (form.elements.namedItem(name) as HTMLInputElement)?.value || '';
+        const getRadioValue = (name: string) => (form.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || 'N/A';
         
-        const addSectionTitle = (title: string) => {
-            if (yPos > 260) { doc.addPage(); yPos = 20; }
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.text(title, margin, yPos);
-            yPos += 8;
-        };
-    
-        const addKeyValuePair = (label: string, value: string, indent = 0) => {
-            if (yPos > 270) { doc.addPage(); yPos = 20; }
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.text(label, margin + indent, yPos);
-            doc.setFont('helvetica', 'normal');
-            const splitValue = doc.splitTextToSize(value, pageWidth - margin * 2 - (50 + indent));
-            doc.text(splitValue, margin + 50 + indent, yPos);
-            yPos += (splitValue.length * 5) + 2;
-        };
-
-        const addCheckboxGroup = (label: string, items: {label: string, id: string}[]) => {
-            if (yPos > 260) { doc.addPage(); yPos = 20; }
-            doc.setFont('helvetica', 'bold');
-            doc.text(label, margin, yPos);
-            yPos += 7;
-            items.forEach(item => {
-                if(getCheckboxValue(item.id)) {
-                    if (yPos > 270) { doc.addPage(); yPos = 20; }
-                    doc.setFont('helvetica', 'normal');
-                    doc.text(`- ${item.label}`, margin + 5, yPos);
-                    yPos += 6;
-                }
-            });
-            yPos += 3;
-        }
-
-        const addRadioGroup = (label: string, name: string, options: {label: string, value: string}[]) => {
-            if (yPos > 270) { doc.addPage(); yPos = 20; }
-            const selectedValue = getRadioValue(name);
-            const selectedOption = options.find(opt => opt.value === selectedValue);
-             doc.setFont('helvetica', 'bold');
-            doc.text(label, margin, yPos);
-            if (selectedOption) {
-                doc.setFont('helvetica', 'normal');
-                doc.text(selectedOption.label, margin + 50, yPos);
-            }
-            yPos += 7;
-        }
-
-        const addTextArea = (label: string, id: string) => {
-            if (yPos > 260) { doc.addPage(); yPos = 20; }
-            doc.setFont('helvetica', 'bold');
-            doc.text(label, margin, yPos);
-            yPos += 7;
-            doc.setFont('helvetica', 'normal');
-            const text = getInputValue(id);
-            const splitText = doc.splitTextToSize(text, pageWidth - margin * 2 - 5);
-            doc.text(splitText, margin + 5, yPos);
-            yPos += (splitText.length * 5) + 5;
-        }
-
-        const addSeparator = () => {
-             if (yPos > 270) { doc.addPage(); yPos = 20; }
-             doc.setLineDash([1,1], 0);
-             doc.line(margin, yPos, pageWidth - margin, yPos);
-             doc.setLineDash([], 0);
-             yPos += 8;
+        const addTableSection = (title: string, data: (string|string[])[][]) => {
+             if (yPos > 250) { doc.addPage(); yPos = 20; }
+             doc.autoTable({
+                head: [[title]],
+                body: data,
+                startY: yPos,
+                theme: 'grid',
+                headStyles: { fillColor: [45, 95, 51], fontStyle: 'bold' },
+             });
+             yPos = (doc as any).lastAutoTable.finalY + 10;
         }
     
         // Main Title
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(14);
-        doc.text('REQUIREMENT PERFORMA FOR RESIDENTIAL AND COMMERCIAL', pageWidth / 2, 15, { align: 'center' });
+        doc.text('REQUIREMENT PERFORMA FOR RESIDENTIAL AND COMMERCIAL', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
     
         // Project Information
-        addSectionTitle("PROJECT INFORMATION");
-        addKeyValuePair('Project:', getInputValue('project'));
-        addKeyValuePair('Address:', getInputValue('project_address'));
-        addKeyValuePair('Project No:', getInputValue('project_no'));
-        addKeyValuePair('Prepared By:', getInputValue('prepared_by'));
-        addKeyValuePair('Prepared Date:', getInputValue('prepared_date'));
-        addSeparator();
+        addTableSection("PROJECT INFORMATION", [
+            ['Project', getInputValue('project')],
+            ['Address', getInputValue('project_address')],
+            ['Project No', getInputValue('project_no')],
+            ['Prepared By', getInputValue('prepared_by')],
+            ['Prepared Date', getInputValue('prepared_date')],
+        ]);
     
         // About Owner
-        addSectionTitle("About Owner");
-        addKeyValuePair('Full Name:', getInputValue('owner_name'));
-        addKeyValuePair('Address (Office):', getInputValue('owner_office_address'));
-        addKeyValuePair('Address (Res.):', getInputValue('owner_res_address'));
-        addKeyValuePair('Phone (Office):', getInputValue('owner_office_phone'));
-        addKeyValuePair('Phone (Res.):', getInputValue('owner_res_phone'));
-        addKeyValuePair("Owner's Rep Name:", getInputValue('rep_name'));
-        addKeyValuePair('Address (Office):', getInputValue('rep_office_address'));
-        addKeyValuePair('Address (Res.):', getInputValue('rep_res_address'));
-        addKeyValuePair('Phone (Office):', getInputValue('rep_office_phone'));
-        addKeyValuePair('Phone (Res.):', getInputValue('rep_res_phone'));
-        addSeparator();
-    
+        addTableSection("About Owner", [
+            ['Full Name', getInputValue('owner_name')],
+            ['Address (Office)', getInputValue('owner_office_address')],
+            ['Address (Res.)', getInputValue('owner_res_address')],
+            ['Phone (Office)', getInputValue('owner_office_phone')],
+            ['Phone (Res.)', getInputValue('owner_res_phone')],
+            ["Owner's Rep Name", getInputValue('rep_name')],
+            ['Address (Office)', getInputValue('rep_office_address')],
+            ['Address (Res.)', getInputValue('rep_res_address')],
+            ['Phone (Office)', getInputValue('rep_office_phone')],
+            ['Phone (Res.)', getInputValue('rep_res_phone')],
+        ]);
+
+        doc.addPage();
+        yPos = 20;
+        
+        const projectReqs = [
+            getCheckboxValue('reqt_arch') && 'Architectural Designing',
+            getCheckboxValue('reqt_interior') && 'Interior Decoration',
+            getCheckboxValue('reqt_landscaping') && 'Landscaping',
+            getCheckboxValue('reqt_turnkey') && 'Turnkey',
+            getCheckboxValue('reqt_other') && `Other: ${getInputValue('reqt_other_text') || 'Yes'}`
+        ].filter(Boolean).join(', ');
+
+        const projectTypes = [
+            getCheckboxValue('type_commercial') && 'Commercial',
+            getCheckboxValue('type_residential') && 'Residential'
+        ].filter(Boolean).join(', ');
+
+        const projectCosts = [
+            getCheckboxValue('cost_arch') && 'Architectural Designing',
+            getCheckboxValue('cost_interior') && 'Interior Decoration',
+            getCheckboxValue('cost_landscaping') && 'Landscaping',
+            getCheckboxValue('cost_construction') && 'Construction',
+            getCheckboxValue('cost_turnkey') && 'Turnkey',
+            getCheckboxValue('cost_other') && `Other: ${getInputValue('cost_other_text') || 'Yes'}`
+        ].filter(Boolean).join(', ');
+
+
         // About Project
-        addSectionTitle("About Project");
-        addKeyValuePair('Address:', getInputValue('about_project_address'));
-        addCheckboxGroup('Project Reqt.:', [
-            {label: "Architectural Designing", id: "reqt_arch"}, {label: "Interior Decoration", id: "reqt_interior"},
-            {label: "Landscaping", id: "reqt_landscaping"}, {label: "Turnkey", id: "reqt_turnkey"}, {label: "Other", id: "reqt_other"}
+        addTableSection("About Project", [
+            ['Address', getInputValue('about_project_address')],
+            ['Project Reqt.', projectReqs],
+            ['Project Type', projectTypes],
+            ['Project Status', getRadioValue('project_status')],
+            ['Project Area', getInputValue('project_area')],
+            ['Special Requirements', getInputValue('special_reqs')],
+            ["Project's Cost", projectCosts]
         ]);
-        addCheckboxGroup('Project Type:', [
-            {label: "Commercial", id: "type_commercial"}, {label: "Residential", id: "type_residential"}
-        ]);
-        addRadioGroup('Project Status:', 'project_status', [
-             {label: "New", value: "new"}, {label: "Addition", value: "addition"}, {label: "Rehabilitation/Renovation", value: "rehab"}
-        ]);
-        addKeyValuePair('Project Area:', getInputValue('project_area'));
-        addTextArea("Special Requirments of Project:", 'special_reqs');
-        addCheckboxGroup("Project's Cost:", [
-            {label: "Architectural Designing", id: "cost_arch"}, {label: "Interior Decoration", id: "cost_interior"},
-            {label: "Landscaping", id: "cost_landscaping"}, {label: "Construction", id: "cost_construction"},
-            {label: "Turnkey", id: "cost_turnkey"}, {label: "Other", id: "cost_other"}
-        ]);
-        addSeparator();
-    
-        // Dates
-        addSectionTitle("Dates Concerned with Project");
-        addKeyValuePair('First Information about Project:', getInputValue('date_first_info'));
-        addKeyValuePair('First Meeting:', getInputValue('date_first_meeting'));
-        addKeyValuePair('First Working on Project:', getInputValue('date_first_working'));
-        addKeyValuePair('First Proposal Start:', getInputValue('date_proposal1_start'));
-        addKeyValuePair('First Proposal Completion:', getInputValue('date_proposal1_completion'));
-        addKeyValuePair('Second Proposal Start:', getInputValue('date_proposal2_start'));
-        addKeyValuePair('Second Proposal Completion:', getInputValue('date_proposal2_completion'));
-        addKeyValuePair('Working on Finalized Proposal:', getInputValue('date_final_proposal'));
-        addKeyValuePair('Revised Presentation:', getInputValue('date_revised_presentation'));
-        addKeyValuePair('Quotation:', getInputValue('date_quotation'));
-        addKeyValuePair('Drawings Start:', getInputValue('date_drawings_start'));
-        addKeyValuePair('Drawings Completion:', getInputValue('date_drawings_completion'));
-        addTextArea('Other Major Projects Milestone Dates:', 'other_dates');
-        addSeparator();
 
-        // Provided by Owner
-        addSectionTitle("Provided by Owner");
-         addCheckboxGroup('', [
-            {label: "Program", id: "owner_program"}, {label: "Suggested Schedule", id: "owner_schedule"},
-            {label: "Legal Site Description & Other Concerned Documents", id: "owner_legal"},
-            {label: "Land Survey Report", id: "owner_survey"}, {label: "Geo-Technical, Tests and Other Site Information", id: "owner_geo"},
-            {label: "Existing Structure's Drawings", id: "owner_existing_drawings"}
+        addTableSection("Dates Concerned with Project", [
+            ['First Information about Project', getInputValue('date_first_info')],
+            ['First Meeting', getInputValue('date_first_meeting')],
+            ['First Working on Project', getInputValue('date_first_working')],
+            ['First Proposal Start', getInputValue('date_proposal1_start')],
+            ['First Proposal Completion', getInputValue('date_proposal1_completion')],
+            ['Second Proposal Start', getInputValue('date_proposal2_start')],
+            ['Second Proposal Completion', getInputValue('date_proposal2_completion')],
+            ['Working on Finalized Proposal', getInputValue('date_final_proposal')],
+            ['Revised Presentation', getInputValue('date_revised_presentation')],
+            ['Quotation', getInputValue('date_quotation')],
+            ['Drawings Start', getInputValue('date_drawings_start')],
+            ['Drawings Completion', getInputValue('date_drawings_completion')],
+            ['Other Milestones', getInputValue('other_dates')],
         ]);
-        addSeparator();
-    
-        // Compensation
-        addSectionTitle("Compensation");
-        addKeyValuePair('Initial Payment:', getInputValue('comp_initial'));
-        addKeyValuePair('Basic Services (% of Cost):', getInputValue('comp_basic'));
-        addKeyValuePair('Schematic Design %:', getInputValue('comp_schematic'));
-        addKeyValuePair('Design Development %:', getInputValue('comp_dev'));
-        addKeyValuePair("Construction Doc's %:", getInputValue('comp_docs'));
-        addKeyValuePair('Bidding / Negotiation %:', getInputValue('comp_bidding'));
-        addKeyValuePair('Construction Contract Admin %:', getInputValue('comp_admin'));
-        addKeyValuePair('Additional Services:', getInputValue('comp_additional'));
-        addKeyValuePair('Reimbursable Expenses:', getInputValue('comp_reimbursable'));
-        addKeyValuePair('Other:', getInputValue('comp_other'));
-        addTextArea('Special Confidential Requirements:', 'confidential_reqs');
-        addSeparator();
 
-        // Miscellaneous Notes
-        addSectionTitle("Miscellaneous Notes");
-        addTextArea('', 'misc_notes');
-        addSeparator();
+        doc.addPage();
+        yPos = 20;
 
-        // Consultants Table
-        addSectionTitle("Consultants");
+        const providedByOwner = [
+            getCheckboxValue('owner_program') && 'Program',
+            getCheckboxValue('owner_schedule') && 'Suggested Schedule',
+            getCheckboxValue('owner_legal') && 'Legal Site Description & Other Concerned Documents',
+            getCheckboxValue('owner_survey') && 'Land Survey Report',
+            getCheckboxValue('owner_geo') && 'Geo-Technical, Tests and Other Site Information',
+            getCheckboxValue('owner_existing_drawings') && "Existing Structure's Drawings"
+        ].filter(Boolean).join('\n');
+
+        addTableSection("Provided by Owner", [
+            [providedByOwner]
+        ]);
+
+        addTableSection("Compensation", [
+            ['Initial Payment', getInputValue('comp_initial')],
+            ['Basic Services (% of Cost)', getInputValue('comp_basic')],
+            ['Schematic Design %', getInputValue('comp_schematic')],
+            ['Design Development %', getInputValue('comp_dev')],
+            ["Construction Doc's %", getInputValue('comp_docs')],
+            ['Bidding / Negotiation %', getInputValue('comp_bidding')],
+            ['Construction Contract Admin %', getInputValue('comp_admin')],
+            ['Additional Services', getInputValue('comp_additional')],
+            ['Reimbursable Expenses', getInputValue('comp_reimbursable')],
+            ['Other', getInputValue('comp_other')],
+            ['Special Confidential Requirements', getInputValue('confidential_reqs')],
+        ]);
+
+        addTableSection("Miscellaneous Notes", [[getInputValue('misc_notes')]]);
+        
+        doc.addPage();
+        yPos = 20;
+
         const consultantTypes = ["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Construction Cost", "Other", "...", "...", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"];
-        const head = [['Type', 'Within Basic Fee', 'Additional Fee', 'Architect', 'Owner']];
-        const body = consultantTypes.map(type => {
+        const consultantBody = consultantTypes.map(type => {
             const slug = type.toLowerCase().replace(/ /g, '_');
             return [
                 type,
@@ -267,39 +225,38 @@ export default function ProjectInformationPage() {
             ];
         });
         doc.autoTable({
-            head: head,
-            body: body,
+            head: [['Type', 'Within Basic Fee', 'Additional Fee', 'Architect', 'Owner']],
+            body: consultantBody,
             startY: yPos,
             styles: { halign: 'left', fontSize: 8 },
             headStyles: { fillColor: [45, 95, 51], textColor: 255, fontStyle: 'bold' }
         });
-        yPos = doc.autoTable.previous.finalY + 10;
-        addSeparator();
-
-        // Requirements
-        addSectionTitle("Requirements");
-        addKeyValuePair('Residence:', getInputValue('req_residence'));
-        addKeyValuePair('Nos.:', getInputValue('req_nos'));
-        addKeyValuePair('Size of plot:', getInputValue('req_plot_size'));
-        addKeyValuePair('Number of Bedrooms:', getInputValue('req_bedrooms'));
-        addKeyValuePair('Specifications:', getInputValue('req_specifications'));
-        addKeyValuePair('Number of Dressing Rooms:', getInputValue('req_dressing_rooms'));
-        addKeyValuePair('Number of Bath Rooms:', getInputValue('req_bathrooms'));
-        addKeyValuePair('Living Rooms:', getInputValue('req_living_rooms'));
-        addKeyValuePair('Breakfast:', getInputValue('req_breakfast'));
-        addKeyValuePair('Dinning:', getInputValue('req_dining'));
-        addKeyValuePair('Servant Kitchen:', getInputValue('req_servant_kitchen'));
-        addKeyValuePair('Self Kitchenett:', getInputValue('req_self_kitchenette'));
-        addKeyValuePair('Garage:', getInputValue('req_garage'));
-        addKeyValuePair('Servant Quarters:', getInputValue('req_servant_quarters'));
-        addKeyValuePair('Guard Room:', getInputValue('req_guard_room'));
-        addKeyValuePair('Study Room:', getInputValue('req_study_room'));
-        addKeyValuePair('Stores:', getInputValue('req_stores'));
-        addKeyValuePair('Entertainment Area:', getInputValue('req_entertainment'));
-        addKeyValuePair('Partio:', getInputValue('req_patio'));
-        addKeyValuePair('Atrium:', getInputValue('req_atrium'));
-        addTextArea('Remarks:', 'req_remarks');
+        yPos = (doc as any).autoTable.previous.finalY + 10;
         
+        addTableSection("Requirements", [
+            ['Residence', getInputValue('req_residence')],
+            ['Nos.', getInputValue('req_nos')],
+            ['Size of plot', getInputValue('req_plot_size')],
+            ['Number of Bedrooms', getInputValue('req_bedrooms')],
+            ['Specifications', getInputValue('req_specifications')],
+            ['Number of Dressing Rooms', getInputValue('req_dressing_rooms')],
+            ['Number of Bath Rooms', getInputValue('req_bathrooms')],
+            ['Living Rooms', getInputValue('req_living_rooms')],
+            ['Breakfast', getInputValue('req_breakfast')],
+            ['Dinning', getInputValue('req_dining')],
+            ['Servant Kitchen', getInputValue('req_servant_kitchen')],
+            ['Self Kitchenett', getInputValue('req_self_kitchenette')],
+            ['Garage', getInputValue('req_garage')],
+            ['Servant Quarters', getInputValue('req_servant_quarters')],
+            ['Guard Room', getInputValue('req_guard_room')],
+            ['Study Room', getInputValue('req_study_room')],
+            ['Stores', getInputValue('req_stores')],
+            ['Entertainment Area', getInputValue('req_entertainment')],
+            ['Partio', getInputValue('req_patio')],
+            ['Atrium', getInputValue('req_atrium')],
+            ['Remarks', getInputValue('req_remarks')],
+        ]);
+
         doc.save('project-information.pdf');
         toast({
             title: "PDF Downloaded",
@@ -353,7 +310,7 @@ export default function ProjectInformationPage() {
                                      <CheckboxRow label="Interior Decoration" id="reqt_interior" />
                                      <CheckboxRow label="Landscaping" id="reqt_landscaping" />
                                      <CheckboxRow label="Turnkey" id="reqt_turnkey" />
-                                     <CheckboxRow label="Other" id="reqt_other" />
+                                     <div className="flex items-center gap-2"><Checkbox id="reqt_other" /><Label htmlFor="reqt_other">Other</Label><Input name="reqt_other_text" className="h-7"/></div>
                                  </div>
                              </div>
                              <div className="grid md:grid-cols-3 gap-4">
@@ -384,7 +341,7 @@ export default function ProjectInformationPage() {
                                      <CheckboxRow label="Landscaping" id="cost_landscaping" />
                                      <CheckboxRow label="Construction" id="cost_construction" />
                                      <CheckboxRow label="Turnkey" id="cost_turnkey" />
-                                     <CheckboxRow label="Other" id="cost_other" />
+                                     <div className="flex items-center gap-2"><Checkbox id="cost_other" /><Label htmlFor="cost_other">Other</Label><Input name="cost_other_text" className="h-7"/></div>
                                  </div>
                              </div>
                         </Section>
