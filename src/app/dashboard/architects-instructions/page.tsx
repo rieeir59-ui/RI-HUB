@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -17,6 +16,8 @@ import 'jspdf-autotable';
 import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface jsPDFWithAutoTable extends jsPDF {
     autoTable: (options: any) => jsPDF;
@@ -62,37 +63,42 @@ export default function Page() {
         });
     };
 
-    const handleSave = async () => {
+    const handleSave = () => {
          if (!firestore || !currentUser) {
             toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
             return;
         }
 
         const dataToSave = {
-            category: "Architect's Supplemental Instructions",
-            items: Object.entries(formState).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: "Architect's Supplemental Instructions",
+            projectName: formState.projectName || 'Untitled Instruction',
+            data: {
+                category: "Architect's Supplemental Instructions",
+                items: Object.entries(formState).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+            },
+            createdAt: serverTimestamp(),
         };
         
-        try {
-            await addDoc(collection(firestore, 'savedRecords'), {
-                employeeId: currentUser.record,
-                employeeName: currentUser.name,
-                fileName: "Architect's Supplemental Instructions",
-                projectName: formState.projectName || 'Untitled Instruction',
-                data: [dataToSave],
-                createdAt: serverTimestamp(),
+        addDoc(collection(firestore, 'savedRecords'), dataToSave)
+            .then(() => {
+                toast({ title: 'Record Saved', description: "The supplemental instruction has been saved." });
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: `savedRecords`,
+                    operation: 'create',
+                    requestResourceData: dataToSave,
+                });
+                errorEmitter.emit('permission-error', permissionError);
             });
-            toast({ title: 'Record Saved', description: "The supplemental instruction has been saved." });
-        } catch (error) {
-            console.error("Error saving document: ", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
-        }
     };
     
     const handleDownloadPdf = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
         let yPos = 20;
-        const primaryColor = [45, 95, 51]; // HSL values for your primary color
+        const primaryColor = [45, 95, 51]; 
 
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
@@ -112,7 +118,7 @@ export default function Page() {
                 [`Owner: ${formState.owner}`, ''],
             ]
         });
-        yPos = doc.autoTable.previous.finalY + 5;
+        yPos = (doc as any).autoTable.previous.finalY + 5;
 
         doc.text('To: (Contractor)', 14, yPos);
         yPos += 5;
@@ -145,7 +151,7 @@ export default function Page() {
                 [`Date: ${formState.issuedDate}`, `Date: ${formState.acceptedDate}`],
             ]
         });
-        yPos = doc.autoTable.previous.finalY + 10;
+        yPos = (doc as any).autoTable.previous.finalY + 10;
         
         doc.setFont('helvetica', 'bold');
         doc.text("Copies To:", 14, yPos);

@@ -1,232 +1,32 @@
-/**
- * Core Philosophy: This ruleset enforces a strict, user-centric ownership model.
- * All primary user data, including projects and tasks, is nested within a
- * user-specific path (/users/{userId}/...), making ownership the default security
- * posture. Access is granted based on the authenticated user's UID matching the
- * {userId} in the path.
- *
- * Data Structure: Data is organized hierarchically to reflect ownership.
- *   - /users/{userId}: Root document for a user's profile and the parent for all their data.
- *   - /users/{userId}/projects/{projectId}: Projects owned by the user.
- *   - /users/{userId}/projects/{projectId}/tasks/{taskId}: Tasks within a project.
- *   - /users/{userId}/login_records/{loginRecordId}: Private login history for a user.
- *   - /contact_messages/{contactMessageId}: A top-level collection for public submissions.
- *
- * Key Security Decisions:
- *   - User Isolation: Users are strictly isolated to their own data trees. By default,
- *     a user cannot read, list, or write data belonging to another user.
- *   - No User Listing: The top-level /users collection cannot be listed by clients,
- *     preventing enumeration of all application users.
- *   - Task Collaboration: Tasks are an exception to strict ownership. They can be
- *     read and updated by both the project owner (from the path) and the user
- *     assigned to the task (from the `assignedUserId` field in the document).
- *   - Admin Override: An administrative role is supported via a /roles_admin/{uid}
- *     collection. Admins have read access to user profiles and login records and
- *     full management access to contact messages. This role collection is not
- *     defined here but is checked for by the isAdmin() function.
- *   - Public Drop-Box: The /contact_messages collection is designed as a secure
- *     "drop-box". Anyone, including unauthenticated users, can create (submit) a
- *     message, but only administrators can read or manage these submissions.
- *
- * Denormalization for Authorization: The data model is designed for efficient rules.
- *   - Path-Based Ownership: The primary security mechanism relies on the document path
- *     (e.g., /users/{userId}/...), which avoids costly `get()` calls to check ownership.
- *   - Task Assignment: The `assignedUserId` is denormalized directly onto each Task
- *     document, allowing a simple rule to grant access to the assigned user without
- *     needing extra reads.
- *
- * Structural Segregation: User-private data (/users/{userId}) and public-submission
- * data (/contact_messages) are in separate top-level collections. This provides
- * strong security and performance guarantees for list operations, preventing any
- * possibility of private data being leaked in a public query.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // -------------------------------------------------------------------------
     // Helper Functions
-    // -------------------------------------------------------------------------
-
-    /**
-     * Checks if a user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the currently authenticated user is the owner of the resource,
-     * based on the userId provided from the path.
-     */
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return request.auth.uid == userId;
     }
 
-    /**
-     * Checks if the currently authenticated user is an administrator.
-     * Admin status is determined by the existence of a document in the
-     * /roles_admin collection where the document ID is the user's UID.
-     */
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
-    /**
-     * Checks if the document being accessed already exists in Firestore.
-     * CRITICAL for all update and delete operations to prevent acting on non-existent data.
-     */
-    function isExistingDoc() {
-      return resource != null;
-    }
-
-    /**
-     * Checks if the authenticated user is the user assigned to a task.
-     * This relies on the `assignedUserId` field in the task document's data.
-     */
-    function isAssignedUser() {
-      return isSignedIn() && request.auth.uid == resource.data.assignedUserId;
-    }
-
-    // --- Create/Update Validation Helpers ---
-
-    /**
-     * On user profile creation, ensures the document's internal `id` field
-     * matches the user's auth UID, establishing the ownership link.
-     */
-    function hasValidUserId(userId) {
-      return request.resource.data.id == userId;
-    }
-
-    /**
-     * On user profile update, ensures the internal `id` field is immutable.
-     */
-    function isIdImmutable() {
-      return request.resource.data.id == resource.data.id;
-    }
-
-    /**
-     * On project creation, ensures the denormalized `userId` field
-     * matches the project manager's ID from the path.
-     */
-    function hasCorrectProjectOwner(userId) {
-      return request.resource.data.userId == userId;
-    }
-
-    /**
-     * On project update, ensures the ownership link (`userId`) is immutable.
-     */
-    function isProjectOwnerImmutable() {
-      return request.resource.data.userId == resource.data.userId;
-    }
-
-    /**
-     * On task creation, ensures the denormalized `projectId` field
-     * matches the project's ID from the path.
-     */
-    function hasCorrectProjectId(projectId) {
-      return request.resource.data.projectId == projectId;
-    }
-
-    /**
-     * On task update, ensures the task's parent project (`projectId`) is immutable.
-     */
-    function isProjectIdImmutable() {
-      return request.resource.data.projectId == resource.data.projectId;
-    }
-
-    /**
-     * On login record creation, ensures the `userId` field
-     * matches the user's ID from the path.
-     */
-    function hasCorrectLoginRecordOwner(userId) {
-      return request.resource.data.userId == userId;
-    }
-
-    // -------------------------------------------------------------------------
-    // Collection Rules
-    // -------------------------------------------------------------------------
-
-    /**
-     * @description Users can create and manage their own profile. Admins can read profiles.
-     * @path /users/{userId}
-     * @allow (auth.uid='user_abc') (create) /users/user_abc with data {id: 'user_abc', ...}
-     * @deny (auth.uid='user_xyz') (get) /users/user_abc
-     * @principle Restricts access to a user's own data tree and enforces self-creation.
-     */
     match /users/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if false;
-      allow create: if isOwner(userId) && hasValidUserId(userId);
-      allow update: if isOwner(userId) && isExistingDoc() && isIdImmutable();
-      allow delete: if false;
-    }
-
-    /**
-     * @description A user can manage projects within their own profile.
-     * @path /users/{userId}/projects/{projectId}
-     * @allow (auth.uid='user_abc') (create) /users/user_abc/projects/proj_123
-     * @deny (auth.uid='user_xyz') (list) /users/user_abc/projects
-     * @principle Enforces strict ownership for all operations on a user's subcollections.
-     */
-    match /users/{userId}/projects/{projectId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && hasCorrectProjectOwner(userId);
-      allow update: if isOwner(userId) && isExistingDoc() && isProjectOwnerImmutable();
-      allow delete: if isOwner(userId) && isExistingDoc();
-    }
-
-    /**
-     * @description The project manager or the assigned user can view/update a task. Only the manager can create/delete/list.
-     * @path /users/{userId}/projects/{projectId}/tasks/{taskId}
-     * @allow (auth.uid='user_xyz') (get) /users/user_abc/projects/proj_123/tasks/task_456 if task data has `assignedUserId: 'user_xyz'`.
-     * @deny (auth.uid='user_xyz') (delete) /users/user_abc/projects/proj_123/tasks/task_456
-     * @principle Implements a closed collaboration model where access is granted to the owner or a designated collaborator.
-     */
-    match /users/{userId}/projects/{projectId}/tasks/{taskId} {
-      allow get: if isOwner(userId) || isAssignedUser();
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && hasCorrectProjectId(projectId);
-      allow update: if (isOwner(userId) || isAssignedUser()) && isExistingDoc() && isProjectIdImmutable();
-      allow delete: if isOwner(userId) && isExistingDoc();
-    }
-
-    /**
-     * @description A user can create and view their own login history. Records are immutable.
-     * @path /users/{userId}/login_records/{loginRecordId}
-     * @allow (auth.uid='user_abc') (create) /users/user_abc/login_records/rec_123
-     * @deny (auth.uid='user_abc') (update) /users/user_abc/login_records/rec_123
-     * @principle Enforces ownership for sensitive, append-only data.
-     */
-    match /users/{userId}/login_records/{loginRecordId} {
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && hasCorrectLoginRecordOwner(userId);
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Anyone can submit a contact message. Only admins can read or manage them.
-     * @path /contact_messages/{contactMessageId}
-     * @allow (unauthenticated user) (create) /contact_messages/msg_123
-     * @deny (authenticated user, not admin) (get) /contact_messages/msg_123
-     * @principle Provides a secure "write-only" collection for public submissions, with restricted read access.
-     */
-    match /contact_messages/{contactMessageId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
-      allow create: if true;
-      allow update: if isAdmin() && isExistingDoc();
-      allow delete: if isAdmin() && isExistingDoc();
+      allow read, write: if isSignedIn() && isOwner(userId);
     }
 
     match /savedRecords/{docId} {
-        allow create: if isSignedIn();
-        allow list: if isSignedIn();
-        allow read: if isSignedIn();
-        allow update, delete: if false;
+      allow read, list: if isSignedIn() && (
+        resource.data.employeeId == request.auth.uid || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.department in ['admin', 'software-engineer', 'ceo']
+      );
+      allow create: if isSignedIn() && request.resource.data.employeeId == request.auth.uid;
+      allow update, delete: if false;
+    }
+    
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
