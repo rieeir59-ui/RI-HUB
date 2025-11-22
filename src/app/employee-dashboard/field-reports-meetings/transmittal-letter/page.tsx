@@ -156,7 +156,7 @@ export default function TransmittalLetterPage() {
         <Card>
             <CardHeader className="text-center">
                 <p className="font-bold">ISBAH HASSAN & ASSOCIATES</p>
-                <p className="text-sm text-muted-foreground">ARCHITECTS – ENGINEERS – REAL ESTATE – CONTRACTORS – DEVELOPERS</p>
+                <p className="text-sm text-muted-foreground uppercase">ARCHITECTS – ENGINEERS – REAL ESTATE – CONTRACTORS – DEVELOPERS</p>
                 <CardTitle className="font-headline text-3xl text-primary pt-4">Transmittal Letter</CardTitle>
             </CardHeader>
             <CardContent>
