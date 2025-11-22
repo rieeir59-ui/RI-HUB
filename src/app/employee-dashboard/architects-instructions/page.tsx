@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -98,7 +99,7 @@ export default function Page() {
     const handleDownloadPdf = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
         let yPos = 20;
-        const primaryColor = [45, 95, 51]; // HSL values for your primary color
+        const primaryColor = [45, 95, 51]; 
 
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
@@ -237,3 +238,5 @@ export default function Page() {
         </div>
     );
 }
+
+    
