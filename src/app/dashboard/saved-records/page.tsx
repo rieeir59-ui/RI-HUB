@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -50,7 +51,7 @@ export default function SavedRecordsPage() {
             setError("Firestore is not available.");
             return;
         }
-
+        
         if (!currentUser) {
             setIsLoading(false);
             setError("You must be logged in to view records.");
