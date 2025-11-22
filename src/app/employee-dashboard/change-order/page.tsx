@@ -17,6 +17,10 @@ import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => jsPDF;
+}
+
 export default function Page() {
     const image = PlaceHolderImages.find(p => p.id === 'change-order');
     const { toast } = useToast();
@@ -107,7 +111,7 @@ export default function Page() {
     };
     
     const handleDownloadPdf = () => {
-        const doc = new jsPDF();
+        const doc = new jsPDF() as jsPDFWithAutoTable;
         let y = 20;
 
         doc.setFontSize(16);
@@ -116,7 +120,7 @@ export default function Page() {
         y += 15;
 
         doc.setFontSize(10);
-        (doc as any).autoTable({
+        doc.autoTable({
             startY: y,
             theme: 'plain',
             body: [
@@ -130,7 +134,7 @@ export default function Page() {
                 headStyles: { fillColor: [45, 95, 51] },
             }
         });
-        y = (doc as any).lastAutoTable.finalY + 10;
+        y = doc.autoTable.previous.finalY + 10;
         
         doc.text('This Contract is changed as follows:', 14, y);
         y += 7;
@@ -141,7 +145,7 @@ export default function Page() {
         doc.text('Not Valid until signed by the Owner, Architect and Contractor.', 14, y);
         y += 10;
 
-        (doc as any).autoTable({
+        doc.autoTable({
             startY: y,
             theme: 'plain',
             styles: { cellPadding: 2 },
@@ -155,22 +159,25 @@ export default function Page() {
                 ['The date of Substantial Completion as the date of this Change Order therefore is:', ''],
             ]
         });
-        y = (doc as any).lastAutoTable.finalY + 5;
+        y = doc.autoTable.previous.finalY + 5;
 
         doc.setFontSize(8);
-        doc.text('NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Construction Change Directive.', 14, y);
-        y += 15;
+        const noteText = 'NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Construction Change Directive.';
+        const splitNote = doc.splitTextToSize(noteText, doc.internal.pageSize.width - 28);
+        doc.text(splitNote, 14, y);
+        y += (splitNote.length * 4) + 5;
         
-        const signatureLine = (label: string, yPos: number) => {
-            doc.line(14, yPos + 12, 80, yPos + 12);
-            doc.text(label, 14, yPos + 18);
+        const signatureLine = (label: string, x: number, currentY: number) => {
+            doc.line(x, currentY + 12, x + 50, currentY + 12);
+            doc.text(label, x, currentY + 18);
         };
         
-        signatureLine("Owner", y);
-        signatureLine("Architect", y + 20);
-        signatureLine("Contractor", y + 40);
-        signatureLine("Field", y + 60);
-        signatureLine("Other", y + 80);
+        signatureLine("Owner", 14, y);
+        signatureLine("Architect", 80, y);
+        signatureLine("Contractor", 146, y);
+        y += 25;
+        signatureLine("Field", 14, y);
+        signatureLine("Other", 80, y);
 
 
         doc.save('change-order.pdf');
