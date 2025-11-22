@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -12,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { useCurrentUser } from '@/context/UserContext';
+import { onAuthStateChanged } from 'firebase/auth';
 
 
 type SavedRecordData = {
@@ -31,7 +33,7 @@ type SavedRecord = {
 
 export default function SavedRecordsPage() {
     const image = PlaceHolderImages.find(p => p.id === 'saved-records');
-    const { firestore } = useFirebase();
+    const { firestore, auth } = useFirebase();
     const { user: currentUser, isUserLoading: isAuthLoading } = useCurrentUser();
     const { toast } = useToast();
 
@@ -40,51 +42,58 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        // Wait until authentication status is resolved
-        if (isAuthLoading) {
-            return;
-        }
-
-        if (!firestore || !currentUser) {
+        if (!firestore || !auth) {
             setIsLoading(false);
             return;
         }
 
-        const isAuthorized = currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo';
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in, now check for authorization and fetch data.
+                const isAuthorized = user && currentUser && (currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo');
+                
+                if (!isAuthorized) {
+                    setIsLoading(false);
+                    return;
+                }
 
-        if (!isAuthorized) {
-            setIsLoading(false);
-            return;
-        }
-        
-        const recordsCollection = collection(firestore, 'savedRecords');
-        const q = query(
-            recordsCollection,
-            orderBy('createdAt', 'desc')
-        );
+                const recordsCollection = collection(firestore, 'savedRecords');
+                const q = query(
+                    recordsCollection,
+                    orderBy('createdAt', 'desc')
+                );
 
-        getDocs(q)
-            .then(querySnapshot => {
-                const fetchedRecords = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                } as SavedRecord));
-                setRecords(fetchedRecords);
-                setError(null);
-            })
-            .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                    path: recordsCollection.path,
-                    operation: 'list'
-                });
-                setError(permissionError);
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
+                getDocs(q)
+                    .then(querySnapshot => {
+                        const fetchedRecords = querySnapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        } as SavedRecord));
+                        setRecords(fetchedRecords);
+                        setError(null);
+                    })
+                    .catch(serverError => {
+                        const permissionError = new FirestorePermissionError({
+                            path: recordsCollection.path,
+                            operation: 'list'
+                        });
+                        setError(permissionError);
+                        errorEmitter.emit('permission-error', permissionError);
+                    })
+                    .finally(() => {
+                        setIsLoading(false);
+                    });
+
+            } else {
+                // User is signed out.
                 setIsLoading(false);
-            });
+                setRecords([]);
+            }
+        });
+
+        return () => unsubscribe();
             
-    }, [firestore, currentUser, isAuthLoading, toast]);
+    }, [firestore, auth, currentUser]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
@@ -111,7 +120,7 @@ export default function SavedRecordsPage() {
         URL.revokeObjectURL(url);
     };
 
-    if (isLoading || isAuthLoading) {
+    if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -119,7 +128,7 @@ export default function SavedRecordsPage() {
             </div>
         )
     }
-
+    
     const isAuthorized = currentUser && (currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo');
 
     if (!isAuthorized) {

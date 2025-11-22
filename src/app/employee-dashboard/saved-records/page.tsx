@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -12,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/context/UserContext';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { onAuthStateChanged } from 'firebase/auth';
 
 
 type SavedRecordData = {
@@ -31,8 +33,8 @@ type SavedRecord = {
 
 export default function SavedRecordsPage() {
     const image = PlaceHolderImages.find(p => p.id === 'saved-records');
-    const { firestore } = useFirebase();
-    const { user: currentUser, isUserLoading: isAuthLoading } = useCurrentUser();
+    const { firestore, auth } = useFirebase();
+    const { user: currentUser } = useCurrentUser();
     const { toast } = useToast();
 
     const [records, setRecords] = useState<SavedRecord[]>([]);
@@ -40,45 +42,50 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        // Wait until authentication status is resolved
-        if (isAuthLoading) {
-            return;
-        }
-
-        if (!firestore || !currentUser) {
+        if (!firestore || !auth) {
             setIsLoading(false);
             return;
         }
-        
-        const recordsCollection = collection(firestore, 'savedRecords');
-        const q = query(
-            recordsCollection,
-            where('employeeId', '==', currentUser.record),
-            orderBy('createdAt', 'desc')
-        );
 
-        getDocs(q)
-            .then(querySnapshot => {
-                const fetchedRecords = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                } as SavedRecord));
-                setRecords(fetchedRecords);
-                setError(null);
-            })
-            .catch(serverError => {
-                 const permissionError = new FirestorePermissionError({
-                    path: recordsCollection.path,
-                    operation: 'list'
-                });
-                setError(permissionError);
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user && currentUser) { // Ensure both Firebase user and context user are available
+                const recordsCollection = collection(firestore, 'savedRecords');
+                const q = query(
+                    recordsCollection,
+                    where('employeeId', '==', currentUser.record),
+                    orderBy('createdAt', 'desc')
+                );
+
+                getDocs(q)
+                    .then(querySnapshot => {
+                        const fetchedRecords = querySnapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        } as SavedRecord));
+                        setRecords(fetchedRecords);
+                        setError(null);
+                    })
+                    .catch(serverError => {
+                        const permissionError = new FirestorePermissionError({
+                            path: recordsCollection.path,
+                            operation: 'list'
+                        });
+                        setError(permissionError);
+                        errorEmitter.emit('permission-error', permissionError);
+                    })
+                    .finally(() => {
+                        setIsLoading(false);
+                    });
+            } else {
+                // No user logged in, stop loading
                 setIsLoading(false);
-            });
-
-    }, [firestore, currentUser, isAuthLoading, toast]);
+                setRecords([]);
+            }
+        });
+        
+        // Cleanup subscription on unmount
+        return () => unsubscribe();
+    }, [firestore, auth, currentUser, toast]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
@@ -105,7 +112,7 @@ export default function SavedRecordsPage() {
         URL.revokeObjectURL(url);
     };
 
-    if (isLoading || isAuthLoading) {
+    if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin" />
