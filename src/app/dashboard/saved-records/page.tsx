@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useFirebase } from '@/firebase/provider';
-import { collection, query, getDocs, orderBy, type Timestamp, FirestoreError } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, type Timestamp, FirestoreError, onSnapshot } from 'firebase/firestore';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -38,18 +38,23 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (isUserLoading || !firestore) {
+        if (!firestore) return;
+
+        // Wait until user loading is complete
+        if (isUserLoading) {
+            setIsLoading(true);
             return;
         }
 
+        // If no user is logged in, deny access.
         if (!currentUser) {
             setIsLoading(false);
             setError("You must be logged in to view records.");
             return;
         }
-
+        
+        // Check for authorization roles
         const isAuthorized = ['admin', 'software-engineer', 'ceo'].includes(currentUser.department);
-
         if (!isAuthorized) {
             setIsLoading(false);
             setError("You do not have permission to view this page.");
@@ -60,16 +65,17 @@ export default function SavedRecordsPage() {
         const recordsCollection = collection(firestore, 'savedRecords');
         const q = query(recordsCollection, orderBy('createdAt', 'desc'));
 
-        getDocs(q)
-            .then((querySnapshot) => {
+        const unsubscribe = onSnapshot(q, 
+            (querySnapshot) => {
                 const fetchedRecords = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 } as SavedRecord));
                 setRecords(fetchedRecords);
                 setError(null);
-            })
-            .catch((serverError: FirestoreError) => {
+                setIsLoading(false);
+            },
+            (serverError: FirestoreError) => {
                 console.error("Firestore Error:", serverError);
                 const permissionError = new FirestorePermissionError({
                     path: recordsCollection.path,
@@ -77,10 +83,12 @@ export default function SavedRecordsPage() {
                 });
                 errorEmitter.emit('permission-error', permissionError);
                 setError(permissionError.message);
-            })
-            .finally(() => {
                 setIsLoading(false);
-            });
+            }
+        );
+        
+        // Cleanup subscription on unmount
+        return () => unsubscribe();
             
     }, [firestore, currentUser, isUserLoading]);
 

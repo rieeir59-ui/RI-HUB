@@ -13,12 +13,14 @@ service cloud.firestore {
     }
 
     function getUserRole() {
+      // This assumes you have a 'users' collection where roles are stored.
+      // Make sure this path is correct for your data structure.
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
 
     function isAuthorizedAdmin() {
-      let userRole = getUserRole();
-      return userRole in ['admin', 'software-engineer', 'ceo'];
+      // Check if user is signed in before trying to get their role.
+      return isSignedIn() && getUserRole() in ['admin', 'software-engineer', 'ceo'];
     }
 
     match /users/{userId} {
@@ -26,18 +28,20 @@ service cloud.firestore {
     }
 
     match /savedRecords/{docId} {
-      // Only authenticated users can create records for themselves.
+      // Any authenticated user can create a record for themselves.
+      // This rule enforces that the employeeId in the document MUST match the UID of the person creating it.
       allow create: if isSignedIn() && request.resource.data.employeeId == request.auth.uid;
       
       // Users can read their own records.
-      // Admin, software-engineer, or ceo can read all records.
+      // Users with specific roles (admin, etc.) can read any record.
       allow read: if isSignedIn() && 
         (resource.data.employeeId == request.auth.uid || isAuthorizedAdmin());
 
-      // Only authorized admins can list all records.
-      allow list: if isSignedIn() && isAuthorizedAdmin();
+      // Only authorized admin roles can list all documents in the collection.
+      allow list: if isAuthorizedAdmin();
         
-      // Nobody can update or delete records directly for now.
+      // To ensure data is permanent as requested, update and delete are disabled for now.
+      // This prevents accidental deletion or modification.
       allow update, delete: if false;
     }
     
