@@ -17,13 +17,6 @@ import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
-const Section = ({ title, children }: { title?: string, children: React.ReactNode }) => (
-    <div className="mb-6">
-        {title && <h2 className="text-lg font-bold mb-2">{title}</h2>}
-        <div className="space-y-4">{children}</div>
-    </div>
-);
-
 export default function Page() {
     const image = PlaceHolderImages.find(p => p.id === 'change-order');
     const { toast } = useToast();
@@ -132,7 +125,10 @@ export default function Page() {
                 [`To: (Contractor) ${formState.contractor}`, `Architect's Project No: ${formState.architectsProjectNo}`],
                 [``, `Contract For: ${formState.contractFor}`],
                 [``, `Contract Date: ${formState.contractDate}`]
-            ]
+            ],
+            styles: {
+                headStyles: { fillColor: [45, 95, 51] },
+            }
         });
         y = (doc as any).lastAutoTable.finalY + 10;
         
@@ -165,17 +161,17 @@ export default function Page() {
         doc.text('NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Construction Change Directive.', 14, y);
         y += 15;
         
-        (doc as any).autoTable({
-            startY: y,
-            theme: 'plain',
-            body: [
-                ['Architect', 'Contractor', 'Owner'],
-                [formState.architectAddress, formState.contractorAddress, formState.ownerAddress],
-                [`By: ${formState.architectBy}`, `By: ${formState.contractorBy}`, `By: ${formState.ownerBy}`],
-                [`Date: ${formState.architectDate}`, `Date: ${formState.contractorDate}`, `Date: ${formState.ownerDate}`],
-            ],
-            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 60 }, 2: { cellWidth: 60 } }
-        });
+        const signatureLine = (label: string, yPos: number) => {
+            doc.line(14, yPos + 12, 80, yPos + 12);
+            doc.text(label, 14, yPos + 18);
+        };
+        
+        signatureLine("Owner", y);
+        signatureLine("Architect", y + 20);
+        signatureLine("Contractor", y + 40);
+        signatureLine("Field", y + 60);
+        signatureLine("Other", y + 80);
+
 
         doc.save('change-order.pdf');
         toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
@@ -256,27 +252,15 @@ export default function Page() {
                 </div>
 
                 <p className="text-xs text-muted-foreground text-center">NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Construction Change Directive.</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-                    <div className="space-y-2">
-                        <h4 className="font-bold text-center">Architect</h4>
-                        <Input name="architectAddress" placeholder="Address" value={formState.architectAddress} onChange={handleChange} />
-                        <Input name="architectBy" placeholder="By" value={formState.architectBy} onChange={handleChange} />
-                        <Input name="architectDate" type="date" value={formState.architectDate} onChange={handleChange} />
-                    </div>
-                    <div className="space-y-2">
-                         <h4 className="font-bold text-center">Contractor</h4>
-                        <Input name="contractorAddress" placeholder="Address" value={formState.contractorAddress} onChange={handleChange} />
-                        <Input name="contractorBy" placeholder="By" value={formState.contractorBy} onChange={handleChange} />
-                        <Input name="contractorDate" type="date" value={formState.contractorDate} onChange={handleChange} />
-                    </div>
-                    <div className="space-y-2">
-                         <h4 className="font-bold text-center">Owner</h4>
-                        <Input name="ownerAddress" placeholder="Address" value={formState.ownerAddress} onChange={handleChange} />
-                        <Input name="ownerBy" placeholder="By" value={formState.ownerBy} onChange={handleChange} />
-                        <Input name="ownerDate" type="date" value={formState.ownerDate} onChange={handleChange} />
-                    </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 pt-8">
+                    <div className="space-y-2"><div className="h-16 border-b border-foreground"></div><p className="text-center font-semibold">Owner</p></div>
+                    <div className="space-y-2"><div className="h-16 border-b border-foreground"></div><p className="text-center font-semibold">Architect</p></div>
+                    <div className="space-y-2"><div className="h-16 border-b border-foreground"></div><p className="text-center font-semibold">Contractor</p></div>
+                    <div className="space-y-2"><div className="h-16 border-b border-foreground"></div><p className="text-center font-semibold">Field</p></div>
+                    <div className="space-y-2"><div className="h-16 border-b border-foreground"></div><p className="text-center font-semibold">Other</p></div>
                 </div>
+
 
                 <div className="flex justify-end gap-4 mt-8">
                     <Button type="button" onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
