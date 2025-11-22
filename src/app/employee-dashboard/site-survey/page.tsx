@@ -177,6 +177,26 @@ export default function SiteSurveyPage() {
             { label: 'Attach as-built plan(s)', value: getCheckboxValue('area_attach_plan') },
         ]);
 
+        addSection('Bounded As', [
+            { label: 'Front', value: getInputValue('bounded_front') },
+            { label: 'Back', value: getInputValue('bounded_back') },
+            { label: 'Left', value: getInputValue('bounded_left') },
+            { label: 'Right', value: getInputValue('bounded_right') },
+        ]);
+
+        addSection('Utilities', [
+            { label: 'Piped Water', value: getRadioValue('piped_water') },
+            { label: 'Sewerage Connection', value: getRadioValue('sewerage') },
+            { label: 'Gas Connection', value: getRadioValue('gas') },
+            { label: 'Electrical Meter', value: getRadioValue('elec_meter') },
+            { label: 'Type of Electrical Load', value: getRadioValue('elec_load_type') },
+            { label: 'Sanctioned Load', value: getInputValue('elec_load_sanctioned') },
+            { label: 'Overhead Tank', value: getRadioValue('overhead_tank') },
+            { label: 'Type of Overhead Tank', value: getInputValue('overhead_tank_type') },
+            { label: 'Underground Tank', value: getRadioValue('underground_tank') },
+            { label: 'Type of Water', value: getInputValue('water_type') },
+        ]);
+        
         addSection('Building Overview', [
             { label: 'No. of Stories/Floors', value: getInputValue('building_stories') },
             { label: 'Min Clear Height (ft)', value: getInputValue('building_clear_height') },
@@ -201,26 +221,6 @@ export default function SiteSurveyPage() {
             { label: 'Approachable via', value: getRadioValue('road_access') },
             { label: 'Building Violations', value: getRadioValue('violations') },
             { label: 'Wall Masonry Material', value: getInputValue('wall_material') },
-        ]);
-
-        addSection('Utilities', [
-            { label: 'Piped Water', value: getRadioValue('piped_water') },
-            { label: 'Sewerage Connection', value: getRadioValue('sewerage') },
-            { label: 'Gas Connection', value: getRadioValue('gas') },
-            { label: 'Electrical Meter', value: getRadioValue('elec_meter') },
-            { label: 'Type of Electrical Load', value: getRadioValue('elec_load_type') },
-            { label: 'Sanctioned Load', value: getInputValue('elec_load_sanctioned') },
-            { label: 'Overhead Tank', value: getRadioValue('overhead_tank') },
-            { label: 'Type of Overhead Tank', value: getInputValue('overhead_tank_type') },
-            { label: 'Underground Tank', value: getRadioValue('underground_tank') },
-            { label: 'Type of Water', value: getInputValue('water_type') },
-        ]);
-        
-        addSection('Bounded As', [
-            { label: 'Front', value: getInputValue('bounded_front') },
-            { label: 'Back', value: getInputValue('bounded_back') },
-            { label: 'Left', value: getInputValue('bounded_left') },
-            { label: 'Right', value: getInputValue('bounded_right') },
         ]);
 
         addSection('Rental Detail', [
@@ -269,8 +269,8 @@ export default function SiteSurveyPage() {
 
         doc.save("site-survey-data.pdf");
         toast({ title: 'Download Started', description: 'Your site survey data is being downloaded as a PDF.' });
-    };
-
+    }
+    
     return (
         <Card>
             <CardHeader>
@@ -279,56 +279,46 @@ export default function SiteSurveyPage() {
             <CardContent>
                 <form id="site-survey-form" className="space-y-8">
                     <Section title="Location">
-                        <FormRow label="Region" htmlFor="location_region">
-                            <Input id="location_region" name="location_region" />
-                        </FormRow>
-                        <FormRow label="Address" htmlFor="location_address">
-                            <Input id="location_address" name="location_address" />
-                        </FormRow>
-                        <FormRow label="City" htmlFor="location_city">
-                            <Input id="location_city" name="location_city" />
-                        </FormRow>
-                        <FormRow label="Purpose" htmlFor="location_purpose">
-                            <Input id="location_purpose" name="location_purpose" placeholder="House, Office, etc." />
-                        </FormRow>
+                        <FormRow label="Region" htmlFor="location_region"><Input id="location_region" name="location_region" /></FormRow>
+                        <FormRow label="Address" htmlFor="location_address"><Input id="location_address" name="location_address" /></FormRow>
+                        <FormRow label="City" htmlFor="location_city"><Input id="location_city" name="location_city" /></FormRow>
+                        <FormRow label="Purpose" htmlFor="location_purpose"><Input id="location_purpose" name="location_purpose" placeholder="House, Office, etc." /></FormRow>
                     </Section>
 
                     <Section title="Legal File">
-                        <FormRow label="Date" htmlFor="legal_date">
-                            <Input type="date" id="legal_date" name="legal_date" />
-                        </FormRow>
-                        <FormRow label="Name of Owner" htmlFor="legal_owner_name">
-                             <Input id="legal_owner_name" name="legal_owner_name" />
-                        </FormRow>
-                        <FormRow label="Is property leased?">
-                             <RadioGroup name="is_leased" className="flex gap-4">
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="is_leased_yes" /><Label htmlFor="is_leased_yes">Yes</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="is_leased_no" /><Label htmlFor="is_leased_no">No</Label></div>
-                             </RadioGroup>
-                        </FormRow>
-                    </Section>
-
-                    <Section title="Area">
-                        <FormRow label="Total Area in Sqft" htmlFor="area_total">
-                            <Input id="area_total" name="area_total" />
-                        </FormRow>
-                        <FormRow label="Dimension">
-                            <div className="grid grid-cols-2 gap-4">
-                                <Input name="area_max_frontage" placeholder="Maximum frontage" />
-                                <Input name="area_max_depth" placeholder="Maximum Depth" />
-                            </div>
-                        </FormRow>
-                         <FormRow label="Building plot size of which premises is a part" htmlFor="area_plot_size">
-                            <Input id="area_plot_size" name="area_plot_size" />
-                        </FormRow>
-                         <FormRow label="Covered Area" htmlFor="area_covered">
-                            <Input id="area_covered" name="area_covered" />
-                        </FormRow>
-                         <FormRow label="Attach as-built plan(s)">
-                            <Checkbox id="area_attach_plan" name="area_attach_plan" />
-                        </FormRow>
+                        <FormRow label="Date" htmlFor="legal_date"><Input type="date" id="legal_date" name="legal_date" /></FormRow>
+                        <FormRow label="Name of Owner" htmlFor="legal_owner_name"><Input id="legal_owner_name" name="legal_owner_name" /></FormRow>
+                        <FormRow label="Is property leased?"><RadioGroup name="is_leased" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="is_leased_yes" /><Label htmlFor="is_leased_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="is_leased_no" /><Label htmlFor="is_leased_no">No</Label></div></RadioGroup></FormRow>
                     </Section>
                     
+                    <Section title="Area">
+                        <FormRow label="Total Area in Sqft" htmlFor="area_total"><Input id="area_total" name="area_total" /></FormRow>
+                        <FormRow label="Dimension"><div className="grid grid-cols-2 gap-4"><Input name="area_max_frontage" placeholder="Maximum frontage" /><Input name="area_max_depth" placeholder="Maximum Depth" /></div></FormRow>
+                        <FormRow label="Building plot size of which premises is a part" htmlFor="area_plot_size"><Input id="area_plot_size" name="area_plot_size" /></FormRow>
+                        <FormRow label="Covered Area" htmlFor="area_covered"><Input id="area_covered" name="area_covered" /></FormRow>
+                        <FormRow label="Attach as-built plan(s)"><Checkbox id="area_attach_plan" name="area_attach_plan" /></FormRow>
+                    </Section>
+                    
+                    <Section title="Bounded As">
+                        <FormRow label="Front"><Input name="bounded_front" /></FormRow>
+                        <FormRow label="Back"><Input name="bounded_back" /></FormRow>
+                        <FormRow label="Left"><Input name="bounded_left" /></FormRow>
+                        <FormRow label="Right"><Input name="bounded_right" /></FormRow>
+                    </Section>
+
+                    <Section title="Utilities">
+                        <FormRow label="Piped water available"><RadioGroup name="piped_water" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="pw_yes" /><Label htmlFor="pw_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="pw_no" /><Label htmlFor="pw_no">No</Label></div></RadioGroup></FormRow>
+                        <FormRow label="Connected to Sewerage line"><RadioGroup name="sewerage" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="sw_yes" /><Label htmlFor="sw_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="sw_no" /><Label htmlFor="sw_no">No</Label></div></RadioGroup></FormRow>
+                        <FormRow label="Gas Connection"><RadioGroup name="gas" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="gas_yes" /><Label htmlFor="gas_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="gas_no" /><Label htmlFor="gas_no">No</Label></div></RadioGroup></FormRow>
+                        <FormRow label="Electrical Meter"><RadioGroup name="elec_meter" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="em_yes" /><Label htmlFor="em_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="em_no" /><Label htmlFor="em_no">No</Label></div></RadioGroup></FormRow>
+                        <FormRow label="Type of electrical load"><RadioGroup name="elec_load_type" className="flex flex-wrap gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="single" id="elt_single" /><Label htmlFor="elt_single">Single Phase</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="3phase" id="elt_3phase" /><Label htmlFor="elt_3phase">3 Phase</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="commercial" id="elt_comm" /><Label htmlFor="elt_comm">Commercial</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="industrial" id="elt_ind" /><Label htmlFor="elt_ind">Industrial</Label></div></RadioGroup></FormRow>
+                        <FormRow label="Sanctioned electrical load"><Input name="elec_load_sanctioned" /></FormRow>
+                        <FormRow label="Overhead tank"><RadioGroup name="overhead_tank" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="oht_yes" /><Label htmlFor="oht_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="oht_no" /><Label htmlFor="oht_no">No</Label></div></RadioGroup></FormRow>
+                        <FormRow label="Type of Overhead tank"><Input name="overhead_tank_type" placeholder="RCC, Fiber etc." /></FormRow>
+                        <FormRow label="Underground tank"><RadioGroup name="underground_tank" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="ugt_yes" /><Label htmlFor="ugt_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="ugt_no" /><Label htmlFor="ugt_no">No</Label></div></RadioGroup></FormRow>
+                        <FormRow label="Type of water"><Input name="water_type" placeholder="boring or Line water" /></FormRow>
+                    </Section>
+
                     <Section title="Building Overview">
                         <FormRow label="No. of Stories/Floors"><Input name="building_stories" placeholder="mention mezzanine, basement, etc." /></FormRow>
                         <FormRow label="Minimum clear height (Floor to Roof) in ft"><Input name="building_clear_height" /></FormRow>
@@ -337,9 +327,6 @@ export default function SiteSurveyPage() {
                         <FormRow label="Interior of Premises"><RadioGroup name="interior_type" className="grid grid-cols-2 md:grid-cols-4 gap-2"><div className="flex items-center space-x-2"><RadioGroupItem value="single_hall" id="it_single_hall" /><Label htmlFor="it_single_hall">Single Hall</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="residence" id="it_residence" /><Label htmlFor="it_residence">Residence</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="offices" id="it_offices" /><Label htmlFor="it_offices">Offices</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="other" id="it_other" /><Label htmlFor="it_other">Other</Label></div></RadioGroup></FormRow>
                         <FormRow label="Is Completion Certificate available?"><RadioGroup name="completion_cert" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="cc_yes" /><Label htmlFor="cc_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="cc_no" /><Label htmlFor="cc_no">No</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="as_informed" id="cc_as_informed" /><Label htmlFor="cc_as_informed">As informed by Owner/Rep</Label></div></RadioGroup></FormRow>
                         <FormRow label="Type of construction"><RadioGroup name="construction_type" className="grid grid-cols-2 gap-2"><div className="flex items-center space-x-2"><RadioGroupItem value="rcc" id="ct_rcc" /><Label htmlFor="ct_rcc">Beam-Column in RCC</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="composite" id="ct_composite" /><Label htmlFor="ct_composite">Composite Structure</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="load_bearing" id="ct_load_bearing" /><Label htmlFor="ct_load_bearing">Load Bearing in walls</Label></div></RadioGroup></FormRow>
-                    </Section>
-                    
-                     <Section>
                         <FormRow label="Staircase"><RadioGroup name="staircase" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="stair_yes" /><Label htmlFor="stair_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="stair_no" /><Label htmlFor="stair_no">No</Label></div></RadioGroup></FormRow>
                         <FormRow label="Condition of roof waterproofing"><RadioGroup name="roof_waterproofing" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="rw_yes" /><Label htmlFor="rw_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="rw_no" /><Label htmlFor="rw_no">No</Label></div></RadioGroup></FormRow>
                         <FormRow label="Seepage"><RadioGroup name="seepage" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="seepage_yes" /><Label htmlFor="seepage_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="seepage_no" /><Label htmlFor="seepage_no">No</Label></div></RadioGroup></FormRow>
@@ -356,26 +343,6 @@ export default function SiteSurveyPage() {
                         <FormRow label="Approachable through Road"><RadioGroup name="road_access" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="main_road" id="ra_main" /><Label htmlFor="ra_main">On Main Road</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="other" id="ra_other" /><Label htmlFor="ra_other">Other</Label></div></RadioGroup></FormRow>
                         <FormRow label="Building Control Violations"><RadioGroup name="violations" className="flex flex-wrap gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="major" id="v_major" /><Label htmlFor="v_major">Major</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="minor" id="v_minor" /><Label htmlFor="v_minor">Minor</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="none" id="v_none" /><Label htmlFor="v_none">No Deviation</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="as_informed" id="v_as_informed" /><Label htmlFor="v_as_informed">As Informed by Owner/Rep</Label></div></RadioGroup></FormRow>
                         <FormRow label="Wall masonary material as per region"><Input name="wall_material" /></FormRow>
-                    </Section>
-
-                    <Section title="Utilities">
-                        <FormRow label="Piped water available"><RadioGroup name="piped_water" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="pw_yes" /><Label htmlFor="pw_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="pw_no" /><Label htmlFor="pw_no">No</Label></div></RadioGroup></FormRow>
-                        <FormRow label="Connected to Sewerage line"><RadioGroup name="sewerage" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="sw_yes" /><Label htmlFor="sw_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="sw_no" /><Label htmlFor="sw_no">No</Label></div></RadioGroup></FormRow>
-                        <FormRow label="Gas Connection"><RadioGroup name="gas" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="gas_yes" /><Label htmlFor="gas_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="gas_no" /><Label htmlFor="gas_no">No</Label></div></RadioGroup></FormRow>
-                        <FormRow label="Electrical Meter"><RadioGroup name="elec_meter" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="em_yes" /><Label htmlFor="em_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="em_no" /><Label htmlFor="em_no">No</Label></div></RadioGroup></FormRow>
-                        <FormRow label="Type of electrical load"><RadioGroup name="elec_load_type" className="flex flex-wrap gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="single" id="elt_single" /><Label htmlFor="elt_single">Single Phase</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="3phase" id="elt_3phase" /><Label htmlFor="elt_3phase">3 Phase</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="commercial" id="elt_comm" /><Label htmlFor="elt_comm">Commercial</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="industrial" id="elt_ind" /><Label htmlFor="elt_ind">Industrial</Label></div></RadioGroup></FormRow>
-                        <FormRow label="Sanctioned electrical load"><Input name="elec_load_sanctioned" /></FormRow>
-                        <FormRow label="Overhead tank"><RadioGroup name="overhead_tank" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="oht_yes" /><Label htmlFor="oht_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="oht_no" /><Label htmlFor="oht_no">No</Label></div></RadioGroup></FormRow>
-                        <FormRow label="Type of Overhead tank"><Input name="overhead_tank_type" placeholder="RCC, Fiber etc." /></FormRow>
-                        <FormRow label="Underground tank"><RadioGroup name="underground_tank" className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="ugt_yes" /><Label htmlFor="ugt_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="ugt_no" /><Label htmlFor="ugt_no">No</Label></div></RadioGroup></FormRow>
-                        <FormRow label="Type of water"><Input name="water_type" placeholder="boring or Line water" /></FormRow>
-                    </Section>
-
-                     <Section title="Bounded As">
-                        <FormRow label="Front"><Input name="bounded_front" /></FormRow>
-                        <FormRow label="Back"><Input name="bounded_back" /></FormRow>
-                        <FormRow label="Left"><Input name="bounded_left" /></FormRow>
-                        <FormRow label="Right"><Input name="bounded_right" /></FormRow>
                     </Section>
 
                     <Section title="Rental Detail">
@@ -462,5 +429,7 @@ export default function SiteSurveyPage() {
         </Card>
     );
 }
+
+    
 
     
