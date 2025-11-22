@@ -38,18 +38,14 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<string | null>(null);
 
      useEffect(() => {
-        if (!firestore) return;
-
-        // Wait until user loading is complete
-        if (isUserLoading) {
+        if (!firestore || isUserLoading) {
             setIsLoading(true);
             return;
         }
         
-        // If no user is logged in, deny access.
         if (!currentUser) {
             setIsLoading(false);
-            setError("You must be logged in to view records.");
+            setError("You must be logged in to view your records.");
             return;
         }
 
@@ -73,7 +69,7 @@ export default function SavedRecordsPage() {
             (serverError: FirestoreError) => {
                 console.error("Firestore Error:", serverError);
                 const permissionError = new FirestorePermissionError({
-                    path: `savedRecords`, // Note: This path is simplified. A more accurate path would require knowing the query constraints.
+                    path: `savedRecords`, // This path is simplified.
                     operation: 'list',
                 });
                 errorEmitter.emit('permission-error', permissionError);
@@ -82,7 +78,6 @@ export default function SavedRecordsPage() {
             }
         );
 
-        // Cleanup subscription on unmount
         return () => unsubscribe();
     }, [firestore, currentUser, isUserLoading]);
 

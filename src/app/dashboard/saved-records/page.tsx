@@ -38,22 +38,17 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!firestore) return;
-
-        // Wait until user loading is complete
-        if (isUserLoading) {
+        if (!firestore || isUserLoading) {
             setIsLoading(true);
             return;
         }
 
-        // If no user is logged in, deny access.
         if (!currentUser) {
             setIsLoading(false);
             setError("You must be logged in to view records.");
             return;
         }
         
-        // Check for authorization roles
         const isAuthorized = ['admin', 'software-engineer', 'ceo'].includes(currentUser.department);
         if (!isAuthorized) {
             setIsLoading(false);
@@ -87,7 +82,6 @@ export default function SavedRecordsPage() {
             }
         );
         
-        // Cleanup subscription on unmount
         return () => unsubscribe();
             
     }, [firestore, currentUser, isUserLoading]);

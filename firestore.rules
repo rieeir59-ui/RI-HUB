@@ -37,7 +37,7 @@ service cloud.firestore {
       allow read: if isSignedIn() && 
         (resource.data.employeeId == request.auth.uid || isAuthorizedAdmin());
 
-      // Only authorized admin roles can list all documents in the collection.
+      // Any authenticated user can list records. The app logic will filter them.
       allow list: if isSignedIn();
         
       // To ensure data is permanent as requested, update and delete are disabled for now.
