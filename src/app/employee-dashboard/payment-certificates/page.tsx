@@ -4,13 +4,13 @@
 import { useState, useMemo, useEffect } from 'react';
 import DashboardPageHeader from "@/components/dashboard/PageHeader";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Save, Download } from 'lucide-react';
+import { Save, Download, PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -22,13 +22,29 @@ interface jsPDFWithAutoTable extends jsPDF {
   autoTable: (options: any) => jsPDF;
 }
 
+const ChangeOrderRow = ({ id, onRemove }: { id: number, onRemove: (id: number) => void }) => (
+    <TableRow>
+        <TableCell><Input name={`co_number_${id}`} /></TableCell>
+        <TableCell><Input type="date" name={`co_date_${id}`} /></TableCell>
+        <TableCell><Input type="number" name={`co_additions_${id}`} defaultValue="0" /></TableCell>
+        <TableCell><Input type="number" name={`co_deductions_${id}`} defaultValue="0" /></TableCell>
+        <TableCell>
+            <Button variant="destructive" size="icon" onClick={() => onRemove(id)}>
+                <Trash2 className="h-4 w-4" />
+            </Button>
+        </TableCell>
+    </TableRow>
+);
+
+
 export default function Page() {
     const image = PlaceHolderImages.find(p => p.id === 'payment-certificates');
     const { toast } = useToast();
     const { firestore } = useFirebase();
     const { user: currentUser } = useCurrentUser();
 
-    const [formState, setFormState] = useState({
+    // State for Form 1
+    const [form1State, setForm1State] = useState({
         toOwner: '',
         attention: '',
         project: '',
@@ -57,18 +73,18 @@ export default function Page() {
         explanation: '',
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleForm1Change = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormState(prev => ({ ...prev, [name]: value }));
+        setForm1State(prev => ({ ...prev, [name]: value }));
     };
     
-    const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleForm1NumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormState(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
+        setForm1State(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
     };
 
-    const handleCheckboxChange = (field: string) => {
-        setFormState(prev => {
+    const handleForm1CheckboxChange = (field: string) => {
+        setForm1State(prev => {
             const current = prev.distributedTo;
             if (current.includes(field)) {
                 return { ...prev, distributedTo: current.filter(item => item !== field) };
@@ -78,31 +94,30 @@ export default function Page() {
         });
     };
 
-    const contractSumToDate = useMemo(() => formState.totalContractSum + formState.netChanges, [formState.totalContractSum, formState.netChanges]);
+    const contractSumToDate1 = useMemo(() => form1State.totalContractSum + form1State.netChanges, [form1State.totalContractSum, form1State.netChanges]);
 
     useEffect(() => {
-        const paymentDue = formState.totalCompleted - formState.retainage - formState.previousPayments;
-        setFormState(prev => ({...prev, currentPaymentDue: paymentDue}));
-    }, [formState.totalCompleted, formState.retainage, formState.previousPayments]);
+        const paymentDue = form1State.totalCompleted - form1State.retainage - form1State.previousPayments;
+        setForm1State(prev => ({...prev, currentPaymentDue: paymentDue}));
+    }, [form1State.totalCompleted, form1State.retainage, form1State.previousPayments]);
 
-
-    const handleSave = async () => {
+    const handleSave1 = async () => {
         if (!firestore || !currentUser) {
             toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
             return;
         }
         
         const dataToSave = {
-            category: 'Project Application for Payment',
-            items: Object.entries(formState).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`),
+            category: 'Project Application for Payment (CM)',
+            items: Object.entries(form1State).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`),
         };
 
         try {
             await addDoc(collection(firestore, 'savedRecords'), {
                 employeeId: currentUser.record,
                 employeeName: currentUser.name,
-                fileName: 'Project Application for Payment',
-                projectName: formState.project || 'Untitled Payment Certificate',
+                fileName: 'Project Application for Payment (CM)',
+                projectName: form1State.project || 'Untitled Payment Certificate',
                 data: [dataToSave],
                 createdAt: serverTimestamp(),
             });
@@ -113,7 +128,7 @@ export default function Page() {
         }
     };
     
-    const handleDownloadPdf = () => {
+    const handleDownloadPdf1 = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
         let y = 15;
         doc.setFontSize(14);
@@ -126,8 +141,8 @@ export default function Page() {
             startY: y,
             theme: 'plain',
             body: [
-                [`To (Owner): ${formState.toOwner}`, `Project: ${formState.project}`],
-                [`Attention: ${formState.attention}`, `Construction Manager: ${formState.constructionManager}`],
+                [`To (Owner): ${form1State.toOwner}`, `Project: ${form1State.project}`],
+                [`Attention: ${form1State.attention}`, `Construction Manager: ${form1State.constructionManager}`],
             ],
             styles: { cellPadding: 1 }
         });
@@ -137,23 +152,16 @@ export default function Page() {
             startY: y,
             theme: 'plain',
             body: [
-                [
-                    { content: '', styles: { cellWidth: 100 } },
-                    `Application Number: ${formState.applicationNumber}`,
-                ],
-                [
-                    '', `Period From: ${formState.periodFrom} To: ${formState.periodTo}`
-                ],
-                [
-                    '', `Architect's Project No: ${formState.architectsProjectNo}`
-                ],
+                [{ content: '', styles: { cellWidth: 100 } }, `Application Number: ${form1State.applicationNumber}`],
+                ['', `Period From: ${form1State.periodFrom} To: ${form1State.periodTo}`],
+                ['', `Architect's Project No: ${form1State.architectsProjectNo}`],
             ],
             styles: { cellPadding: 1 }
         });
 
         y = (doc as any).autoTable.previous.finalY + 5;
         
-        const distributedText = formState.distributedTo.map(d => `[X] ${d}`).join('\n');
+        const distributedText = form1State.distributedTo.map(d => `[X] ${d}`).join('\n');
         doc.text('Distributed to:\n' + distributedText, 150, y - 10);
         
         const appText = "The undersigned Construction Manager certifies that the best of the Construction Manager's knowledge, information and belief Work covered by this Project Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractors for Work for which previous Project Certificates for Payments were issued and payments received from the Owner, and that Current Payment shown herein is now due.";
@@ -171,67 +179,95 @@ export default function Page() {
         y += 40;
 
         doc.autoTable({
-            startY: y,
-            theme: 'plain',
-            columnStyles: { 0: { cellWidth: 100 } },
-            body: [
-                ['', `Total Contract Sum (Item A Totals).................... Rs. ${formState.totalContractSum.toFixed(2)}`],
-                ['', `Total Net Changes by Change Order (Item B Totals)..... Rs. ${formState.netChanges.toFixed(2)}`],
-                ['', `Total Contract Sum to Date (Item C Totals)................ Rs. ${contractSumToDate.toFixed(2)}`],
-            ],
-            styles: { cellPadding: 1 }
+            startY: y, theme: 'plain', columnStyles: { 0: { cellWidth: 100 } }, body: [['', `Total Contract Sum (Item A Totals).................... Rs. ${form1State.totalContractSum.toFixed(2)}`], ['', `Total Net Changes by Change Order (Item B Totals)..... Rs. ${form1State.netChanges.toFixed(2)}`], ['', `Total Contract Sum to Date (Item C Totals)................ Rs. ${contractSumToDate1.toFixed(2)}`]], styles: { cellPadding: 1 }
         });
         y = (doc as any).autoTable.previous.finalY + 5;
 
         doc.autoTable({
-            startY: y,
-            theme: 'plain',
-            body: [
-                 ['', `Total Completed & Stored to Date (Item F Totals)............ Rs. ${formState.totalCompleted.toFixed(2)}`],
-                 ['', `Retainage (Item H Totals)..................................... Rs. ${formState.retainage.toFixed(2)}`],
-                 ['', `Less Previous Totals Payments (Item I Total)............. Rs. ${formState.previousPayments.toFixed(2)}`],
-                 ['', `Current Payment Due (Item J Totals)......................... Rs. ${formState.currentPaymentDue.toFixed(2)}`],
-            ],
-            styles: { cellPadding: 1 }
+            startY: y, theme: 'plain', body: [['', `Total Completed & Stored to Date (Item F Totals)............ Rs. ${form1State.totalCompleted.toFixed(2)}`], ['', `Retainage (Item H Totals)..................................... Rs. ${form1State.retainage.toFixed(2)}`], ['', `Less Previous Totals Payments (Item I Total)............. Rs. ${form1State.previousPayments.toFixed(2)}`], ['', `Current Payment Due (Item J Totals)......................... Rs. ${form1State.currentPaymentDue.toFixed(2)}`]], styles: { cellPadding: 1 }
         });
         y = (doc as any).autoTable.previous.finalY + 5;
         
-        doc.text(`Construction Manager: \nBy: ${formState.constructionManagerBy} \nDate: ${formState.constructionManagerDate}`, 14, y);
-
-        y += 20;
-
-        doc.text(`Status of: ${formState.statusOf}`, 14, y);
-        doc.text(`County of: ${formState.countyOf}`, 80, y);
+        doc.text(`Construction Manager: \nBy: ${form1State.constructionManagerBy} \nDate: ${form1State.constructionManagerDate}`, 14, y);
+        doc.text(`Status of: ${form1State.statusOf}`, 14, y + 20);
+        doc.text(`County of: ${form1State.countyOf}`, 80, y + 20);
+        y += 27;
+        doc.text(`Subscribed and sworn to before me this Day of: ${form1State.subscribedDay}`, 14, y);
         y += 7;
-        doc.text(`Subscribed and sworn to before me this Day of: ${formState.subscribedDay}`, 14, y);
+        doc.text(`Notary Public: ${form1State.notaryPublic}`, 14, y);
         y += 7;
-        doc.text(`Notary Public: ${formState.notaryPublic}`, 14, y);
-        y += 7;
-        doc.text(`My Commission expires: ${formState.commissionExpires}`, 14, y);
+        doc.text(`My Commission expires: ${form1State.commissionExpires}`, 14, y);
 
-        y += 10;
-        
-        doc.setFont('helvetica', 'bold');
-        doc.text("Architect's Project Certificate for Payment:", 14, y);
-        doc.setFont('helvetica', 'normal');
-        y += 5;
         const certText = "In accordance with the Contract Documents, based on on-site observations and the data comprising the above Application, the Architect certifies to the Owner that Work has progressed as indicated; that to the best of the Architect's knowledge, information and belief the quality of the Work is in accordance with the Contract Documents; the quality of the Contractors are entitled to payment of the AMOUNTS CERTIFIED.";
         const splitCertText = doc.splitTextToSize(certText, 90);
-        doc.text(splitCertText, 14, y);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Architect's Project Certificate for Payment:", 110, y - 28);
+        doc.setFont('helvetica', 'normal');
+        doc.text(splitCertText, 110, y - 23);
+        
+        y = Math.max(y, 110 + splitCertText.length * 5 + 5);
 
-        doc.text(`Total of Amounts Certified ................................... Rs. ${formState.totalCertified.toFixed(2)}\n(Attach explanation if amount certified differs from the amount applies for.)`, 110, y);
-        y+= 5;
-        doc.text(`Architect:\nBy: ${formState.architectBy}\nDate: ${formState.architectDate}`, 110, y + 20);
-
-        y = Math.max(y + splitCertText.length * 5, y + 40);
+        doc.text(`Total of Amounts Certified ................................... Rs. ${form1State.totalCertified.toFixed(2)}\n(Attach explanation if amount certified differs from the amount applies for.)`, 110, y-10);
+        y+=10;
+        doc.text(`Architect:\nBy: ${form1State.architectBy}\nDate: ${form1State.architectDate}`, 110, y + 5);
+        y += 20;
 
         const footerText = "This Certificate is not negotiable. The AMOUNTS CERTIFIED are payable on to the Contractors named in Contract Document attached. Issuance, payment and acceptance of payment are without prejudice to any rights of the Owner of the Contractor under this Contract.";
         const splitFooterText = doc.splitTextToSize(footerText, doc.internal.pageSize.width - 28);
-        doc.text(splitFooterText, 14, y);
+        doc.text(splitFooterText, 14, y > 260 ? 260 : y);
 
-        doc.save('payment-certificate.pdf');
+        doc.save('project-payment-certificate.pdf');
         toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
     };
+
+    // State for Form 2
+    const [changeOrders, setChangeOrders] = useState([{ id: 1, number: '', date: '', approved: '' }]);
+    const [form2State, setForm2State] = useState({
+        toOwner: '', fromContractor: '', contractFor: '', project: '', viaArchitect: '',
+        applicationNumber: '', periodTo: '', architectsProjectNo: '', contractDate: '',
+        distributedTo: [] as string[],
+        originalContractSum: 0, netChangeOrders: 0,
+        totalCompleted: 0, retainagePercentCompleted: 0, retainageAmountCompleted: 0,
+        retainagePercentStored: 0, retainageAmountStored: 0, previousPayments: 0,
+        stateOf: '', countyOf: '', subscribedDay: '', subscribedMonth: '', subscribedYear: '',
+        notaryPublic: '', commissionExpires: '',
+        contractorBy: '', contractorDate: '',
+        amountsCertified: 0, explanation: '', architectBy: '', architectDate: ''
+    });
+
+    const addChangeOrder = () => setChangeOrders(prev => [...prev, { id: Date.now(), number: '', date: '', approved: '' }]);
+    const removeChangeOrder = (id: number) => setChangeOrders(prev => prev.filter(co => co.id !== id));
+    
+    const handleForm2Change = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setForm2State(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleForm2NumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setForm2State(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
+    };
+    
+    const handleForm2CheckboxChange = (field: string) => {
+        setForm2State(prev => ({
+            ...prev,
+            distributedTo: prev.distributedTo.includes(field)
+                ? prev.distributedTo.filter(item => item !== field)
+                : [...prev.distributedTo, field]
+        }));
+    };
+    
+    const calculatedForm2 = useMemo(() => {
+        const contractSumToDate = form2State.originalContractSum + form2State.netChangeOrders;
+        const totalRetainage = form2State.retainageAmountCompleted + form2State.retainageAmountStored;
+        const totalEarnedLessRetainage = form2State.totalCompleted - totalRetainage;
+        const currentPaymentDue = totalEarnedLessRetainage - form2State.previousPayments;
+        const balanceToFinish = contractSumToDate - totalEarnedLessRetainage;
+        return { contractSumToDate, totalRetainage, totalEarnedLessRetainage, currentPaymentDue, balanceToFinish };
+    }, [form2State]);
+
+    const handleSave2 = async () => { /* Logic to save form 2 */ };
+    const handleDownloadPdf2 = () => { /* Logic to download form 2 */ };
 
     return (
         <div className="space-y-8">
@@ -246,75 +282,65 @@ export default function Page() {
                     <CardTitle className="text-center font-headline text-2xl text-primary">PROJECT APPLICATION AND PROJECT CERTIFICATE FOR PAYMENT</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                    {/* FORM 1: Project Application and Certificate for Payment */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border p-4 rounded-lg">
                         <div>
-                            <Label htmlFor="toOwner">To (Owner)</Label>
-                            <Input id="toOwner" name="toOwner" value={formState.toOwner} onChange={handleChange} />
-                        </div>
-                         <div>
-                            <Label htmlFor="project">Project</Label>
-                            <Input id="project" name="project" value={formState.project} onChange={handleChange} />
+                            <Label htmlFor="toOwner">To (Owner)</Label><Input id="toOwner" name="toOwner" value={form1State.toOwner} onChange={handleForm1Change} />
+                            <Label htmlFor="attention" className="mt-2">Attention</Label><Input id="attention" name="attention" value={form1State.attention} onChange={handleForm1Change} />
                         </div>
                         <div>
-                            <Label htmlFor="attention">Attention</Label>
-                            <Input id="attention" name="attention" value={formState.attention} onChange={handleChange} />
-                        </div>
-                        <div>
-                            <Label htmlFor="constructionManager">Construction Manager</Label>
-                            <Input id="constructionManager" name="constructionManager" value={formState.constructionManager} onChange={handleChange} />
+                            <Label htmlFor="project">Project</Label><Input id="project" name="project" value={form1State.project} onChange={handleForm1Change} />
+                            <Label htmlFor="constructionManager" className="mt-2">Construction Manager</Label><Input id="constructionManager" name="constructionManager" value={form1State.constructionManager} onChange={handleForm1Change} />
                         </div>
                     </div>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border p-4 rounded-lg">
                         <div>
-                            <Label htmlFor="applicationNumber">Application Number</Label><Input id="applicationNumber" name="applicationNumber" value={formState.applicationNumber} onChange={handleChange} />
-                            <Label htmlFor="periodFrom" className="mt-2">Period From</Label><Input id="periodFrom" name="periodFrom" type="date" value={formState.periodFrom} onChange={handleChange} />
-                            <Label htmlFor="periodTo" className="mt-2">To</Label><Input id="periodTo" name="periodTo" type="date" value={formState.periodTo} onChange={handleChange} />
-                            <Label htmlFor="architectsProjectNo" className="mt-2">Architect's Project No</Label><Input id="architectsProjectNo" name="architectsProjectNo" value={formState.architectsProjectNo} onChange={handleChange} />
-                        </div>
-                        <div>
                             <Label>Distributed to:</Label>
                             <div className="space-y-2 mt-2">
-                                <div className="flex items-center gap-2"><Checkbox id="dist_owner" checked={formState.distributedTo.includes('Owner')} onCheckedChange={() => handleCheckboxChange('Owner')} /><Label htmlFor="dist_owner">Owner</Label></div>
-                                <div className="flex items-center gap-2"><Checkbox id="dist_architect" checked={formState.distributedTo.includes('Architect')} onCheckedChange={() => handleCheckboxChange('Architect')} /><Label htmlFor="dist_architect">Architect</Label></div>
-                                <div className="flex items-center gap-2"><Checkbox id="dist_cm" checked={formState.distributedTo.includes('Contractor Manager')} onCheckedChange={() => handleCheckboxChange('Contractor Manager')} /><Label htmlFor="dist_cm">Contractor Manager</Label></div>
-                                <div className="flex items-center gap-2"><Checkbox id="dist_others" checked={formState.distributedTo.includes('Others')} onCheckedChange={() => handleCheckboxChange('Others')} /><Label htmlFor="dist_others">Others</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="dist_owner" checked={form1State.distributedTo.includes('Owner')} onCheckedChange={() => handleForm1CheckboxChange('Owner')} /><Label htmlFor="dist_owner">Owner</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="dist_architect" checked={form1State.distributedTo.includes('Architect')} onCheckedChange={() => handleForm1CheckboxChange('Architect')} /><Label htmlFor="dist_architect">Architect</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="dist_cm" checked={form1State.distributedTo.includes('Contractor Manager')} onCheckedChange={() => handleForm1CheckboxChange('Contractor Manager')} /><Label htmlFor="dist_cm">Contractor Manager</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="dist_others" checked={form1State.distributedTo.includes('Others')} onCheckedChange={() => handleForm1CheckboxChange('Others')} /><Label htmlFor="dist_others">Others</Label></div>
                             </div>
                         </div>
+                        <div>
+                             <Label htmlFor="applicationNumber">Application Number</Label><Input id="applicationNumber" name="applicationNumber" value={form1State.applicationNumber} onChange={handleForm1Change} />
+                            <Label htmlFor="periodFrom" className="mt-2">Period From</Label><Input id="periodFrom" name="periodFrom" type="date" value={form1State.periodFrom} onChange={handleForm1Change} />
+                            <Label htmlFor="periodTo" className="mt-2">To</Label><Input id="periodTo" name="periodTo" type="date" value={form1State.periodTo} onChange={handleForm1Change} />
+                            <Label htmlFor="architectsProjectNo" className="mt-2">Architect's Project No</Label><Input id="architectsProjectNo" name="architectsProjectNo" value={form1State.architectsProjectNo} onChange={handleForm1Change} />
+                        </div>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
                             <h3 className="font-bold">Project Application for Payment</h3>
                             <p className="text-xs text-muted-foreground mt-2">The undersigned Construction Manager certifies that the best of the Construction Manager's knowledge, information and belief Work covered by this Project Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractors for Work for which previous Project Certificates for Payments were issued and payments received from the Owner, and that Current Payment shown herein is now due.</p>
-                            
-                            <div className="mt-4 space-y-2">
+                             <div className="mt-4 space-y-2">
                                 <h4 className="font-semibold">Construction Manager:</h4>
                                 <div className="flex gap-4">
-                                    <Input name="constructionManagerBy" placeholder="By" value={formState.constructionManagerBy} onChange={handleChange} />
-                                    <Input name="constructionManagerDate" type="date" value={formState.constructionManagerDate} onChange={handleChange} />
+                                    <Input name="constructionManagerBy" placeholder="By" value={form1State.constructionManagerBy} onChange={handleForm1Change} />
+                                    <Input name="constructionManagerDate" type="date" value={form1State.constructionManagerDate} onChange={handleForm1Change} />
                                 </div>
                             </div>
-
                             <div className="mt-4 space-y-2 border-t pt-4">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Input name="statusOf" placeholder="Status of" value={formState.statusOf} onChange={handleChange} />
-                                    <Input name="countyOf" placeholder="County of" value={formState.countyOf} onChange={handleChange} />
+                                    <Input name="statusOf" placeholder="Status of" value={form1State.statusOf} onChange={handleForm1Change} />
+                                    <Input name="countyOf" placeholder="County of" value={form1State.countyOf} onChange={handleForm1Change} />
                                 </div>
-                                <Input name="subscribedDay" placeholder="Subscribed and sworn to before me this Day of" value={formState.subscribedDay} onChange={handleChange} />
-                                <Input name="notaryPublic" placeholder="Notary Public" value={formState.notaryPublic} onChange={handleChange} />
-                                <Input name="commissionExpires" placeholder="My Commission expires" value={formState.commissionExpires} onChange={handleChange} />
+                                <Input name="subscribedDay" placeholder="Subscribed and sworn to before me this Day of" value={form1State.subscribedDay} onChange={handleForm1Change} />
+                                <Input name="notaryPublic" placeholder="Notary Public" value={form1State.notaryPublic} onChange={handleForm1Change} />
+                                <Input name="commissionExpires" placeholder="My Commission expires" value={form1State.commissionExpires} onChange={handleForm1Change} />
                             </div>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Application is made for Payment, as shown below, in connection with the Project. Project Application Summary, is attached. The present status for the account for all Contractors is for this Project is as follows:</p>
                             <div className="space-y-2 mt-4">
-                                <div className="flex items-center gap-2"><Label className="flex-1">Total Contract Sum (Item A Totals)</Label><Input type="number" name="totalContractSum" value={formState.totalContractSum} onChange={handleNumberChange} className="w-40" /></div>
-                                <div className="flex items-center gap-2"><Label className="flex-1">Total Net Changes by Change Order (Item B Totals)</Label><Input type="number" name="netChanges" value={formState.netChanges} onChange={handleNumberChange} className="w-40" /></div>
-                                <div className="flex items-center gap-2 font-bold"><Label className="flex-1">Total Contract Sum to Date (Item C Totals)</Label><Input readOnly value={contractSumToDate.toFixed(2)} className="w-40 bg-muted" /></div>
-                                <div className="flex items-center gap-2 pt-4 border-t"><Label className="flex-1">Total Completed & Stored to Date (Item F Totals)</Label><Input type="number" name="totalCompleted" value={formState.totalCompleted} onChange={handleNumberChange} className="w-40" /></div>
-                                <div className="flex items-center gap-2"><Label className="flex-1">Retainage (Item H Totals)</Label><Input type="number" name="retainage" value={formState.retainage} onChange={handleNumberChange} className="w-40" /></div>
-                                <div className="flex items-center gap-2"><Label className="flex-1">Less Previous Totals Payments (Item I Total)</Label><Input type="number" name="previousPayments" value={formState.previousPayments} onChange={handleNumberChange} className="w-40" /></div>
-                                <div className="flex items-center gap-2 font-bold"><Label className="flex-1">Current Payment Due (Item J Totals)</Label><Input readOnly value={formState.currentPaymentDue.toFixed(2)} className="w-40 bg-muted" /></div>
+                                <div className="flex items-center gap-2"><Label className="flex-1">Total Contract Sum (Item A Totals)</Label><Input type="number" name="totalContractSum" value={form1State.totalContractSum} onChange={handleForm1NumberChange} className="w-40" /></div>
+                                <div className="flex items-center gap-2"><Label className="flex-1">Total Net Changes by Change Order (Item B Totals)</Label><Input type="number" name="netChanges" value={form1State.netChanges} onChange={handleForm1NumberChange} className="w-40" /></div>
+                                <div className="flex items-center gap-2 font-bold"><Label className="flex-1">Total Contract Sum to Date (Item C Totals)</Label><Input readOnly value={contractSumToDate1.toFixed(2)} className="w-40 bg-muted" /></div>
+                                <div className="flex items-center gap-2 pt-4 border-t"><Label className="flex-1">Total Completed & Stored to Date (Item F Totals)</Label><Input type="number" name="totalCompleted" value={form1State.totalCompleted} onChange={handleForm1NumberChange} className="w-40" /></div>
+                                <div className="flex items-center gap-2"><Label className="flex-1">Retainage (Item H Totals)</Label><Input type="number" name="retainage" value={form1State.retainage} onChange={handleForm1NumberChange} className="w-40" /></div>
+                                <div className="flex items-center gap-2"><Label className="flex-1">Less Previous Totals Payments (Item I Total)</Label><Input type="number" name="previousPayments" value={form1State.previousPayments} onChange={handleForm1NumberChange} className="w-40" /></div>
+                                <div className="flex items-center gap-2 font-bold"><Label className="flex-1">Current Payment Due (Item J Totals)</Label><Input readOnly value={form1State.currentPaymentDue.toFixed(2)} className="w-40 bg-muted" /></div>
                             </div>
                         </div>
                     </div>
@@ -324,24 +350,130 @@ export default function Page() {
                             <p className="text-xs text-muted-foreground mt-2">In accordance with the Contract Documents, based on on-site observations and the data comprising the above Application, the Architect certifies to the Owner that Work has progressed as indicated; that to the best of the Architect's knowledge, information and belief the quality of the Work is in accordance with the Contract Documents; the quality of the Contractors are entitled to payment of the AMOUNTS CERTIFIED.</p>
                         </div>
                          <div>
-                            <div className="flex items-center gap-2"><Label className="flex-1">Total of Amounts Certified</Label><Input type="number" name="totalCertified" value={formState.totalCertified} onChange={handleNumberChange} className="w-40" /></div>
-                            <Textarea name="explanation" placeholder="Attach explanation if amount certified differs from the amount applied for." className="text-xs mt-2" />
+                            <div className="flex items-center gap-2"><Label className="flex-1">Total of Amounts Certified</Label><Input type="number" name="totalCertified" value={form1State.totalCertified} onChange={handleForm1NumberChange} className="w-40" /></div>
+                            <Textarea name="explanation" placeholder="Attach explanation if amount certified differs from the amount applies for." className="text-xs mt-2" />
                              <div className="mt-4 space-y-2">
                                 <h4 className="font-semibold">Architect:</h4>
                                 <div className="flex gap-4">
-                                    <Input name="architectBy" placeholder="By" value={formState.architectBy} onChange={handleChange} />
-                                    <Input name="architectDate" type="date" value={formState.architectDate} onChange={handleChange} />
+                                    <Input name="architectBy" placeholder="By" value={form1State.architectBy} onChange={handleForm1Change} />
+                                    <Input name="architectDate" type="date" value={form1State.architectDate} onChange={handleForm1Change} />
                                 </div>
                             </div>
                          </div>
                      </div>
                      <p className="text-xs text-center text-muted-foreground pt-4 border-t">This Certificate is not negotiable. The AMOUNTS CERTIFIED are payable on to the Contractors named in Contract Document attached. Issuance, payment and acceptance of payment are without prejudice to any rights of the Owner of the Contractor under this Contract.</p>
-                     
                     <div className="flex justify-end gap-4 mt-8">
-                        <Button type="button" onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
-                        <Button type="button" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+                        <Button type="button" onClick={handleSave1} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                        <Button type="button" onClick={handleDownloadPdf1}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
                     </div>
                 </CardContent>
+            </Card>
+
+            <Card className="mt-12">
+                 <CardHeader>
+                    <CardTitle className="text-center font-headline text-2xl text-primary">APPLICATION AND CERTIFICATE FOR PAYMENT (Contractor)</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {/* FORM 2: Application and Certificate for Payment (Contractor version) */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border p-4 rounded-lg">
+                        <div>
+                            <Label htmlFor="form2_toOwner">To (Owner)</Label><Input id="form2_toOwner" name="toOwner" value={form2State.toOwner} onChange={handleForm2Change} />
+                            <Label htmlFor="form2_fromContractor" className="mt-2">From (Contractor)</Label><Input id="form2_fromContractor" name="fromContractor" value={form2State.fromContractor} onChange={handleForm2Change} />
+                            <Label htmlFor="form2_contractFor" className="mt-2">Contract For</Label><Input id="form2_contractFor" name="contractFor" value={form2State.contractFor} onChange={handleForm2Change} />
+                        </div>
+                        <div>
+                            <Label htmlFor="form2_project">Project</Label><Input id="form2_project" name="project" value={form2State.project} onChange={handleForm2Change} />
+                            <Label htmlFor="form2_viaArchitect" className="mt-2">VIA (Architect)</Label><Input id="form2_viaArchitect" name="viaArchitect" value={form2State.viaArchitect} onChange={handleForm2Change} />
+                        </div>
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div><Label htmlFor="form2_applicationNumber">Application Number</Label><Input id="form2_applicationNumber" name="applicationNumber" value={form2State.applicationNumber} onChange={handleForm2Change} /></div>
+                            <div><Label htmlFor="form2_periodTo">Period To</Label><Input id="form2_periodTo" name="periodTo" type="date" value={form2State.periodTo} onChange={handleForm2Change} /></div>
+                            <div><Label htmlFor="form2_architectsProjectNo">Architect's Project No</Label><Input id="form2_architectsProjectNo" name="architectsProjectNo" value={form2State.architectsProjectNo} onChange={handleForm2Change} /></div>
+                            <div><Label htmlFor="form2_contractDate">Contract Date</Label><Input id="form2_contractDate" name="contractDate" type="date" value={form2State.contractDate} onChange={handleForm2Change} /></div>
+                        </div>
+                         <div>
+                            <Label>Distributed to:</Label>
+                            <div className="flex flex-wrap gap-4 mt-2">
+                                <div className="flex items-center gap-2"><Checkbox id="form2_dist_owner" checked={form2State.distributedTo.includes('Owner')} onCheckedChange={() => handleForm2CheckboxChange('Owner')} /><Label htmlFor="form2_dist_owner">Owner</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="form2_dist_architect" checked={form2State.distributedTo.includes('Architect')} onCheckedChange={() => handleForm2CheckboxChange('Architect')} /><Label htmlFor="form2_dist_architect">Architect</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="form2_dist_contractor" checked={form2State.distributedTo.includes('Contractor')} onCheckedChange={() => handleForm2CheckboxChange('Contractor')} /><Label htmlFor="form2_dist_contractor">Contractor</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="form2_dist_others" checked={form2State.distributedTo.includes('Others')} onCheckedChange={() => handleForm2CheckboxChange('Others')} /><Label htmlFor="form2_dist_others">Others</Label></div>
+                            </div>
+                        </div>
+                    </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            <h3 className="font-bold">Contractor's Application for Payment</h3>
+                            <Card>
+                                <CardHeader><CardTitle className="text-base">Change Order Summary</CardTitle></CardHeader>
+                                <CardContent>
+                                    <Table>
+                                        <TableHeader><TableRow><TableHead>Number</TableHead><TableHead>Date</TableHead><TableHead>Additions</TableHead><TableHead>Deductions</TableHead><TableHead></TableHead></TableRow></TableHeader>
+                                        <TableBody>
+                                            {changeOrders.map(co => <ChangeOrderRow key={co.id} id={co.id} onRemove={removeChangeOrder} />)}
+                                        </TableBody>
+                                    </Table>
+                                    <Button size="sm" onClick={addChangeOrder} className="mt-2"><PlusCircle className="mr-2 h-4 w-4" /> Add</Button>
+                                    <div className="flex justify-between mt-2 pt-2 border-t">
+                                        <Label>Net change by Change Orders</Label>
+                                        <Input name="netChangeOrders" type="number" value={form2State.netChangeOrders} onChange={handleForm2NumberChange} className="w-40" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <p className="text-xs text-muted-foreground">The undersigned Contractor certifies that to the best of the Contractor's knowledge, information and belief the Work covered by this Application for Payment has been completed in accordance with the Contract Documents...</p>
+                            <div className="flex items-center gap-4">
+                                <Label>Contractor:</Label>
+                                <Input name="contractorBy" placeholder="By" value={form2State.contractorBy} onChange={handleForm2Change} />
+                                <Input name="contractorDate" type="date" value={form2State.contractorDate} onChange={handleForm2Change} />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                             <p className="text-xs text-muted-foreground">Application is made for Payment, as shown below, in connection with the Contract. Continuation Sheet, is attached.</p>
+                             <div className="flex justify-between items-center"><Label>1. Original Contract Sum</Label><span>Rs. <Input type="number" name="originalContractSum" value={form2State.originalContractSum} onChange={handleForm2NumberChange} className="inline-w-32" /></span></div>
+                             <div className="flex justify-between items-center"><Label>2. Total Net Changes by Change Order</Label><span>Rs. {form2State.netChangeOrders.toFixed(2)}</span></div>
+                             <div className="flex justify-between items-center font-bold"><Label>3. Total Contract Sum to Date (Line 1 ± 2)</Label><span>Rs. {calculatedForm2.contractSumToDate.toFixed(2)}</span></div>
+                             <div className="flex justify-between items-center"><Label>4. Total Completed & Stored to Date</Label><span>Rs. <Input type="number" name="totalCompleted" value={form2State.totalCompleted} onChange={handleForm2NumberChange} className="inline-w-32" /></span></div>
+                             <div>
+                                <Label>5. Retainage:</Label>
+                                <div className="pl-4">
+                                     <div className="flex items-center gap-2"><Input type="number" name="retainagePercentCompleted" value={form2State.retainagePercentCompleted} onChange={handleForm2NumberChange} className="w-16" />% of Completed Works <span>Rs. <Input type="number" name="retainageAmountCompleted" value={form2State.retainageAmountCompleted} onChange={handleForm2NumberChange} className="inline-w-24" /></span></div>
+                                     <div className="flex items-center gap-2"><Input type="number" name="retainagePercentStored" value={form2State.retainagePercentStored} onChange={handleForm2NumberChange} className="w-16" />% of Stored Material <span>Rs. <Input type="number" name="retainageAmountStored" value={form2State.retainageAmountStored} onChange={handleForm2NumberChange} className="inline-w-24" /></span></div>
+                                     <div className="flex justify-between items-center font-bold"><Label>Total Retainage</Label><span>Rs. {calculatedForm2.totalRetainage.toFixed(2)}</span></div>
+                                </div>
+                             </div>
+                              <div className="flex justify-between items-center font-bold"><Label>6. Total Earned Less Retainage (Line 4 Less 5 Total)</Label><span>Rs. {calculatedForm2.totalEarnedLessRetainage.toFixed(2)}</span></div>
+                              <div className="flex justify-between items-center"><Label>7. Less Previous Certificates for Payments</Label><span>Rs. <Input type="number" name="previousPayments" value={form2State.previousPayments} onChange={handleForm2NumberChange} className="inline-w-32" /></span></div>
+                              <div className="flex justify-between items-center font-bold"><Label>8. Current Payment Due</Label><span>Rs. {calculatedForm2.currentPaymentDue.toFixed(2)}</span></div>
+                              <div className="flex justify-between items-center font-bold"><Label>9. Balance to Finish, Plus Retainage</Label><span>Rs. {calculatedForm2.balanceToFinish.toFixed(2)}</span></div>
+                        </div>
+                    </div>
+                     <div className="border-t pt-6 space-y-4">
+                        <h3 className="font-bold">Architect's Project Certificate for Payment:</h3>
+                         <p className="text-xs text-muted-foreground">In accordance with the Contract Documents, based on on-site observations and the data comprising the above Application, the Architect certifies to the Owner that Work has progressed as indicated...</p>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">State of: <Input name="stateOf" value={form2State.stateOf} onChange={handleForm2Change} /> County of: <Input name="countyOf" value={form2State.countyOf} onChange={handleForm2Change} /></div>
+                                <div>Subscribed and sworn to before me this <Input name="subscribedDay" className="inline-w-16" value={form2State.subscribedDay} onChange={handleForm2Change} /> day of <Input name="subscribedMonth" className="inline-w-24" value={form2State.subscribedMonth} onChange={handleForm2Change} />, 20<Input name="subscribedYear" className="inline-w-16" value={form2State.subscribedYear} onChange={handleForm2Change} /></div>
+                                <Label htmlFor="form2_notaryPublic">Notary Public:</Label><Input id="form2_notaryPublic" name="notaryPublic" value={form2State.notaryPublic} onChange={handleForm2Change} />
+                                <Label htmlFor="form2_commissionExpires">My Commission expires:</Label><Input id="form2_commissionExpires" name="commissionExpires" value={form2State.commissionExpires} onChange={handleForm2Change} />
+                            </div>
+                            <div className="space-y-2">
+                                 <div className="flex justify-between items-center"><Label>Amounts Certified</Label><span>Rs. <Input type="number" name="amountsCertified" value={form2State.amountsCertified} onChange={handleForm2NumberChange} className="inline-w-32" /></span></div>
+                                <Textarea name="explanation" placeholder="Attach explanation if amount certified differs from the amount applies for." className="text-xs" value={form2State.explanation} onChange={handleForm2Change} />
+                                <div className="flex items-center gap-4 pt-4">
+                                    <Label>Architect:</Label>
+                                    <Input name="architectBy" placeholder="By" value={form2State.architectBy} onChange={handleForm2Change} />
+                                    <Input name="architectDate" type="date" value={form2State.architectDate} onChange={handleForm2Change} />
+                                </div>
+                            </div>
+                         </div>
+                         <p className="text-xs text-center text-muted-foreground pt-4">This Certificate is not negotiable. The AMOUNTS CERTIFIED are payable on to the Contractors named herein. Issuance, payment and acceptance of payment are without prejudice to any rights of the Owner of the Contractor under this Contract.</p>
+                     </div>
+                </CardContent>
+                 <CardFooter className="flex justify-end gap-4">
+                    <Button type="button" onClick={handleSave2} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+                    <Button type="button" onClick={handleDownloadPdf2}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+                </CardFooter>
             </Card>
         </div>
     );
