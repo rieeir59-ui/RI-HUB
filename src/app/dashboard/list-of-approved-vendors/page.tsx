@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -194,10 +195,11 @@ interface VendorTableProps {
     onAdd: () => void;
     onDelete: (id: number) => void;
     onUpdate: (id: number, field: string, value: string) => void;
+    onDownload: (vendor: Vendor) => void;
 }
 
 
-const EditableVendorTable = ({ title, vendors, columns, onAdd, onDelete, onUpdate }: VendorTableProps) => (
+const EditableVendorTable = ({ title, vendors, columns, onAdd, onDelete, onUpdate, onDownload }: VendorTableProps) => (
     <Card className="mb-8">
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-headline text-2xl text-primary">{title}</CardTitle>
@@ -223,7 +225,10 @@ const EditableVendorTable = ({ title, vendors, columns, onAdd, onDelete, onUpdat
                                     />
                                 </TableCell>
                             ))}
-                            <TableCell>
+                            <TableCell className="flex gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => onDownload(vendor)}>
+                                    <Download className="h-4 w-4 text-muted-foreground" />
+                                </Button>
                                 <Button variant="destructive" size="icon" onClick={() => onDelete(vendor.id)}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -301,7 +306,7 @@ export default function Page() {
         const head = [columns.map(c => c.label)];
         const body = (vendors as Vendor[]).map(vendor => columns.map(c => vendor[c.key] || '-'));
         
-        doc.autoTable({
+        (doc as any).autoTable({
             head: head,
             body: body,
             startY: yPos,
@@ -313,6 +318,28 @@ export default function Page() {
 
     doc.save('approved-vendors.pdf');
     toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
+  };
+  
+  const handleDownloadSingleVendor = (vendor: Vendor) => {
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(vendor.company || 'Vendor Details', doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
+
+    const data = Object.entries(vendor)
+      .filter(([key]) => key !== 'id' && key !== 'company')
+      .map(([key, value]) => [key.charAt(0).toUpperCase() + key.slice(1), value || '-']);
+
+    (doc as any).autoTable({
+      startY: 30,
+      head: [['Field', 'Detail']],
+      body: data,
+      theme: 'striped',
+      headStyles: { fillColor: [45, 95, 51] }
+    });
+    
+    doc.save(`${vendor.company || 'vendor'}.pdf`);
+    toast({ title: 'Download Started', description: `Downloading details for ${vendor.company}.` });
   };
 
 
@@ -327,26 +354,28 @@ export default function Page() {
       
       <div className="flex justify-end gap-4 sticky top-20 z-10 py-2 bg-background/90 backdrop-blur-sm">
         <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4"/>Save Changes</Button>
-        <Button onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4"/>Download PDF</Button>
+        <Button onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4"/>Download Full List PDF</Button>
       </div>
 
-      <EditableVendorTable title="Cement Vendors" vendors={vendorData.cement} columns={defaultCols} onAdd={() => handleAdd('cement')} onDelete={(id) => handleDelete('cement', id)} onUpdate={(id, field, value) => handleUpdate('cement', id, field, value)} />
-      <EditableVendorTable title="Brick Vendors" vendors={vendorData.brick} columns={defaultCols} onAdd={() => handleAdd('brick')} onDelete={(id) => handleDelete('brick', id)} onUpdate={(id, field, value) => handleUpdate('brick', id, field, value)} />
-      <EditableVendorTable title="Steel Vendors List" vendors={vendorData.steel} columns={defaultCols} onAdd={() => handleAdd('steel')} onDelete={(id) => handleDelete('steel', id)} onUpdate={(id, field, value) => handleUpdate('steel', id, field, value)} />
-      <EditableVendorTable title="Tiles Vendors" vendors={vendorData.tiles} columns={defaultCols} onAdd={() => handleAdd('tiles')} onDelete={(id) => handleDelete('tiles', id)} onUpdate={(id, field, value) => handleUpdate('tiles', id, field, value)} />
-      <EditableVendorTable title="Aluminium Products Vendor List" vendors={vendorData.aluminium} columns={defaultCols} onAdd={() => handleAdd('aluminium')} onDelete={(id) => handleDelete('aluminium', id)} onUpdate={(id, field, value) => handleUpdate('aluminium', id, field, value)} />
-      <EditableVendorTable title="Glass Vendors" vendors={vendorData.glass} columns={defaultCols} onAdd={() => handleAdd('glass')} onDelete={(id) => handleDelete('glass', id)} onUpdate={(id, field, value) => handleUpdate('glass', id, field, value)} />
-      <EditableVendorTable title="List of Paint Vendors" vendors={vendorData.paint} columns={defaultCols} onAdd={() => handleAdd('paint')} onDelete={(id) => handleDelete('paint', id)} onUpdate={(id, field, value) => handleUpdate('paint', id, field, value)} />
-      <EditableVendorTable title="List of Jumblon Sheet Vendors" vendors={vendorData.jumblon} columns={defaultCols} onAdd={() => handleAdd('jumblon')} onDelete={(id) => handleDelete('jumblon', id)} onUpdate={(id, field, value) => handleUpdate('jumblon', id, field, value)} />
-      <EditableVendorTable title="Waterproofing Vendors" vendors={vendorData.waterproofing} columns={servicesCols} onAdd={() => handleAdd('waterproofing')} onDelete={(id) => handleDelete('waterproofing', id)} onUpdate={(id, field, value) => handleUpdate('waterproofing', id, field, value)} />
-      <EditableVendorTable title="Imported Chemicals Vendors" vendors={vendorData.chemicals} columns={defaultCols} onAdd={() => handleAdd('chemicals')} onDelete={(id) => handleDelete('chemicals', id)} onUpdate={(id, field, value) => handleUpdate('chemicals', id, field, value)} />
-      <EditableVendorTable title="Wood Veneers Vendors" vendors={vendorData.woodVeneer} columns={defaultCols} onAdd={() => handleAdd('woodVeneer')} onDelete={(id) => handleDelete('woodVeneer', id)} onUpdate={(id, field, value) => handleUpdate('woodVeneer', id, field, value)} />
-      <EditableVendorTable title="List of Timber Vendors" vendors={vendorData.timber} columns={defaultCols} onAdd={() => handleAdd('timber')} onDelete={(id) => handleDelete('timber', id)} onUpdate={(id, field, value) => handleUpdate('timber', id, field, value)} />
-      <EditableVendorTable title="Furniture Vendors" vendors={vendorData.furniture} columns={servicesCols} onAdd={() => handleAdd('furniture')} onDelete={(id) => handleDelete('furniture', id)} onUpdate={(id, field, value) => handleUpdate('furniture', id, field, value)} />
-      <EditableVendorTable title="Kitchen &amp; Wardrobe Vendors" vendors={vendorData.kitchen} columns={defaultCols} onAdd={() => handleAdd('kitchen')} onDelete={(id) => handleDelete('kitchen', id)} onUpdate={(id, field, value) => handleUpdate('kitchen', id, field, value)} />
-      <EditableVendorTable title="Fire Places" vendors={vendorData.fireplaces} columns={defaultCols} onAdd={() => handleAdd('fireplaces')} onDelete={(id) => handleDelete('fireplaces', id)} onUpdate={(id, field, value) => handleUpdate('fireplaces', id, field, value)} />
-      <EditableVendorTable title="Electrical Vendors" vendors={vendorData.electrical} columns={electricalCols} onAdd={() => handleAdd('electrical')} onDelete={(id) => handleDelete('electrical', id)} onUpdate={(id, field, value) => handleUpdate('electrical', id, field, value)} />
-      <EditableVendorTable title="Solar &amp; Automation Vendors" vendors={vendorData.solarAutomation} columns={defaultCols} onAdd={() => handleAdd('solarAutomation')} onDelete={(id) => handleDelete('solarAutomation', id)} onUpdate={(id, field, value) => handleUpdate('solarAutomation', id, field, value)} />
+      <EditableVendorTable title="Cement Vendors" vendors={vendorData.cement} columns={defaultCols} onAdd={() => handleAdd('cement')} onDelete={(id) => handleDelete('cement', id)} onUpdate={(id, field, value) => handleUpdate('cement', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Brick Vendors" vendors={vendorData.brick} columns={defaultCols} onAdd={() => handleAdd('brick')} onDelete={(id) => handleDelete('brick', id)} onUpdate={(id, field, value) => handleUpdate('brick', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Steel Vendors List" vendors={vendorData.steel} columns={defaultCols} onAdd={() => handleAdd('steel')} onDelete={(id) => handleDelete('steel', id)} onUpdate={(id, field, value) => handleUpdate('steel', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Tiles Vendors" vendors={vendorData.tiles} columns={defaultCols} onAdd={() => handleAdd('tiles')} onDelete={(id) => handleDelete('tiles', id)} onUpdate={(id, field, value) => handleUpdate('tiles', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Aluminium Products Vendor List" vendors={vendorData.aluminium} columns={defaultCols} onAdd={() => handleAdd('aluminium')} onDelete={(id) => handleDelete('aluminium', id)} onUpdate={(id, field, value) => handleUpdate('aluminium', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Glass Vendors" vendors={vendorData.glass} columns={defaultCols} onAdd={() => handleAdd('glass')} onDelete={(id) => handleDelete('glass', id)} onUpdate={(id, field, value) => handleUpdate('glass', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="List of Paint Vendors" vendors={vendorData.paint} columns={defaultCols} onAdd={() => handleAdd('paint')} onDelete={(id) => handleDelete('paint', id)} onUpdate={(id, field, value) => handleUpdate('paint', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="List of Jumblon Sheet Vendors" vendors={vendorData.jumblon} columns={defaultCols} onAdd={() => handleAdd('jumblon')} onDelete={(id) => handleDelete('jumblon', id)} onUpdate={(id, field, value) => handleUpdate('jumblon', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Waterproofing Vendors" vendors={vendorData.waterproofing} columns={servicesCols} onAdd={() => handleAdd('waterproofing')} onDelete={(id) => handleDelete('waterproofing', id)} onUpdate={(id, field, value) => handleUpdate('waterproofing', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Imported Chemicals Vendors" vendors={vendorData.chemicals} columns={defaultCols} onAdd={() => handleAdd('chemicals')} onDelete={(id) => handleDelete('chemicals', id)} onUpdate={(id, field, value) => handleUpdate('chemicals', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Wood Veneers Vendors" vendors={vendorData.woodVeneer} columns={defaultCols} onAdd={() => handleAdd('woodVeneer')} onDelete={(id) => handleDelete('woodVeneer', id)} onUpdate={(id, field, value) => handleUpdate('woodVeneer', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="List of Timber Vendors" vendors={vendorData.timber} columns={defaultCols} onAdd={() => handleAdd('timber')} onDelete={(id) => handleDelete('timber', id)} onUpdate={(id, field, value) => handleUpdate('timber', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Furniture Vendors" vendors={vendorData.furniture} columns={servicesCols} onAdd={() => handleAdd('furniture')} onDelete={(id) => handleDelete('furniture', id)} onUpdate={(id, field, value) => handleUpdate('furniture', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Kitchen &amp; Wardrobe Vendors" vendors={vendorData.kitchen} columns={defaultCols} onAdd={() => handleAdd('kitchen')} onDelete={(id) => handleDelete('kitchen', id)} onUpdate={(id, field, value) => handleUpdate('kitchen', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Fire Places" vendors={vendorData.fireplaces} columns={defaultCols} onAdd={() => handleAdd('fireplaces')} onDelete={(id) => handleDelete('fireplaces', id)} onUpdate={(id, field, value) => handleUpdate('fireplaces', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Electrical Vendors" vendors={vendorData.electrical} columns={electricalCols} onAdd={() => handleAdd('electrical')} onDelete={(id) => handleDelete('electrical', id)} onUpdate={(id, field, value) => handleUpdate('electrical', id, field, value)} onDownload={handleDownloadSingleVendor} />
+      <EditableVendorTable title="Solar &amp; Automation Vendors" vendors={vendorData.solarAutomation} columns={defaultCols} onAdd={() => handleAdd('solarAutomation')} onDelete={(id) => handleDelete('solarAutomation', id)} onUpdate={(id, field, value) => handleUpdate('solarAutomation', id, field, value)} onDownload={handleDownloadSingleVendor} />
     </div>
   );
 }
+
+    
