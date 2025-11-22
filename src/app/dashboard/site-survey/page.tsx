@@ -151,153 +151,129 @@ export default function ProjectDataPage() {
         const getRadioValue = (name: string) => (form.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || 'N/A';
         const getCheckboxValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.checked;
 
-        const addSectionTitle = (title: string) => {
-            if (yPos > 260) { doc.addPage(); yPos = 20; }
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.text(title, 14, yPos);
-            yPos += 8;
-        };
-
-        const addKeyValuePair = (label: string, value: string) => {
-            if (yPos > 270) { doc.addPage(); yPos = 20; }
-            doc.setFont('helvetica', 'bold');
-            doc.text(label + ':', 14, yPos);
-            doc.setFont('helvetica', 'normal');
-            doc.text(value, 60, yPos);
-            yPos += 7;
-        };
-        
-        const addCheckboxInfo = (label: string, checkboxes: {id: string, label: string}[]) => {
-            const checkedItems = checkboxes.filter(cb => getCheckboxValue(cb.id)).map(cb => cb.label).join(', ');
-            addKeyValuePair(label, checkedItems || 'None');
-        }
-
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
         doc.text('IHA PROJECT MANAGEMENT - Premises Review', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
 
-        // Location
-        addSectionTitle('Location');
-        let purpose = [];
-        if (getCheckboxValue('purpose_house')) purpose.push('House');
-        if (getCheckboxValue('purpose_other_check')) purpose.push(`Other: ${getInputValue('purpose_other_text')}`);
-        addKeyValuePair('Purpose', purpose.join(', '));
-        addKeyValuePair('Date', getInputValue('location_date'));
-        addKeyValuePair('City', getInputValue('location_city'));
-        addKeyValuePair('Region', getInputValue('location_region'));
-        addKeyValuePair('Address', getInputValue('location_address'));
-        yPos += 5;
-
-        // Legal File
-        addSectionTitle('Legal File');
-        addKeyValuePair('Name of Owner', getInputValue('legal_owner_name'));
-        addKeyValuePair('Completion Certificate available', getRadioValue('completion_cert'));
-        addKeyValuePair('Property Leased', getRadioValue('is_leased'));
-        yPos += 5;
-        
-        // Area
-        addSectionTitle('Area');
-        addKeyValuePair('Dimension - Max Frontage', getInputValue('area_frontage'));
-        addKeyValuePair('Dimension - Max Depth', getInputValue('area_depth'));
-        addKeyValuePair('Total Area in Sqft', getInputValue('area_total'));
-        addKeyValuePair('Min Clear Height (ft)', getInputValue('area_height'));
-        addKeyValuePair('Building Plot Size', getInputValue('area_plot_size'));
-        addKeyValuePair('Covered Area', getInputValue('area_covered'));
-        addKeyValuePair('No. of Stories', getInputValue('area_stories'));
-        yPos += 5;
-
-
-        // Bounded As
-        addSectionTitle('Bounded As');
-        addKeyValuePair('Front', getInputValue('bounded_front'));
-        addKeyValuePair('Back', getInputValue('bounded_back'));
-        addKeyValuePair('Right', getInputValue('bounded_right'));
-        addKeyValuePair('Left', getInputValue('bounded_left'));
-        yPos += 5;
-        
-        // ... Continue for all other sections
-         // Utilities
-        addSectionTitle('Utilities');
-        addKeyValuePair('Sanctioned electrical load', getInputValue('sanctioned_load_text') + (getCheckboxValue('sanctioned_load_na') ? ' (N/A)' : ''));
-        addKeyValuePair('Type of electrical load', getRadioValue('electrical_load_type'));
-        addKeyValuePair('Electrical Meter', getInputValue('electrical_meter'));
-        addKeyValuePair('Piped water available', getRadioValue('piped_water'));
-        addKeyValuePair('Underground tank', getRadioValue('underground_tank'));
-        addKeyValuePair('Overhead tank', getRadioValue('overhead_tank'));
-        addKeyValuePair('Type of Overhead tank', getInputValue('overhead_tank_type'));
-        addKeyValuePair('Type of water', getInputValue('water_type'));
-        addKeyValuePair('Gas Connection', getRadioValue('gas_connection'));
-        addKeyValuePair('Connected to Sewerage line', getRadioValue('sewerage_connection'));
-        yPos += 5;
-        
-        // Building Overview
-        doc.addPage();
-        yPos = 20;
-        addSectionTitle('Building Overview');
-        addKeyValuePair('Independent premises', getRadioValue('independent_premises'));
-        addKeyValuePair('Status', getRadioValue('property_status') + (getRadioValue('property_status') === 'other' ? `: ${getInputValue('status_other_text')}` : ''));
-        addKeyValuePair('Type of Premises', getRadioValue('premises_type') + (getRadioValue('premises_type') === 'other' ? `: ${getInputValue('prem_other_text')}` : ''));
-        addKeyValuePair('Age of Premises', getRadioValue('building_age'));
-        addKeyValuePair('Interior of Premises', getRadioValue('interior_type'));
-        addKeyValuePair('Type of construction', getRadioValue('construction_type'));
-        yPos += 5;
-
-        // Building Details
-        addSectionTitle('Building Details');
-        addKeyValuePair('Seepage', getRadioValue('seepage'));
-        addKeyValuePair('Area of seepage', getInputValue('seepage_area'));
-        addKeyValuePair('Cause of Seepage', getInputValue('seepage_cause'));
-        addCheckboxInfo('Property Utilization', [{id: 'util_residential', label: 'Residential'}, {id: 'util_commercial', label: 'Commercial'}, {id: 'util_dual', label: 'Dual'}, {id: 'util_industrial', label: 'Industrial'}]);
-        addKeyValuePair('Condition of roof waterproofing', getInputValue('roof_waterproofing'));
-        addCheckboxInfo('Parking available', [{id: 'parking_yes', label: 'Yes'}, {id: 'parking_main_road', label: 'On Main Road'}, {id: 'parking_no', label: 'No'}]);
-        addKeyValuePair('Approachable through Road', getRadioValue('approachable'));
-        addKeyValuePair('Wall masonary material', getInputValue('wall_material'));
-        addCheckboxInfo('Major retainable building elements', [{id: 'retainable_water_tank', label: 'Water Tank'}, {id: 'retainable_subflooring', label: 'Subflooring'}, {id: 'retainable_staircase', label: 'Staircase'}, {id: 'retainable_other_check', label: `Other: ${getInputValue('retainable_other_text')}`}]);
-        addKeyValuePair('Plot level from road', getInputValue('plot_level'));
-        addKeyValuePair('Building Control Violations', getRadioValue('violations') + (getCheckboxValue('violation_informed') ? ' (As informed by Owner)' : ''));
-        yPos += 5;
-
-        // Rental Detail
-        addSectionTitle('Rental Detail');
-        addKeyValuePair('Acquisition', getInputValue('rental_acquisition'));
-        addKeyValuePair('Expected Rental /month', getInputValue('rental_expected_rent'));
-        addKeyValuePair('Expected Advance (# months)', getInputValue('rental_expected_advance'));
-        addKeyValuePair('Expected period of lease', getInputValue('rental_lease_period'));
-        addKeyValuePair('Annual increase in rental', getInputValue('rental_annual_increase'));
-        yPos += 5;
-        
-        // Survey Checklist
-        doc.addPage();
-        yPos = 20;
-        addSectionTitle('Survey Checklist');
-        addKeyValuePair('Project', getInputValue('survey_project'));
-        addKeyValuePair('Location', getInputValue('survey_location'));
-        addKeyValuePair('Contract Date', getInputValue('survey_contract_date'));
-        addKeyValuePair('Project Number', getInputValue('survey_project_number'));
-        addKeyValuePair('Start Date', getInputValue('survey_start_date'));
-        addKeyValuePair('Project Incharge', getInputValue('survey_project_incharge'));
-        
-        const createTable = (title: string, items: {no: number; title: string}[], prefix: string) => {
-             if (yPos > 240) { doc.addPage(); yPos = 20; }
-             doc.setFontSize(11);
-             doc.setFont('helvetica', 'bold');
-             doc.text(title, 14, yPos);
-             yPos += 7;
+        const addTableSection = (title: string, data: (string|string[])[][]) => {
+             if (yPos > 250) { doc.addPage(); yPos = 20; }
              doc.autoTable({
-                 startY: yPos,
-                 head: [['Sr.No', 'Drawing Title', 'Remarks']],
-                 body: items.map(item => [item.no, item.title, getInputValue(`${prefix}_remarks_${item.no}`)]),
-                 theme: 'grid',
-                 headStyles: { fillColor: [45, 95, 51] }
+                head: [[title]],
+                body: data,
+                startY: yPos,
+                theme: 'grid',
+                headStyles: { fillColor: [45, 95, 51], fontStyle: 'bold' },
              });
              yPos = (doc as any).lastAutoTable.finalY + 10;
         }
 
-        createTable("Architectural Drawings", checklistItems, 'checklist');
-        createTable("Structure Drawings", structureDrawingItems, 'structure');
-        createTable("Plumbing Drawings", plumbingDrawingItems, 'plumbing');
-        createTable("Electrification Drawings", electrificationDrawingItems, 'electrification');
+        yPos = 25;
+
+        let purpose = [];
+        if (getCheckboxValue('purpose_house')) purpose.push('House');
+        if (getCheckboxValue('purpose_other_check')) purpose.push(`Other: ${getInputValue('purpose_other_text')}`);
+
+        addTableSection('Location', [
+            ['Purpose', purpose.join(', ')],
+            ['Date', getInputValue('location_date')],
+            ['City', getInputValue('location_city')],
+            ['Region', getInputValue('location_region')],
+            ['Address', getInputValue('location_address')],
+        ]);
+
+        addTableSection('Legal File', [
+            ['Name of Owner', getInputValue('legal_owner_name')],
+            ['Completion Certificate available', getRadioValue('completion_cert')],
+            ['Property Leased', getRadioValue('is_leased')],
+        ]);
+
+        addTableSection('Area', [
+            ['Dimension - Max Frontage', getInputValue('area_frontage')],
+            ['Dimension - Max Depth', getInputValue('area_depth')],
+            ['Total Area in Sqft', getInputValue('area_total')],
+            ['Min Clear Height (ft)', getInputValue('area_height')],
+            ['Building Plot Size', getInputValue('area_plot_size')],
+            ['Covered Area', getInputValue('area_covered')],
+            ['No. of Stories', getInputValue('area_stories')],
+        ]);
+
+        addTableSection('Bounded As', [
+            ['Front', getInputValue('bounded_front')],
+            ['Back', getInputValue('bounded_back')],
+            ['Right', getInputValue('bounded_right')],
+            ['Left', getInputValue('bounded_left')],
+        ]);
+
+        addTableSection('Utilities', [
+            ['Sanctioned electrical load', getInputValue('sanctioned_load_text') + (getCheckboxValue('sanctioned_load_na') ? ' (N/A)' : '')],
+            ['Type of electrical load', getRadioValue('electrical_load_type')],
+            ['Electrical Meter', getInputValue('electrical_meter')],
+            ['Piped water available', getRadioValue('piped_water')],
+            ['Underground tank', getRadioValue('underground_tank')],
+            ['Overhead tank', getRadioValue('overhead_tank')],
+            ['Type of Overhead tank', getInputValue('overhead_tank_type')],
+            ['Type of water', getInputValue('water_type')],
+            ['Gas Connection', getRadioValue('gas_connection')],
+            ['Connected to Sewerage line', getRadioValue('sewerage_connection')],
+        ]);
+        
+        doc.addPage();
+        yPos = 20;
+
+        addTableSection('Building Overview', [
+            ['Independent premises', getRadioValue('independent_premises')],
+            ['Status', getRadioValue('property_status') + (getRadioValue('property_status') === 'other' ? `: ${getInputValue('status_other_text')}` : '')],
+            ['Type of Premises', getRadioValue('premises_type') + (getRadioValue('premises_type') === 'other' ? `: ${getInputValue('prem_other_text')}` : '')],
+            ['Age of Premises', getRadioValue('building_age')],
+            ['Interior of Premises', getRadioValue('interior_type')],
+            ['Type of construction', getRadioValue('construction_type')],
+        ]);
+
+        const propertyUtil = ['Residential', 'Commercial', 'Dual', 'Industrial'].filter((_, i) => getCheckboxValue(`util_${['residential', 'commercial', 'dual', 'industrial'][i]}`)).join(', ');
+        const parking = ['Yes', 'On Main Road', 'No'].filter((_, i) => getCheckboxValue(`parking_${['yes', 'main_road', 'no'][i]}`)).join(', ');
+        const retainable = ['Water Tank', 'Subflooring', 'Staircase'].filter((_, i) => getCheckboxValue(`retainable_${['water_tank', 'subflooring', 'staircase'][i]}`)).join(', ');
+        const retainableOther = getCheckboxValue('retainable_other_check') ? `Other: ${getInputValue('retainable_other_text')}` : '';
+
+        addTableSection('Building Details', [
+            ['Seepage', getRadioValue('seepage')],
+            ['Area of seepage', getInputValue('seepage_area')],
+            ['Cause of Seepage', getInputValue('seepage_cause')],
+            ['Property Utilization', propertyUtil || 'None'],
+            ['Condition of roof waterproofing', getInputValue('roof_waterproofing')],
+            ['Parking available', parking || 'None'],
+            ['Approachable through Road', getRadioValue('approachable')],
+            ['Wall masonary material', getInputValue('wall_material')],
+            ['Major retainable building elements', [retainable, retainableOther].filter(Boolean).join(', ') || 'None'],
+            ['Plot level from road', getInputValue('plot_level')],
+            ['Building Control Violations', getRadioValue('violations') + (getCheckboxValue('violation_informed') ? ' (As informed by Owner)' : '')],
+        ]);
+
+        addTableSection('Rental Detail', [
+            ['Acquisition', getInputValue('rental_acquisition')],
+            ['Expected Rental /month', getInputValue('rental_expected_rent')],
+            ['Expected Advance (# months)', getInputValue('rental_expected_advance')],
+            ['Expected period of lease', getInputValue('rental_lease_period')],
+            ['Annual increase in rental', getInputValue('rental_annual_increase')],
+        ]);
+
+        doc.addPage();
+        yPos = 20;
+
+        const createChecklistTable = (title: string, items: {no: number; title: string}[], prefix: string) => {
+            doc.autoTable({
+                head: [[{content: title, colSpan: 3, styles: {halign: 'center', fillColor: [45, 95, 51]}}], ['Sr.No', 'Drawing Title', 'Remarks']],
+                body: items.map(item => [item.no, item.title, getInputValue(`${prefix}_remarks_${item.no}`)]),
+                startY: yPos,
+                theme: 'grid',
+                headStyles: { fontStyle: 'bold' }
+            });
+            yPos = (doc as any).lastAutoTable.finalY + 10;
+        }
+
+        createChecklistTable("Architectural Drawings", checklistItems, 'checklist');
+        createChecklistTable("Structure Drawings", structureDrawingItems, 'structure');
+        createChecklistTable("Plumbing Drawings", plumbingDrawingItems, 'plumbing');
+        createChecklistTable("Electrification Drawings", electrificationDrawingItems, 'electrification');
 
         doc.save('site-survey.pdf');
         toast({ title: 'Download Started', description: 'Your site survey PDF is being generated.' });
@@ -403,7 +379,7 @@ export default function ProjectDataPage() {
                     </SectionTable>
 
                     <SectionTable title="Building overview">
-                         <FormRow label="Independent premises">
+                        <FormRow label="Independent premises">
                              <RadioGroup name="independent_premises" className="flex items-center justify-between">
                                 <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="ind_yes" /><Label htmlFor="ind_yes">Yes</Label></div>
                                 <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="ind_no" /><Label htmlFor="ind_no">No. a part of building</Label></div>
