@@ -17,10 +17,6 @@ import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
-interface jsPDFWithAutoTable extends jsPDF {
-    autoTable: (options: any) => jsPDF;
-}
-
 interface TaskRow {
   id: number;
   code: string;
@@ -116,7 +112,7 @@ export default function Page() {
   };
 
   const handleDownloadPdf = () => {
-    const doc = new jsPDF({ orientation: 'landscape' }) as jsPDFWithAutoTable;
+    const doc = new jsPDF({ orientation: 'landscape' });
     let yPos = 15;
 
     doc.setFontSize(14);
@@ -129,12 +125,12 @@ export default function Page() {
       [`Client: ${headerState.client}`, `Title: ${headerState.title}`, `Project Type: ${headerState.projectType}`],
       [`Covered Area: ${headerState.coveredArea}`, `Location: ${headerState.location}`, `Project Number: ${headerState.projectNumber}`, `Date: ${headerState.date}`]
     ];
-    doc.autoTable({
+    (doc as any).autoTable({
         body: headerDetails,
         startY: yPos,
         theme: 'plain',
     });
-    yPos = doc.autoTable.previous.finalY + 10;
+    yPos = (doc as any).autoTable.previous.finalY + 10;
 
     const head = [[
       { content: 'Sr.No/ Code', rowSpan: 2 },
@@ -154,7 +150,7 @@ export default function Page() {
         row.progressVariance, row.remarks
     ]);
 
-    doc.autoTable({
+    (doc as any).autoTable({
         head: head,
         body: body,
         startY: yPos,
