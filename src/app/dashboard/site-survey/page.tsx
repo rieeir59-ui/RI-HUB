@@ -194,22 +194,6 @@ export default function ProjectDataPage() {
                         </div>
                     </Section>
 
-                    <Section title="Area">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="md:col-span-1">
-                                <Label>Dimension</Label>
-                                <p className="text-xs text-muted-foreground">Attach as-built plan(s)</p>
-                            </div>
-                            <Input placeholder="Maximum frontage:" className="md:col-span-1" />
-                            <Input placeholder="Maximum Depth:" className="md:col-span-1" />
-                        </div>
-                        <Input placeholder="Total Area in Sqft" />
-                        <Input placeholder="Minimum clear height (Floor to Roof) in ft" />
-                        <Input placeholder="Building plot size of which premises is a part" />
-                        <Input placeholder="Covered Area" />
-                        <Input placeholder="No. of Stories / floors (mention mezzanine, basement, roof parapet wall etc.) If any." />
-                    </Section>
-
                     <Section title="Bounded As">
                         <FormRow label="Front:"><Input id="bounded_front" /></FormRow>
                         <FormRow label="Back:"><Input id="bounded_back" /></FormRow>
@@ -421,3 +405,5 @@ export default function ProjectDataPage() {
         </Card>
     );
 }
+
+    
