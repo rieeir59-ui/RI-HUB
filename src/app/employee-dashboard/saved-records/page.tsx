@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -41,10 +40,7 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        // Guard: Wait until both firestore and currentUser are available.
         if (!firestore || !currentUser) {
-            // If the user isn't loaded yet, keep the loading state.
-            // When currentUser is definitively null (after loading), isLoading will be set to false.
              if (currentUser === null) {
                 setIsLoading(false);
             }

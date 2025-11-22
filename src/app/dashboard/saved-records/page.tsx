@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -41,10 +40,7 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        // Guard: Wait until both firestore and currentUser are available.
         if (!firestore || !currentUser) {
-            // If the user isn't loaded yet, keep the loading state.
-            // When currentUser is definitively null (after loading), isLoading will be set to false.
             if (currentUser === null) {
                 setIsLoading(false);
             }
@@ -153,14 +149,7 @@ export default function SavedRecordsPage() {
                 imageHint={image?.imageHint || ''}
             />
 
-            {isLoading && (
-                <div className="flex justify-center items-center h-64">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                    <span className="ml-4">Loading records...</span>
-                </div>
-            )}
-
-            {error && (
+            {!isLoading && error && (
                  <Card className="text-center py-12 bg-destructive/10 border-destructive">
                     <CardHeader>
                         <CardTitle className="text-destructive">Error</CardTitle>
