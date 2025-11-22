@@ -273,13 +273,18 @@ export default function Page() {
             return;
         }
 
+        const form = document.getElementById('payment-cert-form-2');
+        if (!form) {
+             toast({ variant: 'destructive', title: 'Error', description: 'Could not find form to save.' });
+            return;
+        }
+
         const changeOrderData = changeOrders.map((co, index) => {
-            const form = document.getElementById('payment-cert-form-2') as HTMLFormElement;
             return {
-                number: (form.elements.namedItem(`co_number_${co.id}`) as HTMLInputElement)?.value,
-                date: (form.elements.namedItem(`co_date_${co.id}`) as HTMLInputElement)?.value,
-                additions: (form.elements.namedItem(`co_additions_${co.id}`) as HTMLInputElement)?.value,
-                deductions: (form.elements.namedItem(`co_deductions_${co.id}`) as HTMLInputElement)?.value,
+                number: (form.querySelector(`[name="co_number_${co.id}"]`) as HTMLInputElement)?.value,
+                date: (form.querySelector(`[name="co_date_${co.id}"]`) as HTMLInputElement)?.value,
+                additions: (form.querySelector(`[name="co_additions_${co.id}"]`) as HTMLInputElement)?.value,
+                deductions: (form.querySelector(`[name="co_deductions_${co.id}"]`) as HTMLInputElement)?.value,
             };
         });
 
@@ -309,6 +314,12 @@ export default function Page() {
     const handleDownloadPdf2 = () => {
          const doc = new jsPDF() as jsPDFWithAutoTable;
         let y = 15;
+        const form = document.getElementById('payment-cert-form-2') as HTMLFormElement;
+        if (!form) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Form not found for PDF generation.' });
+            return;
+        }
+
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
         doc.text('APPLICATION AND CERTIFICATE FOR PAYMENT', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
@@ -340,7 +351,6 @@ export default function Page() {
         doc.autoTable({
             startY: y, theme: 'grid', head: [['Number', 'Date', 'Additions', 'Deductions']],
             body: changeOrders.map(co => {
-                const form = document.getElementById('payment-cert-form-2') as HTMLFormElement;
                 return [
                     (form.elements.namedItem(`co_number_${co.id}`) as HTMLInputElement)?.value,
                     (form.elements.namedItem(`co_date_${co.id}`) as HTMLInputElement)?.value,
@@ -493,7 +503,8 @@ export default function Page() {
                 </CardContent>
             </Card>
 
-            <Card className="mt-12" id="payment-cert-form-2">
+            <Card className="mt-12">
+              <form id="payment-cert-form-2">
                  <CardHeader>
                     <CardTitle className="text-center font-headline text-2xl text-primary">APPLICATION AND CERTIFICATE FOR PAYMENT (Contractor)</CardTitle>
                 </CardHeader>
@@ -598,6 +609,7 @@ export default function Page() {
                     <Button type="button" onClick={handleSave2} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
                     <Button type="button" onClick={handleDownloadPdf2}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
                 </CardFooter>
+              </form>
             </Card>
         </div>
     );
