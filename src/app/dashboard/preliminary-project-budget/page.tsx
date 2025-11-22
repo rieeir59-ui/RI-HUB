@@ -20,13 +20,14 @@ interface BudgetItem {
     id: number;
     description: string;
     rate: number; // Rs per sft
+    grossArea?: number;
     isUnusual?: boolean;
     isAdditional?: boolean;
     isOwnerBudget?: boolean;
     fixedAmount?: number;
 }
 
-const initialItems: BudgetItem[] = [
+const initialItems: Omit<BudgetItem, 'grossArea'>[] = [
     { id: 1, description: '1. Site Work', rate: 0 },
     { id: 2, description: '2. Structural Frame', rate: 0 },
     { id: 3, description: '3. Exterior Finish', rate: 0 },
@@ -67,25 +68,35 @@ export default function Page() {
     const { user: currentUser } = useCurrentUser();
 
     const [header, setHeader] = useState({ project: '', projectNo: '', date: '', job: '', revNo: '', jobDate: '', location: '', preparedBy: '', grossArea: 0, rentalArea: 0 });
-    const [items, setItems] = useState<BudgetItem[]>(initialItems);
+    const [items, setItems] = useState<BudgetItem[]>(() => initialItems.map(item => ({ ...item, grossArea: header.grossArea })));
 
     const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setHeader(prev => ({...prev, [e.target.name]: e.target.value}));
+        const { name, value } = e.target;
+        const newHeader = { ...header, [name]: value };
+        if (name === 'grossArea') {
+            const newGrossArea = parseFloat(value) || 0;
+            setItems(prevItems => prevItems.map(item => 
+                !item.isUnusual && !item.isAdditional && !item.isOwnerBudget 
+                ? { ...item, grossArea: newGrossArea } 
+                : item
+            ));
+        }
+        setHeader(newHeader);
     }
-    const handleItemChange = (id: number, field: 'rate' | 'fixedAmount', value: number) => {
+
+    const handleItemChange = (id: number, field: keyof BudgetItem, value: number) => {
         setItems(prev => prev.map(item => item.id === id ? {...item, [field]: value} : item));
     }
     
     const totals = useMemo(() => {
-        const grossArea = header.grossArea > 0 ? header.grossArea : 0;
-        const basicBuildingCosts = items.filter(i => !i.isUnusual && !i.isAdditional && !i.isOwnerBudget).reduce((acc, item) => acc + (item.rate * grossArea), 0);
+        const basicBuildingCosts = items.filter(i => !i.isUnusual && !i.isAdditional && !i.isOwnerBudget).reduce((acc, item) => acc + (item.rate * (item.grossArea || 0)), 0);
         const unusualBuildingCosts = items.filter(i => i.isUnusual).reduce((acc, item) => acc + (item.fixedAmount || 0), 0);
         const additionalBudgetItems = items.filter(i => i.isAdditional).reduce((acc, item) => acc + (item.fixedAmount || 0), 0);
         const subTotal = basicBuildingCosts + unusualBuildingCosts + additionalBudgetItems;
         const ownerBudgetItems = items.filter(i => i.isOwnerBudget).reduce((acc, item) => acc + (item.fixedAmount || 0), 0);
         const totalProjectBudget = subTotal + ownerBudgetItems;
         return { basicBuildingCosts, unusualBuildingCosts, additionalBudgetItems, subTotal, ownerBudgetItems, totalProjectBudget };
-    }, [items, header.grossArea]);
+    }, [items]);
     
     const efficiency = useMemo(() => {
         if (header.grossArea > 0 && header.rentalArea > 0) {
@@ -153,8 +164,8 @@ export default function Page() {
             body: basicItems.map(item => [
                 item.description, 
                 item.rate.toFixed(2), 
-                header.grossArea, 
-                (item.rate * header.grossArea).toFixed(2)
+                item.grossArea || 0,
+                (item.rate * (item.grossArea || 0)).toFixed(2)
             ]),
             startY: y,
             theme: 'grid',
@@ -224,9 +235,9 @@ export default function Page() {
                     {hasRateCol ? (
                         <>
                             <Input type="number" value={item.rate} onChange={e => handleItemChange(item.id, 'rate', parseFloat(e.target.value) || 0)} />
-                            <div className="text-right font-medium">{header.grossArea || 0}</div>
+                            <Input type="number" value={item.grossArea || 0} onChange={e => handleItemChange(item.id, 'grossArea', parseFloat(e.target.value) || 0)} />
                             <div className="text-right font-medium">
-                                {(item.rate * (header.grossArea || 0)).toFixed(2)}
+                                {(item.rate * (item.grossArea || 0)).toFixed(2)}
                             </div>
                         </>
                     ) : (
@@ -263,8 +274,8 @@ export default function Page() {
                         <Input name="jobDate" value={header.jobDate} onChange={handleHeaderChange} type="date" placeholder="Job Date" />
                         <Input name="location" value={header.location} onChange={handleHeaderChange} placeholder="Location" />
                         <Input name="preparedBy" value={header.preparedBy} onChange={handleHeaderChange} placeholder="Prepared by" />
-                        <Input name="grossArea" value={header.grossArea} onChange={e => setHeader(prev => ({...prev, grossArea: parseFloat(e.target.value) || 0}))} type="number" placeholder="Gross Area" />
-                        <Input name="rentalArea" value={header.rentalArea} onChange={e => setHeader(prev => ({...prev, rentalArea: parseFloat(e.target.value) || 0}))} type="number" placeholder="Rental Area" />
+                        <Input name="grossArea" value={header.grossArea} onChange={handleHeaderChange} type="number" placeholder="Gross Area" />
+                        <Input name="rentalArea" value={header.rentalArea} onChange={handleHeaderChange} type="number" placeholder="Rental Area" />
                         <div className="flex items-center justify-center p-2 bg-muted rounded-md">Efficiency: {efficiency}%</div>
                     </div>
                     
