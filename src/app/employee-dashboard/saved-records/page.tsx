@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useFirebase } from '@/firebase/provider';
-import { collection, query, where, getDocs, orderBy, type Timestamp, FirestoreError } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, type Timestamp, FirestoreError, onSnapshot } from 'firebase/firestore';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -34,7 +34,7 @@ type SavedRecord = {
 export default function SavedRecordsPage() {
     const image = PlaceHolderImages.find(p => p.id === 'saved-records');
     const { firestore, auth } = useFirebase();
-    const { user: currentUser } = useCurrentUser();
+    const { user: currentUser, isUserLoading: isAuthLoading } = useCurrentUser();
     const { toast } = useToast();
 
     const [records, setRecords] = useState<SavedRecord[]>([]);
@@ -42,13 +42,13 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        if (!firestore || !auth) {
+        if (!firestore || !auth || isAuthLoading) {
             setIsLoading(false);
             return;
         }
 
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user && currentUser) { // Ensure both Firebase user and context user are available
+        const authUnsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user && currentUser) { 
                 const recordsCollection = collection(firestore, 'savedRecords');
                 const q = query(
                     recordsCollection,
@@ -56,36 +56,37 @@ export default function SavedRecordsPage() {
                     orderBy('createdAt', 'desc')
                 );
 
-                getDocs(q)
-                    .then(querySnapshot => {
+                const snapshotUnsubscribe = onSnapshot(q, 
+                    (querySnapshot) => {
                         const fetchedRecords = querySnapshot.docs.map(doc => ({
                             id: doc.id,
                             ...doc.data()
                         } as SavedRecord));
                         setRecords(fetchedRecords);
                         setError(null);
-                    })
-                    .catch(serverError => {
+                        setIsLoading(false);
+                    },
+                    (serverError) => {
                         const permissionError = new FirestorePermissionError({
                             path: recordsCollection.path,
                             operation: 'list'
                         });
                         setError(permissionError);
                         errorEmitter.emit('permission-error', permissionError);
-                    })
-                    .finally(() => {
                         setIsLoading(false);
-                    });
+                    }
+                );
+                
+                return () => snapshotUnsubscribe();
+
             } else {
-                // No user logged in, stop loading
                 setIsLoading(false);
                 setRecords([]);
             }
         });
         
-        // Cleanup subscription on unmount
-        return () => unsubscribe();
-    }, [firestore, auth, currentUser, toast]);
+        return () => authUnsubscribe();
+    }, [firestore, auth, currentUser, isAuthLoading, toast]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
@@ -112,7 +113,7 @@ export default function SavedRecordsPage() {
         URL.revokeObjectURL(url);
     };
 
-    if (isLoading) {
+    if (isLoading || isAuthLoading) {
         return (
             <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin" />

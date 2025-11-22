@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useFirebase } from '@/firebase/provider';
-import { collection, query, getDocs, orderBy, type Timestamp, FirestoreError } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, type Timestamp, FirestoreError, onSnapshot } from 'firebase/firestore';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -42,15 +42,14 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<FirestoreError | Error | null>(null);
 
     useEffect(() => {
-        if (!firestore || !auth) {
+        if (!firestore || !auth || isAuthLoading) {
             setIsLoading(false);
             return;
         }
 
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in, now check for authorization and fetch data.
-                const isAuthorized = user && currentUser && (currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo');
+        const authUnsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user && currentUser) {
+                const isAuthorized = currentUser.department === 'admin' || currentUser.department === 'software-engineer' || currentUser.department === 'ceo';
                 
                 if (!isAuthorized) {
                     setIsLoading(false);
@@ -63,37 +62,39 @@ export default function SavedRecordsPage() {
                     orderBy('createdAt', 'desc')
                 );
 
-                getDocs(q)
-                    .then(querySnapshot => {
+                const snapshotUnsubscribe = onSnapshot(q, 
+                    (querySnapshot) => {
                         const fetchedRecords = querySnapshot.docs.map(doc => ({
                             id: doc.id,
                             ...doc.data()
                         } as SavedRecord));
                         setRecords(fetchedRecords);
                         setError(null);
-                    })
-                    .catch(serverError => {
+                        setIsLoading(false);
+                    },
+                    (serverError) => {
                         const permissionError = new FirestorePermissionError({
                             path: recordsCollection.path,
                             operation: 'list'
                         });
                         setError(permissionError);
                         errorEmitter.emit('permission-error', permissionError);
-                    })
-                    .finally(() => {
                         setIsLoading(false);
-                    });
+                    }
+                );
+                
+                // Return the snapshot listener's unsubscribe function
+                return () => snapshotUnsubscribe();
 
             } else {
-                // User is signed out.
                 setIsLoading(false);
                 setRecords([]);
             }
         });
 
-        return () => unsubscribe();
+        return () => authUnsubscribe();
             
-    }, [firestore, auth, currentUser]);
+    }, [firestore, auth, currentUser, isAuthLoading, toast]);
 
     const handleDownload = (record: SavedRecord) => {
         let content = `Project: ${record.projectName}\n`;
@@ -120,7 +121,7 @@ export default function SavedRecordsPage() {
         URL.revokeObjectURL(url);
     };
 
-    if (isLoading) {
+    if (isAuthLoading) {
         return (
             <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -160,6 +161,13 @@ export default function SavedRecordsPage() {
                 imageUrl={image?.imageUrl || ''}
                 imageHint={image?.imageHint || ''}
             />
+
+            {isLoading && (
+                 <div className="flex justify-center items-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <span className="ml-4">Loading Records...</span>
+                </div>
+            )}
 
             {!isLoading && error && (
                  <Card className="text-center py-12 bg-destructive/10 border-destructive">
