@@ -201,8 +201,8 @@ export default function ProjectDataPage() {
                             <RadioGroup name="construction_type" className="flex flex-wrap gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="rcc" id="ct_rcc" /><Label htmlFor="ct_rcc">Beam-Column in RCC</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="composite" id="ct_composite" /><Label htmlFor="ct_composite">Composit Structure</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="load_bearing" id="ct_load_bearing" /><Label htmlFor="ct_load_bearing">Load Bearing in walls</Label></div></RadioGroup>
                         </div>
                     </Section>
-                    
-                    <Section title="Building Details">
+
+                     <Section title="Building Details">
                         <FormRow label="Seepage">
                              <RadioGroup name="seepage" className="flex items-center space-x-8">
                                 <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="seepage_yes" /><Label htmlFor="seepage_yes">Yes</Label></div>
@@ -253,6 +253,55 @@ export default function ProjectDataPage() {
                                  <div className="flex items-center space-x-2"><Checkbox id="violation_informed" /><Label htmlFor="violation_informed">As Informed by Owner Representative</Label></div>
                             </div>
                         </FormRow>
+                    </Section>
+
+                     <Section title="Utilities">
+                        <FormRow label="Sanctioned electrical load">
+                            <div className="flex items-center justify-between">
+                                <Input id="sanctioned_load_text" />
+                                <div className="flex items-center space-x-2"><Checkbox id="sanctioned_load_na" /><Label htmlFor="sanctioned_load_na">N/A</Label></div>
+                            </div>
+                        </FormRow>
+                        <FormRow label="Type of electrical load">
+                             <RadioGroup name="electrical_load_type" className="flex flex-wrap gap-4">
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="commercial" id="elec_commercial" /><Label htmlFor="elec_commercial">Commercial</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="industrial" id="elec_industrial" /><Label htmlFor="elec_industrial">Industrial</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="residential" id="elec_residential" /><Label htmlFor="elec_residential">Residential</Label></div>
+                            </RadioGroup>
+                        </FormRow>
+                        <FormRow label="Electrical Meter (single phase / 3 phase)"><Input id="electrical_meter" /></FormRow>
+                        <FormRow label="Piped water available">
+                            <RadioGroup name="piped_water" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="water_yes" /><Label htmlFor="water_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="water_no" /><Label htmlFor="water_no">No</Label></div></RadioGroup>
+                        </FormRow>
+                        <FormRow label="Underground tank">
+                            <RadioGroup name="underground_tank" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="ug_tank_yes" /><Label htmlFor="ug_tank_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="ug_tank_no" /><Label htmlFor="ug_tank_no">No</Label></div></RadioGroup>
+                        </FormRow>
+                        <FormRow label="Overhead tank">
+                            <RadioGroup name="overhead_tank" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="oh_tank_yes" /><Label htmlFor="oh_tank_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="oh_tank_no" /><Label htmlFor="oh_tank_no">No</Label></div></RadioGroup>
+                        </FormRow>
+                        <FormRow label="Type of Overhead tank (RCC, Fiber etc.)"><Input id="overhead_tank_type" /></FormRow>
+                        <FormRow label="Type of water (boring or Line water)"><Input id="water_type" /></FormRow>
+                        <FormRow label="Gas Connection">
+                            <RadioGroup name="gas_connection" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="gas_yes" /><Label htmlFor="gas_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="gas_no" /><Label htmlFor="gas_no">No</Label></div></RadioGroup>
+                        </FormRow>
+                         <FormRow label="Connected to Sewerage line">
+                            <RadioGroup name="sewerage_connection" className="flex items-center space-x-8"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="sewer_yes" /><Label htmlFor="sewer_yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="sewer_no" /><Label htmlFor="sewer_no">No</Label></div></RadioGroup>
+                        </FormRow>
+                    </Section>
+
+                    <Section title="Bounded As">
+                        <FormRow label="Front:"><Input id="bounded_front" /></FormRow>
+                        <FormRow label="Back:"><Input id="bounded_back" /></FormRow>
+                        <FormRow label="Right:"><Input id="bounded_right" /></FormRow>
+                        <FormRow label="Left:"><Input id="bounded_left" /></FormRow>
+                    </Section>
+
+                     <Section title="Rental Detail">
+                        <FormRow label="Acquisition"><Input id="rental_acquisition" /></FormRow>
+                        <FormRow label="Expected Rental /month"><Input id="rental_expected_rent" /></FormRow>
+                        <FormRow label="Expected Advance (# of months)"><Input id="rental_expected_advance" /></FormRow>
+                        <FormRow label="Expected period of lease"><Input id="rental_lease_period" /></FormRow>
+                        <FormRow label="Annual increase in rental"><Input id="rental_annual_increase" /></FormRow>
                     </Section>
 
                     <div className="flex justify-end gap-4 mt-12">
