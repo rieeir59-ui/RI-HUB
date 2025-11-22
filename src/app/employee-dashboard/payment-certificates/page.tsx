@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -145,28 +146,15 @@ export default function Page() {
             startY: yPos,
             theme: 'plain',
             body: [
-                [`To (Owner): ${form1State.toOwner}`, `Project: ${form1State.project}`],
-                [`Attention: ${form1State.attention}`, `Construction Manager: ${form1State.constructionManager}`],
+                [`To (Owner): ${form1State.toOwner}`, `Application Number: ${form1State.applicationNumber}`],
+                [`Attention: ${form1State.attention}`, `Period From: ${form1State.periodFrom} To: ${form1State.periodTo}`],
+                 [`Project: ${form1State.project}`, `Architect's Project No: ${form1State.architectsProjectNo}`],
+                [`Construction Manager: ${form1State.constructionManager}`],
             ],
-            styles: { cellPadding: 1 },
+            styles: { cellPadding: 1, fontSize: 9 },
             columnStyles: { 0: { cellWidth: 100 } }
         });
-        
-        const lastY = (doc as any).autoTable.previous.finalY;
-    
-        doc.autoTable({
-            startY: yPos,
-            theme: 'plain',
-            body: [
-                [`Application Number: ${form1State.applicationNumber}`],
-                [`Period From: ${form1State.periodFrom} To: ${form1State.periodTo}`],
-                [`Architect's Project No: ${form1State.architectsProjectNo}`],
-            ],
-            styles: { cellPadding: 1 },
-            margin: { left: 115 }
-        });
-    
-        yPos = Math.max(lastY, (doc as any).autoTable.previous.finalY) + 5;
+        yPos = (doc as any).autoTable.previous.finalY + 5;
     
         const appText = "The undersigned Construction Manager certifies that the best of the Construction Manager's knowledge, information and belief Work covered by this Project Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractors for Work for which previous Project Certificates for Payments were issued and payments received from the Owner, and that Current Payment shown herein is now due.";
         const summaryText = "Application is made for Payment, as shown below, in connection with the Project. Project Application Summary, is attached. The present status for the account for all Contractors is for this Project is as follows:";
@@ -177,61 +165,55 @@ export default function Page() {
             body: [
                 [
                     { content: 'Project Application for Payment:', styles: { fontStyle: 'bold' } },
-                    { content: 'Application is made for Payment, as shown below...', styles: { fontStyle: 'normal' } }
+                    { content: 'Application for Payment:', styles: { fontStyle: 'bold' } }
                 ],
                 [
-                    { content: doc.splitTextToSize(appText, 90), styles: { fontSize: 9 } },
-                    { content: doc.splitTextToSize(summaryText, 80), styles: { fontSize: 9 } }
+                    { content: doc.splitTextToSize(appText, 85), styles: { fontSize: 8, cellPadding: 1 } },
+                    { content: doc.splitTextToSize(summaryText, 85), styles: { fontSize: 8, cellPadding: 1 } }
                 ]
             ],
-            styles: { cellPadding: 1 }
         });
         yPos = (doc as any).autoTable.previous.finalY + 5;
     
-        doc.autoTable({
-            startY: yPos, theme: 'plain', body: [
+         doc.autoTable({
+            startY: yPos, theme: 'grid',
+            head: [['Description', 'Amount']],
+            body: [
                 ['Total Contract Sum (Item A Totals)', `Rs. ${form1State.totalContractSum.toFixed(2)}`],
                 ['Total Net Changes by Change Order (Item B Totals)', `Rs. ${form1State.netChanges.toFixed(2)}`],
                 ['Total Contract Sum to Date (Item C Totals)', `Rs. ${contractSumToDate1.toFixed(2)}`],
-            ],
-            styles: { cellPadding: 1 },
-            columnStyles: { 0: { cellWidth: 100 } }
-        });
-        yPos = (doc as any).autoTable.previous.finalY + 5;
-    
-        doc.autoTable({
-            startY: yPos, theme: 'plain', body: [
-                ['Total Completed & Stored to Date (Item F Totals)', `Rs. ${form1State.totalCompleted.toFixed(2)}`],
+                 ['Total Completed & Stored to Date (Item F Totals)', `Rs. ${form1State.totalCompleted.toFixed(2)}`],
                 ['Retainage (Item H Totals)', `Rs. ${form1State.retainage.toFixed(2)}`],
                 ['Less Previous Totals Payments (Item I Total)', `Rs. ${form1State.previousPayments.toFixed(2)}`],
                 ['Current Payment Due (Item J Totals)', `Rs. ${form1State.currentPaymentDue.toFixed(2)}`],
             ],
-            styles: { cellPadding: 1, fontStyle: 'bold' },
-            columnStyles: { 0: { cellWidth: 100, fontStyle: 'normal' } }
+            styles: { cellPadding: 2, fontSize: 9 },
+            headStyles: { fillColor: primaryColor, fontStyle: 'bold' },
+            bodyStyles: { fontStyle: 'bold' },
+            columnStyles: { 0: { fontStyle: 'normal' } }
         });
         yPos = (doc as any).autoTable.previous.finalY + 5;
     
         const certText = "In accordance with the Contract Documents, based on on-site observations and the data comprising the above Application, the Architect certifies to the Owner that Work has progressed as indicated; that to the best of the Architect's knowledge, information and belief the quality of the Work is in accordance with the Contract Documents; the quality of the Contractors are entitled to payment of the AMOUNTS CERTIFIED.";
-    
+        
         doc.autoTable({
             startY: yPos,
             theme: 'plain',
             body: [
-                [
-                    { content: `Construction Manager:\nBy: ${form1State.constructionManagerBy} \nDate: ${form1State.constructionManagerDate}` },
+                 [
+                    { content: `Construction Manager:\nBy: ${form1State.constructionManagerBy}\nDate: ${form1State.constructionManagerDate}`, styles: {fontStyle: 'bold'} },
                     { content: "Architect's Project Certificate for Payment:", styles: { fontStyle: 'bold' } }
                 ],
                 [
-                    { content: `\nStatus of: ${form1State.statusOf}\nCounty of: ${form1State.countyOf}` },
-                    { content: doc.splitTextToSize(certText, 80), styles: { fontSize: 9 } }
+                    { content: `\nState of: ${form1State.statusOf}\nCounty of: ${form1State.countyOf}`, styles: {fontStyle: 'bold'} },
+                    { content: doc.splitTextToSize(certText, 80), styles: { fontSize: 8 } }
                 ],
                 [
                     { content: `Subscribed and sworn to before me this Day of: ${form1State.subscribedDay}\nNotary Public: ${form1State.notaryPublic}\nMy Commission expires: ${form1State.commissionExpires}`},
                     { content: `Total of Amounts Certified: Rs. ${form1State.totalCertified.toFixed(2)}\nArchitect:\nBy: ${form1State.architectBy}\nDate: ${form1State.architectDate}` }
                 ],
             ],
-            styles: { cellPadding: 1, valign: 'top' },
-            columnStyles: { 0: { fontStyle: 'bold' }, 1: { fontStyle: 'normal'} }
+            styles: { cellPadding: 1, valign: 'top', fontSize: 9 },
         });
         yPos = (doc as any).autoTable.previous.finalY + 5;
     
@@ -443,10 +425,14 @@ export default function Page() {
                         <div>
                             <Label htmlFor="toOwner">To (Owner)</Label><Input id="toOwner" name="toOwner" value={form1State.toOwner} onChange={handleForm1Change} />
                             <Label htmlFor="attention" className="mt-2">Attention</Label><Input id="attention" name="attention" value={form1State.attention} onChange={handleForm1Change} />
+                            <Label htmlFor="project" className="mt-2">Project</Label><Input id="project" name="project" value={form1State.project} onChange={handleForm1Change} />
+                             <Label htmlFor="constructionManager" className="mt-2">Construction Manager</Label><Input id="constructionManager" name="constructionManager" value={form1State.constructionManager} onChange={handleForm1Change} />
                         </div>
                         <div>
-                            <Label htmlFor="project">Project</Label><Input id="project" name="project" value={form1State.project} onChange={handleForm1Change} />
-                            <Label htmlFor="constructionManager" className="mt-2">Construction Manager</Label><Input id="constructionManager" name="constructionManager" value={form1State.constructionManager} onChange={handleForm1Change} />
+                             <Label htmlFor="applicationNumber">Application Number</Label><Input id="applicationNumber" name="applicationNumber" value={form1State.applicationNumber} onChange={handleForm1Change} />
+                            <Label htmlFor="periodFrom" className="mt-2">Period From</Label><Input id="periodFrom" name="periodFrom" type="date" value={form1State.periodFrom} onChange={handleForm1Change} />
+                            <Label htmlFor="periodTo" className="mt-2">To</Label><Input id="periodTo" name="periodTo" type="date" value={form1State.periodTo} onChange={handleForm1Change} />
+                            <Label htmlFor="architectsProjectNo" className="mt-2">Architect's Project No</Label><Input id="architectsProjectNo" name="architectsProjectNo" value={form1State.architectsProjectNo} onChange={handleForm1Change} />
                         </div>
                     </div>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border p-4 rounded-lg">
@@ -459,11 +445,9 @@ export default function Page() {
                                 <div className="flex items-center gap-2"><Checkbox id="dist_others" checked={form1State.distributedTo.includes('Others')} onCheckedChange={() => handleForm1CheckboxChange('Others')} /><Label htmlFor="dist_others">Others</Label></div>
                             </div>
                         </div>
-                        <div>
-                             <Label htmlFor="applicationNumber">Application Number</Label><Input id="applicationNumber" name="applicationNumber" value={form1State.applicationNumber} onChange={handleForm1Change} />
-                            <Label htmlFor="periodFrom" className="mt-2">Period From</Label><Input id="periodFrom" name="periodFrom" type="date" value={form1State.periodFrom} onChange={handleForm1Change} />
-                            <Label htmlFor="periodTo" className="mt-2">To</Label><Input id="periodTo" name="periodTo" type="date" value={form1State.periodTo} onChange={handleForm1Change} />
-                            <Label htmlFor="architectsProjectNo" className="mt-2">Architect's Project No</Label><Input id="architectsProjectNo" name="architectsProjectNo" value={form1State.architectsProjectNo} onChange={handleForm1Change} />
+                         <div>
+                            <h3 className="font-bold">Application for Payment:</h3>
+                            <p className="text-xs text-muted-foreground mt-2">Application is made for Payment, as shown below, in connection with the Project. Project Application Summary, is attached. The present status for the account for all Contractors is for this Project is as follows:</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -479,7 +463,7 @@ export default function Page() {
                             </div>
                             <div className="mt-4 space-y-2 border-t pt-4">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Input name="statusOf" placeholder="Status of" value={form1State.statusOf} onChange={handleForm1Change} />
+                                    <Input name="statusOf" placeholder="State of" value={form1State.statusOf} onChange={handleForm1Change} />
                                     <Input name="countyOf" placeholder="County of" value={form1State.countyOf} onChange={handleForm1Change} />
                                 </div>
                                 <Input name="subscribedDay" placeholder="Subscribed and sworn to before me this Day of" value={form1State.subscribedDay} onChange={handleForm1Change} />
@@ -487,17 +471,14 @@ export default function Page() {
                                 <Input name="commissionExpires" placeholder="My Commission expires" value={form1State.commissionExpires} onChange={handleForm1Change} />
                             </div>
                         </div>
-                        <div>
-                            <p className="text-xs text-muted-foreground">Application is made for Payment, as shown below, in connection with the Project. Project Application Summary, is attached. The present status for the account for all Contractors is for this Project is as follows:</p>
-                            <div className="space-y-2 mt-4">
-                                <div className="flex items-center gap-2"><Label className="flex-1">Total Contract Sum (Item A Totals)</Label><Input type="number" name="totalContractSum" value={form1State.totalContractSum} onChange={handleForm1NumberChange} className="w-40" /></div>
-                                <div className="flex items-center gap-2"><Label className="flex-1">Total Net Changes by Change Order (Item B Totals)</Label><Input type="number" name="netChanges" value={form1State.netChanges} onChange={handleForm1NumberChange} className="w-40" /></div>
-                                <div className="flex items-center gap-2 font-bold"><Label className="flex-1">Total Contract Sum to Date (Item C Totals)</Label><Input readOnly value={contractSumToDate1.toFixed(2)} className="w-40 bg-muted" /></div>
-                                <div className="flex items-center gap-2 pt-4 border-t"><Label className="flex-1">Total Completed & Stored to Date (Item F Totals)</Label><Input type="number" name="totalCompleted" value={form1State.totalCompleted} onChange={handleForm1NumberChange} className="w-40" /></div>
-                                <div className="flex items-center gap-2"><Label className="flex-1">Retainage (Item H Totals)</Label><Input type="number" name="retainage" value={form1State.retainage} onChange={handleForm1NumberChange} className="w-40" /></div>
-                                <div className="flex items-center gap-2"><Label className="flex-1">Less Previous Totals Payments (Item I Total)</Label><Input type="number" name="previousPayments" value={form1State.previousPayments} onChange={handleForm1NumberChange} className="w-40" /></div>
-                                <div className="flex items-center gap-2 font-bold"><Label className="flex-1">Current Payment Due (Item J Totals)</Label><Input readOnly value={form1State.currentPaymentDue.toFixed(2)} className="w-40 bg-muted" /></div>
-                            </div>
+                        <div className="space-y-2 mt-4 border p-4 rounded-lg">
+                            <div className="flex items-center justify-between gap-2"><Label className="flex-1">Total Contract Sum</Label><Input type="number" name="totalContractSum" value={form1State.totalContractSum} onChange={handleForm1NumberChange} className="w-40" /></div>
+                            <div className="flex items-center justify-between gap-2"><Label className="flex-1">Total Net Changes by Change Order</Label><Input type="number" name="netChanges" value={form1State.netChanges} onChange={handleForm1NumberChange} className="w-40" /></div>
+                            <div className="flex items-center justify-between gap-2 font-bold"><Label className="flex-1">Total Contract Sum to Date</Label><Input readOnly value={contractSumToDate1.toFixed(2)} className="w-40 bg-muted" /></div>
+                            <div className="flex items-center justify-between gap-2 pt-4 border-t"><Label className="flex-1">Total Completed & Stored to Date</Label><Input type="number" name="totalCompleted" value={form1State.totalCompleted} onChange={handleForm1NumberChange} className="w-40" /></div>
+                            <div className="flex items-center justify-between gap-2"><Label className="flex-1">Retainage</Label><Input type="number" name="retainage" value={form1State.retainage} onChange={handleForm1NumberChange} className="w-40" /></div>
+                            <div className="flex items-center justify-between gap-2"><Label className="flex-1">Less Previous Totals Payments</Label><Input type="number" name="previousPayments" value={form1State.previousPayments} onChange={handleForm1NumberChange} className="w-40" /></div>
+                            <div className="flex items-center justify-between gap-2 font-bold"><Label className="flex-1">Current Payment Due</Label><Input readOnly value={form1State.currentPaymentDue.toFixed(2)} className="w-40 bg-muted" /></div>
                         </div>
                     </div>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t pt-6">
@@ -506,7 +487,7 @@ export default function Page() {
                             <p className="text-xs text-muted-foreground mt-2">In accordance with the Contract Documents, based on on-site observations and the data comprising the above Application, the Architect certifies to the Owner that Work has progressed as indicated; that to the best of the Architect's knowledge, information and belief the quality of the Work is in accordance with the Contract Documents; the quality of the Contractors are entitled to payment of the AMOUNTS CERTIFIED.</p>
                         </div>
                          <div>
-                            <div className="flex items-center gap-2"><Label className="flex-1">Total of Amounts Certified</Label><Input type="number" name="totalCertified" value={form1State.totalCertified} onChange={handleForm1NumberChange} className="w-40" /></div>
+                            <div className="flex items-center justify-between gap-2"><Label className="flex-1">Total of Amounts Certified</Label><Input type="number" name="totalCertified" value={form1State.totalCertified} onChange={handleForm1NumberChange} className="w-40" /></div>
                             <Textarea name="explanation" placeholder="Attach explanation if amount certified differs from the amount applies for." className="text-xs mt-2" />
                              <div className="mt-4 space-y-2">
                                 <h4 className="font-semibold">Architect:</h4>
@@ -636,3 +617,4 @@ export default function Page() {
         </div>
     );
 }
+
