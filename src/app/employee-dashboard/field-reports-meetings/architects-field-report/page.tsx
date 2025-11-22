@@ -109,7 +109,7 @@ export default function ArchitectsFieldReportPage() {
     return (
         <Card>
             <CardHeader className="text-center">
-                <p className="font-bold">ISBAH HASSAN & ASSOCIATES</p>
+                <p className="font-bold text-primary">ISBAH HASSAN & ASSOCIATES</p>
                 <p className="text-sm text-muted-foreground">ARCHITECTURAL - ENGINEERING - CONSTRUCTIONS</p>
                 <CardTitle className="font-headline text-3xl text-primary pt-4">Architect's Field Report</CardTitle>
             </CardHeader>

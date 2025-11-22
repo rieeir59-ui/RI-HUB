@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -14,6 +15,7 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
 import { addDays, subDays, differenceInDays, format, parseISO } from 'date-fns';
+
 
 interface Task {
   id: number;
@@ -207,7 +209,7 @@ export default function TimelinePage() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="text-2xl font-bold text-center">TIME LINE SCHEDULE</CardTitle>
+                <CardTitle className="text-2xl font-bold text-center text-primary">TIME LINE SCHEDULE</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-2 gap-4 mb-4">
