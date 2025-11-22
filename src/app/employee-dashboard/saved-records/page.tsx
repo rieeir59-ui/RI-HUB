@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,10 +7,12 @@ import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, Edit } from 'lucide-react';
 import { useCurrentUser } from '@/context/UserContext';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import Link from 'next/link';
+import { getFormUrlFromFileName } from '@/lib/utils';
 
 type SavedRecordData = {
     category: string;
@@ -38,8 +39,14 @@ export default function SavedRecordsPage() {
     const [error, setError] = useState<string | null>(null);
 
      useEffect(() => {
-        if (!firestore || isUserLoading) {
+        if (isUserLoading) {
             setIsLoading(true);
+            return;
+        }
+
+        if (!firestore) {
+            setIsLoading(false);
+            setError("Firestore is not available.");
             return;
         }
         
@@ -155,7 +162,9 @@ export default function SavedRecordsPage() {
 
             {!isLoading && !error && records.length > 0 && (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {records.map(record => (
+                    {records.map(record => {
+                        const formUrl = getFormUrlFromFileName(record.fileName, 'employee-dashboard');
+                        return (
                         <Card key={record.id} className="flex flex-col">
                             <CardHeader>
                                 <CardTitle>{record.projectName}</CardTitle>
@@ -187,14 +196,21 @@ export default function SavedRecordsPage() {
                                    {record.data.length > 2 && <p className="text-sm text-muted-foreground">...and more categories</p>}
                                 </div>
                             </CardContent>
-                            <CardFooter>
-                                <Button onClick={() => handleDownload(record)} className="w-full">
+                            <CardFooter className="flex-col items-stretch space-y-2">
+                                {formUrl && (
+                                     <Button asChild>
+                                        <Link href={`${formUrl}?id=${record.id}`}>
+                                            <Edit className="mr-2 h-4 w-4" /> Edit Record
+                                        </Link>
+                                    </Button>
+                                )}
+                                <Button onClick={() => handleDownload(record)} variant="outline" className="w-full">
                                     <Download className="mr-2 h-4 w-4" />
-                                    Download Record
+                                    Download Raw Data
                                 </Button>
                             </CardFooter>
                         </Card>
-                    ))}
+                    )})}
                 </div>
             )}
         </div>
