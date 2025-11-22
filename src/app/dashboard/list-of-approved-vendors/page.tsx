@@ -1,4 +1,3 @@
-
 'use client';
 
 import DashboardPageHeader from "@/components/dashboard/PageHeader";
@@ -141,6 +140,15 @@ const vendorData = {
     { category: 'Generators', company: 'ENPOWER ENGINEERING COMPANY(GENERATORS)', person: '-', address: '55-N,GULBERGII,LAHORE', contact: '042-35310110, sales@enpowerservices.com' },
     { category: 'HVAC', company: 'ICEBERG INDUSTRIES(LG)', person: 'RAQIB SHAHZAD(HVAC ENGR.)', address: '14,R-1 BLOCK M.A. JOHAR TOWN, LAHORE', contact: '3312488967, 042-35275637, 042-35275639, 3022512004, raqib-shahzad@icebergindutries.net, info@nei.net.pk' },
   ],
+  solarAutomation: [
+    { company: 'Sync & Secure', person: 'Bilal', products: 'Home Automation', address: '199-C, 2nd Floor, Phase 8, Commercial Broadway, DHA', contact: '0305-5442145' },
+    { company: 'Octave Technology', person: 'Hashim', products: 'Home Automation', address: '', contact: '' },
+    { company: 'Tera Generation Solutions Pvt. Ltd.', person: '-', products: 'Home Automation', address: '7-A, P Block Block P Gulberg 2, Lahore, Punjab', contact: '(042) 111 847 111' },
+    { company: 'Synergy Technologies', person: '-', products: 'Home Automation', address: '39-A Block D-1 Gulberg III Lahore', contact: '042-111900111' },
+    { company: 'Phoenix Groups of Compines', person: '-', products: 'Home Automation', address: 'KHI.SUK P&O Plaza I.I. Chunrigar Road Khi', contact: '021-111288288' },
+    { company: 'Green Wave', person: '-', products: 'Home Automation', address: 'Suit 5 ,4 sher shah Block,Lahore Punjab', contact: '' },
+    { company: 'HDL', person: '-', products: 'Home Automation', address: '48-T, First Floor ,(CCA) Lalik Chowk Phase II DHA Lahore', contact: '0303-0435435' },
+  ]
 };
 
 const VendorTable = ({ title, vendors, columns }: { title: string, vendors: any[], columns: { key: string, label: string }[] }) => (
@@ -213,9 +221,10 @@ export default function Page() {
       <VendorTable title="Wood Veneers Vendors" vendors={vendorData.woodVeneer} columns={defaultCols} />
       <VendorTable title="List of Timber Vendors" vendors={vendorData.timber} columns={defaultCols} />
       <VendorTable title="Furniture Vendors" vendors={vendorData.furniture} columns={servicesCols} />
-      <VendorTable title="Kitchen & Wardrobe Vendors" vendors={vendorData.kitchen} columns={defaultCols} />
+      <VendorTable title="Kitchen &amp; Wardrobe Vendors" vendors={vendorData.kitchen} columns={defaultCols} />
       <VendorTable title="Fire Places" vendors={vendorData.fireplaces} columns={defaultCols} />
       <VendorTable title="Electrical Vendors" vendors={vendorData.electrical} columns={electricalCols} />
+      <VendorTable title="Solar &amp; Automation Vendors" vendors={vendorData.solarAutomation} columns={defaultCols} />
     </div>
   );
 }
