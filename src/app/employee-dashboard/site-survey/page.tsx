@@ -201,6 +201,59 @@ export default function ProjectDataPage() {
                             <RadioGroup name="construction_type" className="flex flex-wrap gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="rcc" id="ct_rcc" /><Label htmlFor="ct_rcc">Beam-Column in RCC</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="composite" id="ct_composite" /><Label htmlFor="ct_composite">Composit Structure</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="load_bearing" id="ct_load_bearing" /><Label htmlFor="ct_load_bearing">Load Bearing in walls</Label></div></RadioGroup>
                         </div>
                     </Section>
+                    
+                    <Section title="Building Details">
+                        <FormRow label="Seepage">
+                             <RadioGroup name="seepage" className="flex items-center space-x-8">
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="seepage_yes" /><Label htmlFor="seepage_yes">Yes</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="seepage_no" /><Label htmlFor="seepage_no">No</Label></div>
+                            </RadioGroup>
+                        </FormRow>
+                        <FormRow label="Area of seepage (Walls, slab etc.)"><Input id="seepage_area" /></FormRow>
+                        <FormRow label="Cause of Seepage"><Input id="seepage_cause" /></FormRow>
+                        <FormRow label="Property Utilization">
+                            <div className="flex flex-wrap gap-4">
+                                <div className="flex items-center space-x-2"><Checkbox id="util_residential" /><Label htmlFor="util_residential">Fully residential</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id="util_commercial" /><Label htmlFor="util_commercial">Fully Commercial</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id="util_dual" /><Label htmlFor="util_dual">Dual use residential & commercial</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id="util_industrial" /><Label htmlFor="util_industrial">Industrial</Label></div>
+                            </div>
+                        </FormRow>
+                         <FormRow label="Condition of roof waterproofing (if applicable)"><Input id="roof_waterproofing" /></FormRow>
+                        <FormRow label="Parking available">
+                             <div className="flex flex-wrap gap-4">
+                                <div className="flex items-center space-x-2"><Checkbox id="parking_yes" /><Label htmlFor="parking_yes">Yes</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id="parking_main_road" /><Label htmlFor="parking_main_road">On Main Road</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id="parking_no" /><Label htmlFor="parking_no">No</Label></div>
+                            </div>
+                        </FormRow>
+                        <FormRow label="Approachable through Road">
+                             <RadioGroup name="approachable" className="flex items-center space-x-8">
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="approachable_yes" /><Label htmlFor="approachable_yes">Yes</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="approachable_no" /><Label htmlFor="approachable_no">No</Label></div>
+                            </RadioGroup>
+                        </FormRow>
+                         <FormRow label="Wall masonary material as per region"><Input id="wall_material" /></FormRow>
+                        <FormRow label="Major retainable building elements">
+                            <div className="flex flex-wrap gap-4">
+                                <div className="flex items-center space-x-2"><Checkbox id="retainable_water_tank" /><Label htmlFor="retainable_water_tank">Water tank</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id="retainable_subflooring" /><Label htmlFor="retainable_subflooring">Subflooring</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id="retainable_staircase" /><Label htmlFor="retainable_staircase">staircase</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id="retainable_other_check" /><Label htmlFor="retainable_other_check">Others</Label><Input id="retainable_other_text" className="h-7" /></div>
+                            </div>
+                        </FormRow>
+                        <FormRow label="Incase of Plot provide existing level from road & surrounding buildings"><Input id="plot_level" /></FormRow>
+                        <FormRow label="Building Control Violations">
+                             <div className="flex flex-wrap items-center gap-4">
+                                 <RadioGroup name="violations" className="flex flex-wrap gap-4">
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="major" id="violation_major" /><Label htmlFor="violation_major">Major</Label></div>
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="minor" id="violation_minor" /><Label htmlFor="violation_minor">Minor</Label></div>
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="none" id="violation_none" /><Label htmlFor="violation_none">No Deviation</Label></div>
+                                </RadioGroup>
+                                 <div className="flex items-center space-x-2"><Checkbox id="violation_informed" /><Label htmlFor="violation_informed">As Informed by Owner Representative</Label></div>
+                            </div>
+                        </FormRow>
+                    </Section>
 
                     <div className="flex justify-end gap-4 mt-12">
                         <Button type="button" onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save Record</Button>
