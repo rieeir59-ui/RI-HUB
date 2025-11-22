@@ -441,7 +441,9 @@ export default function ProjectChecklistPage() {
             doc.setFontSize(11);
             doc.text(label, 14, yPos);
             doc.setFont('helvetica', 'normal');
-            doc.text(value, 60, yPos);
+            // Calculate position for the value to avoid overlap
+            const labelWidth = doc.getTextWidth(label);
+            doc.text(value, 14 + labelWidth + 5, yPos); // 5 is for a small gap
             yPos += 10;
         }
 
