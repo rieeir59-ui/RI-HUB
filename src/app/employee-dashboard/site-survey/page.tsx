@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -113,6 +114,7 @@ export default function SiteSurveyPage() {
         let yPos = 20;
         const pageHeight = doc.internal.pageSize.height;
         const margin = 14;
+        const primaryColor = [45, 95, 51]; 
 
         const checkAndAddPage = () => {
             if (yPos > pageHeight - 20) {
@@ -129,7 +131,9 @@ export default function SiteSurveyPage() {
             checkAndAddPage();
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
             doc.text(title, margin, yPos);
+            doc.setTextColor(0,0,0);
             yPos += 8;
 
             content.forEach(item => {
@@ -147,7 +151,9 @@ export default function SiteSurveyPage() {
 
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         doc.text("Site Survey - Premises Review", doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        doc.setTextColor(0,0,0);
 
         addSection('Location', [
             { label: 'Region', value: getInputValue('location_region') },
@@ -228,7 +234,9 @@ export default function SiteSurveyPage() {
         checkAndAddPage();
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         doc.text('Survey Checklist', margin, yPos);
+        doc.setTextColor(0,0,0);
         yPos += 8;
 
         const tableData = [
@@ -255,6 +263,7 @@ export default function SiteSurveyPage() {
             body: remarksBody,
             startY: yPos,
             theme: 'grid',
+            headStyles: { fillColor: primaryColor, textColor: [255,255,255] }
         });
 
 
@@ -453,3 +462,5 @@ export default function SiteSurveyPage() {
         </Card>
     );
 }
+
+    
