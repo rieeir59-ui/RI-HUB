@@ -126,14 +126,17 @@ export default function SavedRecordsPage() {
         yPos += 10;
         
         doc.setFontSize(10);
+        
+        const headerData = [
+            [`File: ${record.fileName}`],
+            [`Saved by: ${record.employeeName}`],
+            [`Date: ${record.createdAt.toDate().toLocaleDateString()}`],
+        ];
+
         doc.autoTable({
             startY: yPos,
             theme: 'plain',
-            body: [
-                [`File: ${record.fileName}`],
-                [`Saved by: ${record.employeeName}`],
-                [`Date: ${record.createdAt.toDate().toLocaleDateString()}`],
-            ],
+            body: headerData,
             styles: { fontSize: 10 },
         });
 
@@ -147,29 +150,35 @@ export default function SavedRecordsPage() {
                 yPos = 20;
             }
             
-            let body: (string | number)[][] = [];
+            const body: (string | number)[][] = [];
 
             if (section.items && Array.isArray(section.items)) {
-                 body = section.items.map((item: any) => {
+                section.items.forEach((item: any) => {
                     try {
                         const parsed = JSON.parse(item);
-                        return Object.entries(parsed).map(([key, value]) => [key, String(value)]);
+                        Object.entries(parsed).forEach(([key, value]) => {
+                            if (typeof value !== 'object' && value !== null) {
+                                body.push([key, String(value)]);
+                            }
+                        });
                     } catch {
                         const parts = String(item).split(':');
                         if (parts.length > 1) {
-                            return [parts[0], parts.slice(1).join(':').trim()];
+                            body.push([parts[0], parts.slice(1).join(':').trim()]);
+                        } else {
+                            body.push([item, '']);
                         }
-                        return [item, ''];
                     }
-                }).flat();
+                });
             } else if (typeof section.items === 'object' && section.items !== null) {
-                 body = Object.entries(section.items).map(([key, value]) => [key, String(value)]);
+                 Object.entries(section.items).forEach(([key, value]) => {
+                     body.push([key, String(value)]);
+                 });
             }
-
 
             doc.autoTable({
                 head: [[section.category || 'Details']],
-                body: body,
+                body: body.length > 0 ? body : [['No items to display']],
                 startY: yPos,
                 theme: 'grid',
                 headStyles: { fontStyle: 'bold', fillColor: [45, 95, 51], textColor: 255 },
@@ -303,4 +312,3 @@ export default function SavedRecordsPage() {
         </>
     );
 }
-
