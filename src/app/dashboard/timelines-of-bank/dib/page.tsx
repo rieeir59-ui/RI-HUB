@@ -227,7 +227,7 @@ export default function DIBTimelinePage() {
                             {statusRows.map(row => (
                                 <tr key={row.id}>
                                     <td className="border p-2 font-semibold w-8">{row.title}</td>
-                                    <td className="border p-2"><Textarea value={row.status} onChange={e => handleStatusChange(row.id, e.target.value)} rows={2}/></td>
+                                    <td className="border p-2"><Textarea value={row.status} onChange={e => handleStatusChange(row.id, e.target.value)} rows={2} /></td>
                                 </tr>
                             ))}
                          </tbody>
