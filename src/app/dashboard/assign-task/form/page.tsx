@@ -69,7 +69,7 @@ export default function AssignTaskFormPage() {
             assignedBy: currentUser.name,
             assignedById: currentUser.record,
             createdAt: serverTimestamp(),
-            status: 'pending',
+            status: 'not-started',
         };
 
         addDoc(collection(firestore, 'tasks'), dataToSave)

@@ -10,6 +10,9 @@ import { useEmployees } from '@/context/EmployeeContext';
 import { type Employee } from '@/lib/employees';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useEffect, useState } from 'react';
+import { useFirebase } from '@/firebase/provider';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 
 const departments = [
     { name: 'CEO', slug: 'ceo' },
@@ -24,6 +27,38 @@ const departments = [
 ];
 
 function EmployeeCard({ employee }: { employee: Employee }) {
+    const { firestore } = useFirebase();
+    const [taskStats, setTaskStats] = useState({ total: 0, overdue: 0, inProgress: 0, completed: 0 });
+
+    useEffect(() => {
+        if (!firestore) return;
+
+        const tasksCollection = collection(firestore, 'tasks');
+        const q = query(tasksCollection, where('assignedTo', '==', employee.record));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            let total = 0;
+            let overdue = 0;
+            let inProgress = 0;
+            let completed = 0;
+            
+            snapshot.forEach(doc => {
+                const task = doc.data();
+                total++;
+                if (task.status === 'completed') {
+                    completed++;
+                } else if (task.status === 'in-progress') {
+                    inProgress++;
+                } else if (task.dueDate && new Date(task.dueDate) < new Date()) {
+                    overdue++;
+                }
+            });
+            setTaskStats({ total, overdue, inProgress, completed });
+        });
+
+        return () => unsubscribe();
+    }, [firestore, employee.record]);
+
     return (
         <Link href={`/dashboard/assign-task/form?employeeId=${employee.record}`}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -32,19 +67,19 @@ function EmployeeCard({ employee }: { employee: Employee }) {
                     <div className="mt-2 text-sm text-muted-foreground space-y-1">
                         <div className="flex justify-between items-center">
                             <div className="flex items-center gap-1"><Briefcase size={14} /><span>Tasks</span></div>
-                            <span>0</span>
+                            <span>{taskStats.total}</span>
                         </div>
                         <div className="flex justify-between items-center">
                              <div className="flex items-center gap-1"><XCircle size={14} className="text-red-500" /><span>Overdue</span></div>
-                            <span className="text-red-500">0</span>
+                            <span className="text-red-500">{taskStats.overdue}</span>
                         </div>
                          <div className="flex justify-between items-center">
                             <div className="flex items-center gap-1"><Clock size={14} className="text-blue-500" /><span>In Progress</span></div>
-                            <span className="text-blue-500">0</span>
+                            <span className="text-blue-500">{taskStats.inProgress}</span>
                         </div>
                          <div className="flex justify-between items-center">
                            <div className="flex items-center gap-1"><CheckCircle2 size={14} className="text-green-500" /><span>Completed</span></div>
-                            <span className="text-green-500">0</span>
+                            <span className="text-green-500">{taskStats.completed}</span>
                         </div>
                     </div>
                 </CardContent>

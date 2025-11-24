@@ -3,17 +3,14 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { useCurrentUser } from '@/context/UserContext';
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle2, XCircle, Clock, PlusCircle, Trash2, Save, Download, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { useFirebase } from '@/firebase/provider';
-import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, Timestamp, doc, updateDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const departments: Record<string, string> = {
     'ceo': 'CEO',
@@ -64,7 +61,7 @@ const StatusIcon = ({ status }: { status: Project['status'] }) => {
 };
 
 export default function EmployeeDashboardPage() {
-  const { user } = useCurrentUser();
+  const { user, isUserLoading } = useCurrentUser();
   const { toast } = useToast();
   const { firestore } = useFirebase();
 
@@ -72,7 +69,11 @@ export default function EmployeeDashboardPage() {
   const [isLoadingTasks, setIsLoadingTasks] = useState(true);
 
   useEffect(() => {
-    if (!firestore || !user) return;
+    if (isUserLoading) return;
+    if (!firestore || !user) {
+        setIsLoadingTasks(false);
+        return;
+    }
 
     setIsLoadingTasks(true);
     const tasksCollection = collection(firestore, 'tasks');
@@ -98,6 +99,11 @@ export default function EmployeeDashboardPage() {
         setIsLoadingTasks(false);
     }, (error) => {
         console.error("Error fetching tasks: ", error);
+        const permissionError = new FirestorePermissionError({
+            path: `tasks`,
+            operation: 'list'
+        });
+        errorEmitter.emit('permission-error', permissionError);
         toast({
             variant: "destructive",
             title: "Error",
@@ -107,10 +113,27 @@ export default function EmployeeDashboardPage() {
     });
 
     return () => unsubscribe();
-  }, [firestore, user, toast]);
+  }, [firestore, user, isUserLoading, toast]);
+  
+  const handleStatusChange = async (taskId: string, newStatus: Project['status']) => {
+    if (!firestore) return;
 
-  const [schedule, setSchedule] = useState({ startDate: '', endDate: ''});
-  const [remarks, setRemarks] = useState('');
+    const taskRef = doc(firestore, 'tasks', taskId);
+    try {
+      await updateDoc(taskRef, { status: newStatus });
+      toast({
+        title: 'Status Updated',
+        description: `Task status changed to ${newStatus.replace('-', ' ')}.`,
+      });
+    } catch (serverError) {
+      const permissionError = new FirestorePermissionError({
+        path: `tasks/${taskId}`,
+        operation: 'update',
+        requestResourceData: { status: newStatus }
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    }
+  };
 
   const projectStats = useMemo(() => {
     const total = projects.length;
@@ -120,41 +143,13 @@ export default function EmployeeDashboardPage() {
     return { total, completed, inProgress, notStarted };
   }, [projects]);
   
-  const handleSave = () => {
-    console.log({ schedule, projects, remarks });
-    toast({ title: "Saved", description: "Your project schedule has been saved." });
-  }
-
-  const handleDownload = () => {
-    const doc = new jsPDF();
-    let yPos = 20;
-
-    if (user) {
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.text(user.name, 14, yPos);
-        yPos += 10;
-    }
-
-    doc.setFontSize(12);
-    doc.text(`Schedule: ${schedule.startDate} to ${schedule.endDate}`, 14, yPos);
-    yPos += 15;
-
-    doc.autoTable({
-        head: [['Project Name', 'Task', 'Due Date', 'Status', 'Assigned By']],
-        body: projects.map(p => [p.projectName, p.taskName, p.dueDate, p.status, p.assignedBy]),
-        startY: yPos,
-        theme: 'grid'
-    });
-    yPos = (doc as any).autoTable.previous.finalY + 10;
-    
-    doc.text('Remarks:', 14, yPos);
-    yPos += 7;
-    const remarksLines = doc.splitTextToSize(remarks, doc.internal.pageSize.width - 28);
-    doc.text(remarksLines, 14, yPos);
-
-    doc.save('my-projects.pdf');
-    toast({ title: "Downloaded", description: "Your project schedule has been downloaded as a PDF." });
+  if (isUserLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-4">Loading user data...</span>
+      </div>
+    );
   }
 
   return (
@@ -181,7 +176,7 @@ export default function EmployeeDashboardPage() {
                     <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center border-4 border-primary shadow-inner">
                         <span className="text-4xl font-bold text-primary">{getInitials(user.name)}</span>
                     </div>
-                    <CardTitle className="text-3xl font-bold">{user.name}'s Tasks</CardTitle>
+                    <CardTitle className="text-3xl font-bold">My Assigned Tasks</CardTitle>
                 </div>
             )}
             <div className="flex items-center gap-6 text-sm">
@@ -189,12 +184,6 @@ export default function EmployeeDashboardPage() {
                 <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-green-500" /> Completed: {projectStats.completed}</div>
                 <div className="flex items-center gap-2"><Clock className="h-5 w-5 text-blue-500" /> In Progress: {projectStats.inProgress}</div>
                 <div className="flex items-center gap-2"><XCircle className="h-5 w-5 text-red-500" /> Not Started: {projectStats.notStarted}</div>
-            </div>
-             <div className="flex items-center gap-4">
-                <Label>Work Schedule:</Label>
-                <Input type="date" value={schedule.startDate} onChange={(e) => setSchedule({...schedule, startDate: e.target.value})} className="w-fit" />
-                <span>to</span>
-                <Input type="date" value={schedule.endDate} onChange={(e) => setSchedule({...schedule, endDate: e.target.value})} className="w-fit" />
             </div>
           </div>
         </CardHeader>
@@ -212,39 +201,51 @@ export default function EmployeeDashboardPage() {
                             <TableHead>Task</TableHead>
                             <TableHead>Description</TableHead>
                             <TableHead>Due Date</TableHead>
-                            <TableHead>Status</TableHead>
                             <TableHead>Assigned By</TableHead>
+                            <TableHead>Status</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {projects.map((project) => (
+                        {projects.length === 0 ? (
+                           <TableRow>
+                                <TableCell colSpan={6} className="text-center h-24">You have no assigned tasks.</TableCell>
+                           </TableRow>
+                        ) : projects.map((project) => (
                             <TableRow key={project.id}>
                                 <TableCell>{project.projectName}</TableCell>
                                 <TableCell>{project.taskName}</TableCell>
                                 <TableCell className="max-w-[200px] truncate">{project.taskDescription}</TableCell>
                                 <TableCell>{project.dueDate}</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <StatusIcon status={project.status} />
-                                        {project.status.replace('-', ' ')}
-                                    </div>
-                                </TableCell>
                                 <TableCell>{project.assignedBy}</TableCell>
+                                <TableCell>
+                                     <Select
+                                        value={project.status}
+                                        onValueChange={(newStatus: Project['status']) => handleStatusChange(project.id, newStatus)}
+                                      >
+                                        <SelectTrigger className="w-[180px]">
+                                           <div className="flex items-center gap-2">
+                                             <StatusIcon status={project.status} />
+                                             <SelectValue placeholder="Set status" />
+                                           </div>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="not-started">
+                                             <div className="flex items-center gap-2"><XCircle className="h-5 w-5 text-red-500" />Not Started</div>
+                                          </SelectItem>
+                                          <SelectItem value="in-progress">
+                                            <div className="flex items-center gap-2"><Clock className="h-5 w-5 text-blue-500" />In Progress</div>
+                                          </SelectItem>
+                                          <SelectItem value="completed">
+                                            <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-green-500" />Completed</div>
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             )}
-
-            <div className="mt-6">
-                <Label htmlFor="remarks">Remarks</Label>
-                <Textarea id="remarks" value={remarks} onChange={(e) => setRemarks(e.target.value)} />
-            </div>
-
-            <div className="flex justify-end gap-4 mt-6">
-                <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" />Save</Button>
-                <Button onClick={handleDownload}><Download className="mr-2 h-4 w-4" />Download PDF</Button>
-            </div>
         </CardContent>
       </Card>
     </div>
