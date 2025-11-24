@@ -1,4 +1,3 @@
-
 'use client';
 
 import { MoreHorizontal, PlusCircle, Download, FileText as FileDown } from 'lucide-react';
@@ -103,8 +102,9 @@ export default function EmployeePage() {
     const email = formData.get('email') as string;
     const contact = formData.get('contact') as string;
     const department = formData.get('department') as string;
+    const password = formData.get('password') as string;
 
-    if (!name || !email || !department) {
+    if (!name || !email || !department || !password) {
       toast({
         variant: "destructive",
         title: "Validation Error",
@@ -118,6 +118,7 @@ export default function EmployeePage() {
       email,
       contact,
       department,
+      password,
       record: `EMP-${String(Date.now()).slice(-4)}`,
       avatarId: 'avatar-3',
     };
@@ -140,6 +141,7 @@ export default function EmployeePage() {
       email: formData.get('email') as string,
       contact: formData.get('contact') as string,
       department: formData.get('department') as string,
+      password: formData.get('password') as string,
     };
 
     updateEmployee(selectedEmployee.record, updatedData);
@@ -267,6 +269,10 @@ export default function EmployeePage() {
                           </SelectContent>
                         </Select>
                     </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="password" className="text-right">Password</Label>
+                      <Input id="password" name="password" type="password" className="col-span-3" required />
+                    </div>
                   </div>
                   <DialogFooter>
                     <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
@@ -380,6 +386,10 @@ export default function EmployeePage() {
                   </SelectContent>
                 </Select>
               </div>
+               <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-password" className="text-right">Password</Label>
+                  <Input id="edit-password" name="password" type="password" defaultValue={selectedEmployee?.password} className="col-span-3" required />
+                </div>
             </div>
             <DialogFooter>
               <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>

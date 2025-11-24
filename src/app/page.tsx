@@ -32,7 +32,7 @@ export default function Home() {
               Architecture Company
             </p>
             <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-10 py-6 transition-transform hover:scale-105">
-              <Link href="/dashboard">Start Now</Link>
+              <Link href="/login">Start Now</Link>
             </Button>
           </div>
         </section>

@@ -1,215 +1,274 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarSeparator,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
-} from '@/components/ui/sidebar';
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from '@/components/ui/collapsible';
-import {
-  LogOut,
-  User,
-  FileText,
-  Database,
-  Users,
-  LayoutDashboard,
-  Folder,
-  Briefcase,
-  Book,
-  File,
-  ClipboardList,
-  UserCheck,
-  Building,
-  FilePlus,
-  Compass,
-  FileSearch,
-  BookUser,
-  FileSignature,
-  FileKey,
-  Scroll,
-  BarChart2,
-  Calendar,
-  Wallet,
-  CheckSquare,
-  FileX,
-  FilePen,
-  FileUp,
-  CircleDollarSign,
-  Clipboard,
-  Presentation,
-  Package,
-  ListChecks,
-  Palette,
-  Clock,
-  BookCopy,
-  UserCog,
-  Landmark,
-  Building2,
-  Home,
-  Save,
-  ClipboardCheck,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useState, useMemo } from 'react';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { CheckCircle2, Clock, XCircle, Briefcase, PlusCircle, Trash2, Save, Download } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/context/UserContext';
+import { useFirebase } from '@/firebase/provider';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
-const menuItems = [
-    { href: '/employee-dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/employee-dashboard/assign-task', label: 'Assign Task', icon: ClipboardCheck },
-    { href: '/employee-dashboard/our-team', label: 'Our Team', icon: Users },
-    { href: '/employee-dashboard/about-me', label: 'About Me', icon: User },
-    { href: '/employee-dashboard/services', label: 'Services', icon: FileText },
-    { href: '/employee-dashboard/project-checklist', label: 'Project Checklist', icon: ListChecks },
-    { href: '/employee-dashboard/project-information', label: 'Project Information', icon: Folder },
-    { href: '/employee-dashboard/predesign-assessment', label: 'Predesign Assessment', icon: FileSearch },
-    { href: '/employee-dashboard/project-data', label: 'Project Data', icon: Database },
-    { href: '/employee-dashboard/project-agreement', label: 'Project Agreement', icon: FileSignature },
-    { href: '/employee-dashboard/list-of-services', label: 'List of Services', icon: ClipboardList },
-    { href: '/employee-dashboard/site-survey', label: 'Site Survey', icon: Compass },
-    { href: '/employee-dashboard/project-bylaws', label: 'Project Bylaws', icon: FileKey },
-    { href: '/employee-dashboard/proposal-request', label: 'Proposal Request', icon: Briefcase },
-    { href: '/employee-dashboard/drawings', label: 'Drawings', icon: Palette },
-    { href: '/employee-dashboard/shop-drawings-record', label: 'Shop Drawings Record', icon: File },
-    { href: '/employee-dashboard/project-chart-studio', label: 'Project Chart (Studio)', icon: BarChart2 },
-    { href: '/employee-dashboard/field-reports-meetings', label: 'Field Reports/Meetings', icon: Presentation },
-    { href: '/employee-dashboard/list-of-sub-consultants', label: 'List Of Sub-consultants', icon: BookUser },
-    { href: '/employee-dashboard/list-of-contractors', label: 'List of Contractors', icon: Building },
-    { href: '/employee-dashboard/list-of-approved-vendors', label: 'List of Approved Vendors', icon: UserCheck },
-    { href: '/employee-dashboard/time-line-schedule', label: 'Time line Schedule', icon: Clock },
-    { href: '/employee-dashboard/project-application-summary', label: 'Project Application Summary', icon: CheckSquare },
-    { href: '/employee-dashboard/continuation-sheet', label: 'Continuation Sheet', icon: FileX },
-    { href: '/employee-dashboard/construction-schedule', label: 'Construction Schedule', icon: Calendar },
-    { href: '/employee-dashboard/preliminary-project-budget', label: 'Preliminary Project Budget', icon: Scroll },
-    { href: '/employee-dashboard/bill-of-quantity', label: 'Bill Of Quantity', icon: Wallet },
-    { href: '/employee-dashboard/rate-analysis', label: 'Rate Analysis', icon: BarChart2 },
-    { href: '/employee-dashboard/change-order', label: 'Change Order', icon: Book },
-    { href: '/employee-dashboard/payment-certificates', label: 'Payment Certificates', icon: CircleDollarSign },
-    { href: '/employee-dashboard/instruction-sheet', label: 'Instruction Sheet', icon: FileUp },
-    { href: '/employee-dashboard/other-provisions', label: 'Other Provisions', icon: BookCopy },
-    { href: '/employee-dashboard/consent-of-surety', label: 'Consent of Surety', icon: FilePen },
-    { href: '/employee-dashboard/substantial-summary', label: 'Substantial Summary', icon: Clipboard },
-    { href: '/employee-dashboard/total-project-package', label: 'Total Project Package', icon: Package },
-    { href: '/employee-dashboard/architects-instructions', label: 'Architects Instructions', icon: User },
-    { href: '/employee-dashboard/construction-change-director', label: 'Construction Change Director', icon: Users },
-    { href: '/employee-dashboard/document-summarizer', label: 'Document Summarizer', icon: FileText },
-    { href: '/employee-dashboard/saved-records', label: 'Saved Records', icon: Database },
-    { href: '/employee-dashboard/data-entry', label: 'Data Entry', icon: FileUp },
-    { href: '/employee-dashboard/employee-record', label: 'Employee Record', icon: UserCog },
-];
+const departments: Record<string, string> = {
+    'ceo': 'CEO',
+    'admin': 'Admin',
+    'hr': 'HR',
+    'software-engineer': 'Software Engineer',
+    'draftman': 'Draftsman',
+    '3d-visualizer': '3D Visualizer',
+    'architects': 'Architects',
+    'finance': 'Finance',
+    'quantity-management': 'Quantity Management',
+};
 
-const bankTimelineItems = [
-    { href: '/employee-dashboard/timelines-of-bank/commercial', label: 'Commercial', icon: Building2 },
-    { href: '/employee-dashboard/timelines-of-bank/residential', label: 'Residential', icon: Home },
-    { href: '/employee-dashboard/timelines-of-bank/askari-bank', label: 'Askari Bank', icon: Landmark },
-    { href: '/employee-dashboard/timelines-of-bank/bank-alfalah', label: 'Bank Alfalah', icon: Landmark },
-    { href: '/employee-dashboard/timelines-of-bank/bank-al-habib', label: 'Bank Al Habib', icon: Landmark },
-    { href: '/employee-dashboard/timelines-of-bank/cbd', label: 'CBD', icon: Landmark },
-    { href: '/employee-dashboard/timelines-of-bank/dib', label: 'DIB', icon: Landmark },
-    { href: '/employee-dashboard/timelines-of-bank/fbl', label: 'FBL', icon: Landmark },
-    { href: '/employee-dashboard/timelines-of-bank/hbl', label: 'HBL', icon: Landmark },
-    { href: '/employee-dashboard/timelines-of-bank/mcb', label: 'MCB', icon: Landmark },
-    { href: '/employee-dashboard/timelines-of-bank/ubl', label: 'UBL', icon: Landmark },
-    { href: '/employee-dashboard/timelines-of-bank/timeline-record', label: 'Timeline Record', icon: Save },
-];
+function formatDepartmentName(slug: string) {
+    return departments[slug] || slug;
+}
 
+const getInitials = (name: string) => {
+    if (!name) return '';
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1 && nameParts[nameParts.length - 1]) {
+        return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
+    }
+    return name[0] ? name[0].toUpperCase() : '';
+}
 
-export default function EmployeeDashboardSidebar() {
-  const pathname = usePathname();
-  const { toast } = useToast();
-  const router = useRouter();
-  const { logout } = useCurrentUser();
+type ProjectStatus = 'completed' | 'in-progress' | 'not-started';
 
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    });
-    router.push('/login');
-  };
-  
-  return (
-      <Sidebar side="left" collapsible="icon">
-        <SidebarHeader className="p-4">
-            <Link href="/employee-dashboard" className="flex items-center gap-2 text-primary font-bold text-2xl font-headline">
-                <Users className="w-8 h-8" />
-                <span className="group-data-[collapsible=icon]:hidden">RI-HUB</span>
-            </Link>
-        </SidebarHeader>
-        <SidebarContent className="p-2">
-          <SidebarMenu>
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href} passHref>
-                    <SidebarMenuButton
-                        isActive={pathname === item.href}
-                        className={cn(pathname === item.href && 'bg-sidebar-accent text-sidebar-accent-foreground', 'group-data-[collapsible=icon]:justify-center')}
-                        tooltip={item.label}
-                    >
-                        <item.icon className="size-5" />
-                        <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                    </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-             <Collapsible asChild>
-                  <div className="group/collapsible-menu-item">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                         <SidebarMenuButton
-                            className="group-data-[collapsible=icon]:justify-center"
-                            tooltip="Timelines of Bank"
-                          >
-                            <Landmark className="size-5" />
-                            <span className="group-data-[collapsible=icon]:hidden">Timelines of Bank</span>
-                          </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                    </SidebarMenuItem>
-                    <CollapsibleContent asChild>
-                      <SidebarMenuSub>
-                        {bankTimelineItems.map((item) => (
-                           <SidebarMenuSubItem key={item.href}>
-                            <Link href={item.href} passHref>
-                               <SidebarMenuSubButton isActive={pathname === item.href}>
-                                  <item.icon className="size-4 mr-2" />
-                                  {item.label}
-                               </SidebarMenuSubButton>
-                            </Link>
-                           </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </div>
-              </Collapsible>
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter className="p-2">
-            <SidebarSeparator />
-            <SidebarMenu>
-                <SidebarMenuItem>
-                     <Button onClick={handleLogout} variant="ghost" className="w-full justify-start gap-2 group-data-[collapsible=icon]:justify-center">
-                        <LogOut className="size-5" />
-                        <span className="group-data-[collapsible=icon]:hidden">Logout</span>
-                    </Button>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-  );
+type ProjectRow = {
+  id: number;
+  projectName: string;
+  detail: string;
+  status: ProjectStatus;
+  startDate: string;
+  endDate: string;
+}
+
+const StatusIcon = ({ status }: { status: ProjectStatus }) => {
+    switch (status) {
+        case 'completed':
+            return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+        case 'in-progress':
+            return <Clock className="h-5 w-5 text-blue-500" />;
+        case 'not-started':
+            return <XCircle className="h-5 w-5 text-red-500" />;
+        default:
+            return null;
+    }
+};
+
+const StatCard = ({ title, value, icon }: { title: string, value: number, icon: React.ReactNode }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            {icon}
+        </CardHeader>
+        <CardContent>
+            <div className="text-2xl font-bold">{value}</div>
+        </CardContent>
+    </Card>
+);
+
+export default function MyProjectsPage() {
+    const { user } = useCurrentUser();
+    const { toast } = useToast();
+    const { firestore } = useFirebase();
+
+    const [rows, setRows] = useState<ProjectRow[]>([{ id: 1, projectName: '', detail: '', status: 'not-started', startDate: '', endDate: '' }]);
+    const [schedule, setSchedule] = useState({ start: '', end: '' });
+    const [remarks, setRemarks] = useState('');
+
+    const projectStats = useMemo(() => {
+        const total = rows.length;
+        const completed = rows.filter(p => p.status === 'completed').length;
+        const inProgress = rows.filter(p => p.status === 'in-progress').length;
+        const notStarted = rows.filter(p => p.status === 'not-started').length;
+        return { total, completed, inProgress, notStarted };
+    }, [rows]);
+    
+    const handleRowChange = (id: number, field: keyof ProjectRow, value: any) => {
+        setRows(rows.map(row => (row.id === id ? { ...row, [field]: value } : row)));
+    };
+
+    const addRow = () => {
+        setRows([...rows, { id: Date.now(), projectName: '', detail: '', status: 'not-started', startDate: '', endDate: '' }]);
+    };
+
+    const removeRow = (id: number) => {
+        setRows(rows.filter(row => row.id !== id));
+    };
+
+    const handleSave = () => {
+        if (!firestore || !user) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
+            return;
+        }
+
+        const dataToSave = {
+            employeeId: user.record,
+            employeeName: user.name,
+            fileName: "My Projects",
+            projectName: `Projects for ${user.name}`,
+            data: {
+                category: 'My Projects',
+                schedule,
+                projects: rows,
+                remarks,
+            },
+            createdAt: serverTimestamp(),
+        };
+
+        addDoc(collection(firestore, 'savedRecords'), dataToSave)
+            .then(() => toast({ title: 'Record Saved', description: "Your project records have been saved." }))
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: `savedRecords`,
+                    operation: 'create',
+                    requestResourceData: dataToSave,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        let yPos = 20;
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Project Overview for ${user?.name || 'Employee'}`, doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+        yPos += 15;
+
+        doc.setFontSize(10);
+        (doc as any).autoTable({
+            startY: yPos, theme: 'plain', body: [
+                [`Work Schedule Start: ${schedule.start || 'N/A'}`, `Work Schedule End: ${schedule.end || 'N/A'}`]
+            ]
+        });
+        yPos = (doc as any).autoTable.previous.finalY + 10;
+        
+        (doc as any).autoTable({
+            head: [['Project Name', 'Detail', 'Status', 'Start Date', 'End Date']],
+            body: rows.map(row => [row.projectName, row.detail, row.status, row.startDate, row.endDate]),
+            startY: yPos, theme: 'grid'
+        });
+        yPos = (doc as any).autoTable.previous.finalY + 10;
+
+        doc.setFont('helvetica', 'bold');
+        doc.text('Remarks:', 14, yPos);
+        yPos += 7;
+        doc.setFont('helvetica', 'normal');
+        doc.text(doc.splitTextToSize(remarks, doc.internal.pageSize.width - 28), 14, yPos);
+        
+        doc.save(`${user?.name}_projects.pdf`);
+        toast({ title: 'Download Started', description: 'Your project PDF is being generated.' });
+    };
+
+    return (
+        <div className="space-y-8">
+            <Card className="bg-card/90">
+                <CardHeader className="text-center">
+                    {user && (
+                        <>
+                            <CardTitle className="text-4xl font-headline text-primary font-bold">{user.name}</CardTitle>
+                            <CardDescription className="text-xl text-primary/90 font-semibold pt-1">Welcome to {formatDepartmentName(user.department)} Panel</CardDescription>
+                        </>
+                    )}
+                </CardHeader>
+                <CardContent className="text-center">
+                    <p className="text-muted-foreground">Use the sidebar to navigate to different sections of your dashboard.</p>
+                </CardContent>
+            </Card>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard title="Total Projects" value={projectStats.total} icon={<Briefcase className="h-4 w-4 text-muted-foreground" />} />
+                <StatCard title="Completed" value={projectStats.completed} icon={<CheckCircle2 className="h-4 w-4 text-green-500" />} />
+                <StatCard title="In Progress" value={projectStats.inProgress} icon={<Clock className="h-4 w-4 text-blue-500" />} />
+                <StatCard title="Not Started" value={projectStats.notStarted} icon={<XCircle className="h-4 w-4 text-red-500" />} />
+            </div>
+
+            <Card>
+                <CardHeader className="flex flex-row items-center gap-4">
+                    <Avatar className="h-16 w-16 border-4 border-primary">
+                        <AvatarFallback className="bg-secondary text-secondary-foreground font-bold text-2xl">{user ? getInitials(user.name) : ''}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <CardTitle className="text-2xl font-bold">{user?.name.toUpperCase()}</CardTitle>
+                        <p className="text-muted-foreground">{user ? formatDepartmentName(user.department) : ''}</p>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <Label className="font-semibold">Work Schedule</Label>
+                        <div className="flex gap-4">
+                            <Input type="date" value={schedule.start} onChange={e => setSchedule({ ...schedule, start: e.target.value })} />
+                            <Input type="date" value={schedule.end} onChange={e => setSchedule({ ...schedule, end: e.target.value })} />
+                        </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Project Name</TableHead>
+                                    <TableHead>Detail</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Start Date</TableHead>
+                                    <TableHead>End Date</TableHead>
+                                    <TableHead>Action</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {rows.map(row => (
+                                    <TableRow key={row.id}>
+                                        <TableCell><Input value={row.projectName} onChange={e => handleRowChange(row.id, 'projectName', e.target.value)} /></TableCell>
+                                        <TableCell><Textarea value={row.detail} onChange={e => handleRowChange(row.id, 'detail', e.target.value)} rows={1} /></TableCell>
+                                        <TableCell>
+                                            <Select value={row.status} onValueChange={(val: ProjectStatus) => handleRowChange(row.id, 'status', val)}>
+                                                <SelectTrigger className="w-[180px]">
+                                                   <div className="flex items-center gap-2">
+                                                     <StatusIcon status={row.status} />
+                                                     <SelectValue placeholder="Set status" />
+                                                   </div>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  <SelectItem value="not-started"><div className="flex items-center gap-2"><XCircle className="h-5 w-5 text-red-500" />Not Started</div></SelectItem>
+                                                  <SelectItem value="in-progress"><div className="flex items-center gap-2"><Clock className="h-5 w-5 text-blue-500" />In Progress</div></SelectItem>
+                                                  <SelectItem value="completed"><div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-green-500" />Completed</div></SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </TableCell>
+                                        <TableCell><Input type="date" value={row.startDate} onChange={e => handleRowChange(row.id, 'startDate', e.target.value)} /></TableCell>
+                                        <TableCell><Input type="date" value={row.endDate} onChange={e => handleRowChange(row.id, 'endDate', e.target.value)} /></TableCell>
+                                        <TableCell><Button variant="destructive" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4"/></Button></TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <Button onClick={addRow} size="sm"><PlusCircle className="mr-2 h-4 w-4"/>Add Project</Button>
+
+                    <div className="space-y-2 pt-4">
+                        <Label htmlFor="remarks" className="font-semibold">Remarks</Label>
+                        <Textarea id="remarks" value={remarks} onChange={e => setRemarks(e.target.value)} />
+                    </div>
+                    
+                    <div className="flex justify-end gap-4 mt-8">
+                        <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4"/>Save Record</Button>
+                        <Button onClick={handleDownload}><Download className="mr-2 h-4 w-4"/>Download PDF</Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
