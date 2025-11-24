@@ -27,6 +27,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import type jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 export default function AssignTaskForm() {
     const searchParams = useSearchParams();
@@ -68,9 +69,35 @@ export default function AssignTaskForm() {
             status: 'not-started',
         };
 
+        const recordToSave = {
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: "Task Assignment",
+            projectName: projectName || `Task: ${taskName}`,
+            data: {
+                category: 'Task Assignment',
+                items: Object.entries(dataToSave).map(([key, value]) => {
+                    if (key === 'createdAt') return `${key}: ${new Date().toISOString()}`;
+                    return `${key}: ${value}`;
+                })
+            },
+            createdAt: serverTimestamp(),
+        };
+
+        // Save to tasks collection
         addDoc(collection(firestore, 'tasks'), dataToSave)
             .then(() => {
-                toast({ title: 'Task Assigned', description: `Task "${taskName}" has been assigned.` });
+                 // Also save to general records
+                addDoc(collection(firestore, 'savedRecords'), recordToSave).catch(serverError => {
+                    const permissionError = new FirestorePermissionError({
+                        path: 'savedRecords',
+                        operation: 'create',
+                        requestResourceData: recordToSave,
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                });
+
+                toast({ title: 'Task Assigned', description: `Task "${taskName}" has been assigned and recorded.` });
                 setIsSaveOpen(false);
                 // Reset form
                 setTaskName('');
@@ -90,10 +117,10 @@ export default function AssignTaskForm() {
     };
     
     const handleDownloadPdf = async () => {
-        const jsPDF = (await import('jspdf')).default;
+        const { default: jsPDF } = await import('jspdf');
         await import('jspdf-autotable');
 
-        const doc = new jsPDF();
+        const doc = new jsPDF() as any;
         let yPos = 20;
         
         doc.setFontSize(16);
@@ -104,7 +131,7 @@ export default function AssignTaskForm() {
         doc.setFontSize(10);
         const assignedEmployee = employees.find(e => e.record === assignedTo);
 
-        (doc as any).autoTable({
+        doc.autoTable({
             startY: yPos,
             theme: 'grid',
             head: [['Field', 'Details']],

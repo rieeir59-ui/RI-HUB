@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import DashboardPageHeader from "@/components/dashboard/PageHeader";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -10,10 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, Download } from 'lucide-react';
+import { Save, Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { useEmployees } from '@/context/EmployeeContext';
@@ -30,12 +28,13 @@ import {
   DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
+import type jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
-export default function AssignTaskFormPage() {
+function AssignTaskForm() {
     const searchParams = useSearchParams();
     const employeeId = searchParams.get('employeeId');
 
-    const image = PlaceHolderImages.find(p => p.id === 'assign-task');
     const { toast } = useToast();
     const { firestore } = useFirebase();
     const { user: currentUser } = useCurrentUser();
@@ -72,9 +71,35 @@ export default function AssignTaskFormPage() {
             status: 'not-started',
         };
 
+        const recordToSave = {
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: "Task Assignment",
+            projectName: projectName || `Task: ${taskName}`,
+            data: {
+                category: 'Task Assignment',
+                items: Object.entries(dataToSave).map(([key, value]) => {
+                    if (key === 'createdAt') return `${key}: ${new Date().toISOString()}`;
+                    return `${key}: ${value}`;
+                })
+            },
+            createdAt: serverTimestamp(),
+        };
+
+        // Save to tasks collection
         addDoc(collection(firestore, 'tasks'), dataToSave)
             .then(() => {
-                toast({ title: 'Task Assigned', description: `Task "${taskName}" has been assigned.` });
+                 // Also save to general records
+                addDoc(collection(firestore, 'savedRecords'), recordToSave).catch(serverError => {
+                    const permissionError = new FirestorePermissionError({
+                        path: 'savedRecords',
+                        operation: 'create',
+                        requestResourceData: recordToSave,
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                });
+
+                toast({ title: 'Task Assigned', description: `Task "${taskName}" has been assigned and recorded.` });
                 setIsSaveOpen(false);
                 // Reset form
                 setTaskName('');
@@ -93,8 +118,11 @@ export default function AssignTaskFormPage() {
             });
     };
     
-    const handleDownloadPdf = () => {
-        const doc = new jsPDF();
+    const handleDownloadPdf = async () => {
+        const { default: jsPDF } = await import('jspdf');
+        await import('jspdf-autotable');
+
+        const doc = new jsPDF() as any;
         let yPos = 20;
         
         doc.setFontSize(16);
@@ -125,13 +153,6 @@ export default function AssignTaskFormPage() {
     };
 
     return (
-        <div className="space-y-8">
-            <DashboardPageHeader
-                title="Assign Task"
-                description="Delegate tasks to your team members."
-                imageUrl={image?.imageUrl || ''}
-                imageHint={image?.imageHint || ''}
-            />
             <Card>
                 <CardHeader>
                     <CardTitle className="text-center font-headline text-3xl text-primary">Assign a New Task</CardTitle>
@@ -141,7 +162,7 @@ export default function AssignTaskFormPage() {
                         <Label htmlFor="projectName">Project Name</Label>
                         <Input id="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Corporate Office Building" />
                     </div>
-                     <div className="space-y-2">
+                        <div className="space-y-2">
                         <Label htmlFor="taskName">Task Name</Label>
                         <Input id="taskName" value={taskName} onChange={(e) => setTaskName(e.target.value)} placeholder="e.g. Finalize floor plan" />
                     </div>
@@ -149,7 +170,7 @@ export default function AssignTaskFormPage() {
                         <Label htmlFor="taskDescription">Task Description</Label>
                         <Textarea id="taskDescription" value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} placeholder="Provide details about the task..." />
                     </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="assignedTo">Assign To</Label>
                             <Select value={assignedTo} onValueChange={setAssignedTo}>
@@ -172,7 +193,7 @@ export default function AssignTaskFormPage() {
                     </div>
 
                     <div className="flex justify-end gap-4 mt-8">
-                         <Dialog open={isSaveOpen} onOpenChange={setIsSaveOpen}>
+                            <Dialog open={isSaveOpen} onOpenChange={setIsSaveOpen}>
                             <DialogTrigger asChild>
                                 <Button><Save className="mr-2 h-4 w-4" /> Assign & Save</Button>
                             </DialogTrigger>
@@ -193,6 +214,38 @@ export default function AssignTaskFormPage() {
                     </div>
                 </CardContent>
             </Card>
-        </div>
     );
+}
+
+function AssignTaskFormFallback() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-center font-headline text-3xl text-primary">Assign a New Task</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 md:p-6 space-y-6 max-w-2xl mx-auto h-96 flex items-center justify-center">
+                 <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <span>Loading Form...</span>
+                 </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+export default function AssignTaskFormPage() {
+  const image = PlaceHolderImages.find(p => p.id === 'assign-task');
+  return (
+    <div className="space-y-8">
+      <DashboardPageHeader
+        title="Assign Task"
+        description="Delegate tasks to your team members."
+        imageUrl={image?.imageUrl || ''}
+        imageHint={image?.imageHint || ''}
+      />
+      <Suspense fallback={<AssignTaskFormFallback />}>
+        <AssignTaskForm />
+      </Suspense>
+    </div>
+  );
 }
