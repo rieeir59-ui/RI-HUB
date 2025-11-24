@@ -2,10 +2,9 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { useCurrentUser } from '@/context/UserContext';
 import { useState, useMemo, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle2, XCircle, Clock, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Loader2, Briefcase } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
 import { collection, query, where, onSnapshot, Timestamp, doc, updateDoc } from 'firebase/firestore';
@@ -59,6 +58,18 @@ const StatusIcon = ({ status }: { status: Project['status'] }) => {
             return null;
     }
 };
+
+const StatCard = ({ title, value, icon }: { title: string, value: number, icon: React.ReactNode }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            {icon}
+        </CardHeader>
+        <CardContent>
+            <div className="text-2xl font-bold">{value}</div>
+        </CardContent>
+    </Card>
+);
 
 export default function EmployeeDashboardPage() {
   const { user, isUserLoading } = useCurrentUser();
@@ -168,24 +179,17 @@ export default function EmployeeDashboardPage() {
         </CardContent>
       </Card>
       
-      <Card className="mt-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard title="Total Tasks" value={projectStats.total} icon={<Briefcase className="h-4 w-4 text-muted-foreground" />} />
+        <StatCard title="Completed" value={projectStats.completed} icon={<CheckCircle2 className="h-4 w-4 text-green-500" />} />
+        <StatCard title="In Progress" value={projectStats.inProgress} icon={<Clock className="h-4 w-4 text-blue-500" />} />
+        <StatCard title="Not Started" value={projectStats.notStarted} icon={<XCircle className="h-4 w-4 text-red-500" />} />
+      </div>
+
+      <Card>
         <CardHeader>
-          <div className="flex flex-col items-center gap-4 text-center">
-            {user && (
-                 <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center border-4 border-primary shadow-inner">
-                        <span className="text-4xl font-bold text-primary">{getInitials(user.name)}</span>
-                    </div>
-                    <CardTitle className="text-3xl font-bold">My Assigned Tasks</CardTitle>
-                </div>
-            )}
-            <div className="flex items-center gap-6 text-sm">
-                <div className="font-semibold">Total Tasks: {projectStats.total}</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-green-500" /> Completed: {projectStats.completed}</div>
-                <div className="flex items-center gap-2"><Clock className="h-5 w-5 text-blue-500" /> In Progress: {projectStats.inProgress}</div>
-                <div className="flex items-center gap-2"><XCircle className="h-5 w-5 text-red-500" /> Not Started: {projectStats.notStarted}</div>
-            </div>
-          </div>
+            <CardTitle>My Assigned Tasks</CardTitle>
+            <CardDescription>A list of tasks assigned to you.</CardDescription>
         </CardHeader>
         <CardContent>
             {isLoadingTasks ? (
