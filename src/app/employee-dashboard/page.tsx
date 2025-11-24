@@ -83,10 +83,10 @@ export default function EmployeeDashboardPage() {
   };
 
   const projectStats = useMemo(() => {
-    const total = projects.length;
-    const completed = projects.filter(p => p.status === 'completed').length;
-    const inProgress = projects.filter(p => p.status === 'in-progress').length;
-    const notStarted = projects.filter(p => p.status === 'not-started').length;
+    const total = projects.filter(p => p.name.trim() !== '').length;
+    const completed = projects.filter(p => p.status === 'completed' && p.name.trim() !== '').length;
+    const inProgress = projects.filter(p => p.status === 'in-progress' && p.name.trim() !== '').length;
+    const notStarted = projects.filter(p => p.status === 'not-started' && p.name.trim() !== '').length;
     return { total, completed, inProgress, notStarted };
   }, [projects]);
   
