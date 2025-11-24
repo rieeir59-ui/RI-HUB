@@ -177,27 +177,6 @@ export default function MyProjectsPage() {
 
     return (
         <div className="space-y-8">
-            <Card className="bg-card/90">
-                <CardHeader className="text-center">
-                    {user && (
-                        <>
-                            <CardTitle className="text-4xl font-headline text-primary font-bold">{user.name}</CardTitle>
-                            <CardDescription className="text-xl text-primary/90 font-semibold pt-1">Welcome to {formatDepartmentName(user.department)} Panel</CardDescription>
-                        </>
-                    )}
-                </CardHeader>
-                <CardContent className="text-center">
-                    <p className="text-muted-foreground">Use the sidebar to navigate to different sections of your dashboard.</p>
-                </CardContent>
-            </Card>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title="Total Projects" value={projectStats.total} icon={<Briefcase className="h-4 w-4 text-muted-foreground" />} />
-                <StatCard title="Completed" value={projectStats.completed} icon={<CheckCircle2 className="h-4 w-4 text-green-500" />} />
-                <StatCard title="In Progress" value={projectStats.inProgress} icon={<Clock className="h-4 w-4 text-blue-500" />} />
-                <StatCard title="Not Started" value={projectStats.notStarted} icon={<XCircle className="h-4 w-4 text-red-500" />} />
-            </div>
-
             <Card>
                 <CardHeader className="flex flex-row items-center gap-4">
                     <Avatar className="h-16 w-16 border-4 border-primary">
@@ -272,3 +251,5 @@ export default function MyProjectsPage() {
         </div>
     );
 }
+
+    
