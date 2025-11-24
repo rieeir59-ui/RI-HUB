@@ -58,6 +58,9 @@ export default function DepartmentPage() {
           </Button>
           <h1 className="text-3xl md:text-4xl font-headline text-primary">{formattedDeptName}</h1>
         </div>
+        <Button asChild>
+            <Link href="/employee-dashboard">Back to My Dashboard</Link>
+        </Button>
       </div>
 
       <div className="grid gap-6">
