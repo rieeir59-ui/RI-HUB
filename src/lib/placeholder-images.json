@@ -31,9 +31,15 @@
       "imageHint": "architects blueprints"
     },
     {
+      "id": "assign-task",
+      "description": "A person writing on a to-do list.",
+      "imageUrl": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx0YXNrJTIwYXNzaWdubWVudHxlbnwwfHx8fDE3NjQxMDQwODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "task assignment"
+    },
+    {
       "id": "bill-of-quantity",
       "description": "A document with financial calculations.",
-      "imageUrl": "https://images.unsplash.com/photo-1758523418784-efd368723c42?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxmaW5hbmNpYWwlMjBkb2N1bWVudHxlbnwwfHx8fDE3NjM2NjM0MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1758523418784-efcd368723c42?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxmaW5hbmNpYWwlMjBkb2N1bWVudHxlbnwwfHx8fDE3NjM2NjM0MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "financial document"
     },
     {

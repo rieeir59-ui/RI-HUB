@@ -23,6 +23,7 @@ import {
   FileText,
   Database,
   FileUp,
+  ClipboardCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -34,6 +35,7 @@ import { useCurrentUser } from '@/context/UserContext';
 const menuItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/dashboard/employee', label: 'Employees', icon: Users },
+    { href: '/dashboard/assign-task', label: 'Assign Task', icon: ClipboardCheck },
     { href: '/dashboard/team', label: 'Our Team', icon: User },
     { href: '/dashboard/about-me', label: 'About Me', icon: User },
     { href: '/dashboard/services', label: 'Services', icon: FileText },
