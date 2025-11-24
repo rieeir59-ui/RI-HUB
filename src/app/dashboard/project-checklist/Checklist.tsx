@@ -321,6 +321,8 @@ export default function ProjectChecklist() {
                 }
             };
             fetchRecord();
+        } else {
+          setIsLoading(false);
         }
     }, [recordId, firestore, toast]);
 
