@@ -61,7 +61,7 @@ function EmployeeCard({ employee }: { employee: Employee }) {
 
     return (
         <Link href={`/dashboard/assign-task/form?employeeId=${employee.record}`}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-yellow-500">
                 <CardContent className="p-4">
                     <p className="font-bold text-center">{employee.name.toUpperCase()}</p>
                     <div className="mt-2 text-sm text-muted-foreground space-y-1">
@@ -107,8 +107,8 @@ export default function AssignTaskPage() {
                 return (
                     <div key={dept.slug}>
                         <div className="flex items-center gap-2 mb-4">
-                            <Users className="h-6 w-6 text-primary" />
-                            <h2 className="text-2xl font-headline font-bold text-primary">{dept.name}</h2>
+                            <Users className="h-6 w-6 text-black" />
+                            <h2 className="text-2xl font-headline font-bold text-black">{dept.name}</h2>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                            {deptEmployees.map(emp => <EmployeeCard key={emp.record} employee={emp} />)}
