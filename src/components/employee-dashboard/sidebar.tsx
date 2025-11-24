@@ -166,7 +166,7 @@ export default function EmployeeDashboardSidebar() {
               </SidebarMenuItem>
             ))}
              <Collapsible asChild>
-                  <>
+                  <div>
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
                          <SidebarMenuButton
@@ -192,7 +192,7 @@ export default function EmployeeDashboardSidebar() {
                         ))}
                       </SidebarMenuSub>
                     </CollapsibleContent>
-                  </>
+                  </div>
               </Collapsible>
           </SidebarMenu>
         </SidebarContent>
@@ -210,3 +210,4 @@ export default function EmployeeDashboardSidebar() {
       </Sidebar>
   );
 }
+
