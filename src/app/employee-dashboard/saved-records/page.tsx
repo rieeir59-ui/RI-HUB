@@ -5,7 +5,7 @@ import { useFirebase } from '@/firebase/provider';
 import { collection, query, where, getDocs, orderBy, type Timestamp, onSnapshot, FirestoreError, doc, deleteDoc } from 'firebase/firestore';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2, Edit, Trash2 } from 'lucide-react';
 import {
@@ -113,7 +113,7 @@ export default function SavedRecordsPage() {
 
     const handleDownload = (record: SavedRecord) => {
         const doc = new jsPDF();
-        let yPos = 20;
+        let yPos = 15;
 
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
@@ -121,40 +121,46 @@ export default function SavedRecordsPage() {
         yPos += 10;
         
         doc.setFontSize(10);
-        doc.text(`File: ${record.fileName}`, 14, yPos);
-        yPos += 7;
-        doc.text(`Saved by: ${record.employeeName}`, 14, yPos);
-        yPos += 7;
-        doc.text(`Date: ${record.createdAt.toDate().toLocaleDateString()}`, 14, yPos);
-        yPos += 10;
+        doc.autoTable({
+            startY: yPos,
+            theme: 'plain',
+            body: [
+                [`File: ${record.fileName}`],
+                [`Saved by: ${record.employeeName}`],
+                [`Date: ${record.createdAt.toDate().toLocaleDateString()}`],
+            ],
+            styles: { fontSize: 10 },
+        });
+
+        yPos = (doc as any).autoTable.previous.finalY + 10;
 
         record.data.forEach(section => {
             if (yPos > 260) {
                 doc.addPage();
                 yPos = 20;
             }
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text(section.category, 14, yPos);
-            yPos += 10;
-
+            
             const body = section.items.map(item => {
                 try {
+                    // Handle JSON stringified objects
                     const parsed = JSON.parse(item);
                     return Object.entries(parsed).map(([key, value]) => [key, String(value)]);
                 } catch {
+                    // Handle simple "key: value" strings
                     const parts = item.split(':');
                     if (parts.length > 1) {
                         return [parts[0], parts.slice(1).join(':').trim()];
                     }
-                    return [item, ''];
+                    return [item, '']; // Fallback for items without a colon
                 }
             }).flat();
 
-            (doc as any).autoTable({
-                startY: yPos,
+            doc.autoTable({
+                head: [[section.category]],
                 body: body,
-                theme: 'plain',
+                startY: yPos,
+                theme: 'grid',
+                headStyles: { fontStyle: 'bold', fillColor: [230, 230, 230], textColor: 20 },
                 styles: { fontSize: 9 }
             });
 
