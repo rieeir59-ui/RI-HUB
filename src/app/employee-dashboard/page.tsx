@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { useCurrentUser } from '@/context/UserContext';
@@ -19,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Save, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { addDoc } from 'firebase/firestore';
 
 
 const departments: Record<string, string> = {
@@ -119,9 +121,10 @@ export default function EmployeeDashboardPage() {
     );
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const fetchedTasks = querySnapshot.docs.map(doc => {
+        const fetchedTasks: Project[] = [];
+        querySnapshot.forEach(doc => {
             const data = doc.data();
-            return {
+            fetchedTasks.push({
                 id: doc.id,
                 projectName: data.projectName || '',
                 taskName: data.taskName || '',
@@ -129,7 +132,7 @@ export default function EmployeeDashboardPage() {
                 status: data.status || 'not-started',
                 dueDate: data.dueDate || '',
                 assignedBy: data.assignedBy || 'N/A'
-            } as Project
+            });
         });
         setProjects(fetchedTasks);
         setIsLoadingTasks(false);
@@ -432,5 +435,3 @@ export default function EmployeeDashboardPage() {
     </div>
   );
 }
-
-    
