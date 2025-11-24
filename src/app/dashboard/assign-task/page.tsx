@@ -1,189 +1,86 @@
-
 'use client';
 
-import { useState } from 'react';
-import DashboardPageHeader from "@/components/dashboard/PageHeader";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, Download } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import { useFirebase } from '@/firebase/provider';
-import { useCurrentUser } from '@/context/UserContext';
-import { useEmployees } from '@/context/EmployeeContext';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from '@/components/ui/dialog';
+  Card,
+  CardContent,
+} from '@/components/ui/card';
+import { Users, Briefcase, XCircle, Clock, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
+import { useEmployees } from '@/context/EmployeeContext';
+import { type Employee } from '@/lib/employees';
+import DashboardPageHeader from '@/components/dashboard/PageHeader';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+const departments = [
+    { name: 'CEO', slug: 'ceo' },
+    { name: 'ADMIN', slug: 'admin' },
+    { name: 'HR', slug: 'hr' },
+    { name: 'SOFTWARE ENGINEER', slug: 'software-engineer' },
+    { name: 'DRAFTMAN', slug: 'draftman' },
+    { name: '3D VISULIZER', slug: '3d-visualizer' },
+    { name: 'ARCHITECTS', slug: 'architects' },
+    { name: 'FINANCE', slug: 'finance' },
+    { name: 'QUANTITY MANAGEMENT', slug: 'quantity-management' },
+];
+
+function EmployeeCard({ employee }: { employee: Employee }) {
+    return (
+        <Link href={`/dashboard/assign-task/form?employeeId=${employee.record}`}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-4">
+                    <p className="font-bold text-center">{employee.name.toUpperCase()}</p>
+                    <div className="mt-2 text-sm text-muted-foreground space-y-1">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-1"><Briefcase size={14} /><span>Tasks</span></div>
+                            <span>0</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                             <div className="flex items-center gap-1"><XCircle size={14} className="text-red-500" /><span>Overdue</span></div>
+                            <span className="text-red-500">0</span>
+                        </div>
+                         <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-1"><Clock size={14} className="text-blue-500" /><span>In Progress</span></div>
+                            <span className="text-blue-500">0</span>
+                        </div>
+                         <div className="flex justify-between items-center">
+                           <div className="flex items-center gap-1"><CheckCircle2 size={14} className="text-green-500" /><span>Completed</span></div>
+                            <span className="text-green-500">0</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </Link>
+    );
+}
 
 export default function AssignTaskPage() {
+    const { employeesByDepartment } = useEmployees();
     const image = PlaceHolderImages.find(p => p.id === 'assign-task');
-    const { toast } = useToast();
-    const { firestore } = useFirebase();
-    const { user: currentUser } = useCurrentUser();
-    const { employees } = useEmployees();
-
-    const [isSaveOpen, setIsSaveOpen] = useState(false);
-    const [taskName, setTaskName] = useState('');
-    const [taskDescription, setTaskDescription] = useState('');
-    const [assignedTo, setAssignedTo] = useState('');
-    const [dueDate, setDueDate] = useState('');
-    const [projectName, setProjectName] = useState('');
-
-    const handleSave = () => {
-        if (!firestore || !currentUser) {
-            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save a task.' });
-            return;
-        }
-
-        const dataToSave = {
-            taskName,
-            taskDescription,
-            assignedTo,
-            dueDate,
-            projectName,
-            assignedBy: currentUser.name,
-            assignedById: currentUser.record,
-            createdAt: serverTimestamp(),
-            status: 'pending',
-        };
-
-        addDoc(collection(firestore, 'tasks'), dataToSave)
-            .then(() => {
-                toast({ title: 'Task Assigned', description: `Task "${taskName}" has been assigned to ${assignedTo}.` });
-                setIsSaveOpen(false);
-                // Reset form
-                setTaskName('');
-                setTaskDescription('');
-                setAssignedTo('');
-                setDueDate('');
-                setProjectName('');
-            })
-            .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                    path: `tasks`,
-                    operation: 'create',
-                    requestResourceData: dataToSave,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            });
-    };
     
-    const handleDownloadPdf = () => {
-        const doc = new jsPDF();
-        let yPos = 20;
-        
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.text("Task Assignment", doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
-        yPos += 15;
-        
-        doc.setFontSize(10);
-        const assignedEmployee = employees.find(e => e.record === assignedTo);
-
-        doc.autoTable({
-            startY: yPos,
-            theme: 'grid',
-            head: [['Field', 'Details']],
-            body: [
-                ['Project Name', projectName],
-                ['Task Name', taskName],
-                ['Task Description', taskDescription],
-                ['Assigned To', assignedEmployee?.name || assignedTo],
-                ['Due Date', dueDate],
-                ['Assigned By', currentUser?.name || 'N/A'],
-            ],
-            headStyles: { fillColor: [45, 95, 51] }
-        });
-
-        doc.save('task-assignment.pdf');
-        toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
-    };
-
     return (
         <div className="space-y-8">
             <DashboardPageHeader
                 title="Assign Task"
-                description="Delegate tasks to your team members."
+                description="Select an employee to assign a new task."
                 imageUrl={image?.imageUrl || ''}
                 imageHint={image?.imageHint || ''}
             />
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-center font-headline text-3xl text-primary">Assign a New Task</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 md:p-6 space-y-6 max-w-2xl mx-auto">
-                    <div className="space-y-2">
-                        <Label htmlFor="projectName">Project Name</Label>
-                        <Input id="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Corporate Office Building" />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="taskName">Task Name</Label>
-                        <Input id="taskName" value={taskName} onChange={(e) => setTaskName(e.target.value)} placeholder="e.g. Finalize floor plan" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="taskDescription">Task Description</Label>
-                        <Textarea id="taskDescription" value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} placeholder="Provide details about the task..." />
-                    </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="assignedTo">Assign To</Label>
-                            <Select value={assignedTo} onValueChange={setAssignedTo}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select an employee" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {employees.map(employee => (
-                                        <SelectItem key={employee.record} value={employee.record}>
-                                            {employee.name} ({employee.department})
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+            {departments.map(dept => {
+                const deptEmployees = employeesByDepartment[dept.slug] || [];
+                if(deptEmployees.length === 0) return null;
+                
+                return (
+                    <div key={dept.slug}>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Users className="h-6 w-6 text-primary" />
+                            <h2 className="text-2xl font-headline font-bold text-primary">{dept.name}</h2>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="dueDate">Due Date</Label>
-                            <Input id="dueDate" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                           {deptEmployees.map(emp => <EmployeeCard key={emp.record} employee={emp} />)}
                         </div>
                     </div>
-
-                    <div className="flex justify-end gap-4 mt-8">
-                         <Dialog open={isSaveOpen} onOpenChange={setIsSaveOpen}>
-                            <DialogTrigger asChild>
-                                <Button><Save className="mr-2 h-4 w-4" /> Assign & Save</Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Confirm Assignment</DialogTitle>
-                                    <DialogDescription>
-                                        Are you sure you want to assign this task?
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <DialogFooter>
-                                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                                    <Button onClick={handleSave}>Confirm</Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                        <Button onClick={handleDownloadPdf} variant="outline"><Download className="mr-2 h-4 w-4" /> Download as PDF</Button>
-                    </div>
-                </CardContent>
-            </Card>
+                )
+            })}
         </div>
     );
 }
