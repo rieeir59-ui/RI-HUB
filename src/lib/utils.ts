@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -27,6 +28,17 @@ const fileNameToUrlMap: Record<string, string> = {
   "Rate Analysis": "rate-analysis",
   "Shop Drawing and Sample Record": "shop-drawings-record",
   "Timeline Schedule": "time-line-schedule",
+  "Commercial Timeline": "timelines-of-bank/commercial",
+  "Residential Timeline": "timelines-of-bank/residential",
+  "Askari Bank Timeline": "timelines-of-bank/askari-bank",
+  "Bank Alfalah Timeline": "timelines-of-bank/bank-alfalah",
+  "Bank Al Habib Timeline": "timelines-of-bank/bank-al-habib",
+  "CBD Timeline": "timelines-of-bank/cbd",
+  "DIB Timeline": "timelines-of-bank/dib",
+  "FBL Timeline": "timelines-of-bank/fbl",
+  "HBL Timeline": "timelines-of-bank/hbl",
+  "MCB Timeline": "timelines-of-bank/mcb",
+  "UBL Timeline": "timelines-of-bank/ubl",
 };
 
 export function getFormUrlFromFileName(fileName: string, dashboardPrefix: 'dashboard' | 'employee-dashboard'): string | null {

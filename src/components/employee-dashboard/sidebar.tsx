@@ -60,7 +60,8 @@ import {
   UserCog,
   Landmark,
   Building2,
-  Home
+  Home,
+  Save,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -123,6 +124,7 @@ const bankTimelineItems = [
     { href: '/employee-dashboard/timelines-of-bank/hbl', label: 'HBL', icon: Landmark },
     { href: '/employee-dashboard/timelines-of-bank/mcb', label: 'MCB', icon: Landmark },
     { href: '/employee-dashboard/timelines-of-bank/ubl', label: 'UBL', icon: Landmark },
+    { href: '/employee-dashboard/timelines-of-bank/timeline-record', label: 'Timeline Record', icon: Save },
 ];
 
 
@@ -166,7 +168,7 @@ export default function EmployeeDashboardSidebar() {
               </SidebarMenuItem>
             ))}
              <Collapsible asChild>
-                  <div>
+                  <div className="group/collapsible-menu-item">
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
                          <SidebarMenuButton
@@ -210,4 +212,3 @@ export default function EmployeeDashboardSidebar() {
       </Sidebar>
   );
 }
-
