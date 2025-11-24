@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Download, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -134,12 +133,11 @@ interface jsPDFWithAutoTable extends jsPDF {
 }
 
 const ChecklistItem = ({ item }: { item: { label: string; level: number } }) => {
+  const inputId = item.label.replace(/\s+/g, '-').toLowerCase();
   return (
-    <div className="flex items-start">
-      <div style={{ paddingLeft: `${item.level * 1.5}rem` }} className="flex items-start flex-1">
-        <Checkbox id={item.label.replace(/\s+/g, '-')} className="mt-1" />
-        <Label htmlFor={item.label.replace(/\s+/g, '-')} className="ml-3 flex-1">{item.label}</Label>
-      </div>
+    <div className="flex items-center" style={{ paddingLeft: `${item.level * 1}rem` }}>
+      <Label htmlFor={inputId} className="flex-1 text-sm">{item.label}</Label>
+      <Input id={inputId} name={inputId} className="w-32 h-8 ml-2" />
     </div>
   );
 };
@@ -188,53 +186,37 @@ export default function PredesignAssessmentPage() {
 
     yPos += 10;
     
-    const maxRows = Math.max(
-        factorsData.humanFactors.items.length,
-        factorsData.physicalFactors.items.length,
-        factorsData.externalFactors.items.length
-    );
+    Object.values(factorsData).forEach((factor, factorIndex) => {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(factor.title, margin, yPos);
+      yPos += 8;
 
-    const body = [];
-    for (let i = 0; i < maxRows; i++) {
-        const humanItem = factorsData.humanFactors.items[i];
-        const physicalItem = factorsData.physicalFactors.items[i];
-        const externalItem = factorsData.externalFactors.items[i];
-
-        const formatItem = (item: {label: string, level: number} | undefined) => {
-            if (!item) return '';
-            const indentation = ' '.repeat(item.level * 2);
-            return `${indentation}[] ${item.label}`;
-        };
-
-        body.push([
-            formatItem(humanItem),
-            formatItem(physicalItem),
-            formatItem(externalItem)
-        ]);
-    }
-    
-    doc.autoTable({
+      const body = factor.items.map(item => {
+        const inputId = item.label.replace(/\s+/g, '-').toLowerCase();
+        return [item.label, getInputValue(inputId)];
+      });
+      
+      doc.autoTable({
         startY: yPos,
-        head: [['Human Factors', 'Physical Factors', 'External Factors']],
+        head: [['Factor', 'Value']],
         body: body,
         theme: 'grid',
         headStyles: {
             fillColor: [22, 160, 133],
             textColor: 255,
             fontStyle: 'bold',
-            halign: 'center'
         },
         styles: {
-            font: 'courier', // Monospaced font to respect indentation
             fontSize: 8,
             cellPadding: 2,
-            valign: 'top',
         },
-        didParseCell: function (data) {
-             if (data.section === 'body') {
-                data.cell.styles.fillColor = '#ffffff';
-             }
-        }
+      });
+      yPos = (doc as any).autoTable.previous.finalY + 10;
+      
+      if (factorIndex < Object.values(factorsData).length - 1) {
+        if (yPos > 260) doc.addPage();
+      }
     });
 
     doc.save('predesign-assessment.pdf');
@@ -290,5 +272,3 @@ export default function PredesignAssessmentPage() {
     </div>
   );
 }
-
-    
