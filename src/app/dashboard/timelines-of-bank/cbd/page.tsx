@@ -268,9 +268,13 @@ export default function CBDTimelinePage() {
                         <Textarea value={queries} onChange={e => setQueries(e.target.value)} rows={4} />
                     </div>
                 </div>
+                
+                 <div className="flex justify-end gap-4 mt-8">
+                    <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save</Button>
+                    <Button onClick={handleDownload}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+                </div>
             </CardContent>
         </Card>
     );
 }
-
     
