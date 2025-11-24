@@ -9,6 +9,7 @@ import { Download, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const factorsData = {
   humanFactors: {
@@ -135,9 +136,9 @@ interface jsPDFWithAutoTable extends jsPDF {
 const ChecklistItem = ({ item }: { item: { label: string; level: number } }) => {
   const inputId = item.label.replace(/\s+/g, '-').toLowerCase();
   return (
-    <div className="flex items-center" style={{ paddingLeft: `${item.level * 1}rem` }}>
-      <Label htmlFor={inputId} className="flex-1 text-sm">{item.label}</Label>
-      <Input id={inputId} name={inputId} className="w-32 h-8 ml-2" />
+    <div className="grid grid-cols-2 items-center gap-4 py-2 border-b" style={{ paddingLeft: `${item.level * 1.5}rem` }}>
+      <Label htmlFor={inputId} className="text-sm">{item.label}</Label>
+      <Input id={inputId} name={inputId} className="w-full h-8" />
     </div>
   );
 };
@@ -186,7 +187,11 @@ export default function PredesignAssessmentPage() {
 
     yPos += 10;
     
-    Object.values(factorsData).forEach((factor, factorIndex) => {
+    Object.values(factorsData).forEach((factor) => {
+      if (yPos > 260) {
+          doc.addPage();
+          yPos = 20;
+      }
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text(factor.title, margin, yPos);
@@ -194,7 +199,10 @@ export default function PredesignAssessmentPage() {
 
       const body = factor.items.map(item => {
         const inputId = item.label.replace(/\s+/g, '-').toLowerCase();
-        return [item.label, getInputValue(inputId)];
+        return [
+          { content: item.label, styles: { cellPadding: { left: item.level * 5 + 2 } } },
+          getInputValue(inputId)
+        ];
       });
       
       doc.autoTable({
@@ -203,7 +211,7 @@ export default function PredesignAssessmentPage() {
         body: body,
         theme: 'grid',
         headStyles: {
-            fillColor: [22, 160, 133],
+            fillColor: [45, 95, 51],
             textColor: 255,
             fontStyle: 'bold',
         },
@@ -213,10 +221,6 @@ export default function PredesignAssessmentPage() {
         },
       });
       yPos = (doc as any).autoTable.previous.finalY + 10;
-      
-      if (factorIndex < Object.values(factorsData).length - 1) {
-        if (yPos > 260) doc.addPage();
-      }
     });
 
     doc.save('predesign-assessment.pdf');
@@ -227,48 +231,52 @@ export default function PredesignAssessmentPage() {
   };
 
   return (
-    <div className="bg-white p-8 md:p-12 lg:p-16 text-black rounded-lg shadow-lg">
-      <div className="printable-area">
-        <h1 className="text-xl font-bold mb-2">PREDESIGN</h1>
-        <h1 className="text-xl font-bold mb-6">ASSESSMENT</h1>
+    <Card className="bg-card/90">
+      <CardHeader className="text-center">
+          <CardTitle className="font-headline text-4xl text-primary">PREDESIGN ASSESSMENT</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="printable-area p-4 md:p-6 lg:p-8">
+            <div className="space-y-4 mb-8 p-4 border rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="project-name" className="font-semibold">Project:</Label>
+                        <Input id="project-name" placeholder="(Name, Address)" />
+                    </div>
+                     <div>
+                        <Label htmlFor="architect" className="font-semibold">Architect:</Label>
+                        <Input id="architect" />
+                    </div>
+                    <div>
+                        <Label htmlFor="project-no" className="font-semibold">Architects Project No:</Label>
+                        <Input id="project-no" />
+                    </div>
+                    <div>
+                        <Label htmlFor="project-date" className="font-semibold">Project Date:</Label>
+                        <Input id="project-date" type="date" />
+                    </div>
+                </div>
+            </div>
 
-        <div className="space-y-4 mb-8">
-            <div className="flex items-center gap-4">
-                <Label htmlFor="project-name" className="w-24">Project:</Label>
-                <Input id="project-name" placeholder="(Name, Address)" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
-            </div>
-             <div className="flex items-center gap-4">
-                <Label htmlFor="architect" className="w-24">Architect:</Label>
-                <Input id="architect" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
-            </div>
-            <div className="flex items-center gap-4">
-                <Label htmlFor="project-no" className="w-36">Architects Project No:</Label>
-                <Input id="project-no" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
-            </div>
-            <div className="flex items-center gap-4">
-                <Label htmlFor="project-date" className="w-28">Project Date:</Label>
-                <Input id="project-date" type="date" className="border-0 border-b-2 rounded-none p-0 focus-visible:ring-0" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {Object.values(factorsData).map((factor) => (
+                <div key={factor.title} className="border rounded-lg p-4">
+                  <h2 className="font-bold text-center text-xl text-primary border-b pb-2 mb-4">{factor.title}</h2>
+                  <div className="space-y-2">
+                    {factor.items.map((item, index) => (
+                      <ChecklistItem key={index} item={item} />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {Object.values(factorsData).map((factor) => (
-            <div key={factor.title} className="border-t-2 border-b-2 border-black py-2">
-              <h2 className="font-bold text-center border-b-2 border-black pb-1 mb-2">{factor.title}</h2>
-              <div className="space-y-3">
-                {factor.items.map((item, index) => (
-                  <ChecklistItem key={index} item={item} />
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="flex justify-end gap-4 mt-8 px-8 pb-8">
+          <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
+          <Button onClick={handleDownload}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
         </div>
-      </div>
-
-      <div className="flex justify-end gap-4 mt-12 no-print">
-        <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700"><Save className="mr-2 h-4 w-4" /> Save Record</Button>
-        <Button onClick={handleDownload} variant="outline" className="text-black border-black hover:bg-gray-200"><Download className="mr-2 h-4 w-4" /> Download/Print PDF</Button>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
