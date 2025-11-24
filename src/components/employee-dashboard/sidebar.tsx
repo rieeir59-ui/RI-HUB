@@ -12,10 +12,15 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarSeparator,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
+} from '@/components/ui/sidebar';
+import {
   Collapsible,
   CollapsibleTrigger,
-  CollapsibleContent
-} from '@/components/ui/sidebar';
+  CollapsibleContent,
+} from '@/components/ui/collapsible';
 import {
   LogOut,
   User,
