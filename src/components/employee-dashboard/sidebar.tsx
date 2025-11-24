@@ -58,7 +58,9 @@ import {
   Clock,
   BookCopy,
   UserCog,
-  Landmark
+  Landmark,
+  Building2,
+  Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -110,17 +112,17 @@ const menuItems = [
 ];
 
 const bankTimelineItems = [
-    { href: '/employee-dashboard/timelines-of-bank/commercial', label: 'Commercial' },
-    { href: '/employee-dashboard/timelines-of-bank/residential', label: 'Residential' },
-    { href: '/employee-dashboard/timelines-of-bank/askari-bank', label: 'Askari Bank' },
-    { href: '/employee-dashboard/timelines-of-bank/bank-alfalah', label: 'Bank Alfalah' },
-    { href: '/employee-dashboard/timelines-of-bank/bank-al-habib', label: 'Bank Al Habib' },
-    { href: '/employee-dashboard/timelines-of-bank/cbd', label: 'CBD' },
-    { href: '/employee-dashboard/timelines-of-bank/dib', label: 'DIB' },
-    { href: '/employee-dashboard/timelines-of-bank/fbl', label: 'FBL' },
-    { href: '/employee-dashboard/timelines-of-bank/hbl', label: 'HBL' },
-    { href: '/employee-dashboard/timelines-of-bank/mcb', label: 'MCB' },
-    { href: '/employee-dashboard/timelines-of-bank/ubl', label: 'UBL' },
+    { href: '/employee-dashboard/timelines-of-bank/commercial', label: 'Commercial', icon: Building2 },
+    { href: '/employee-dashboard/timelines-of-bank/residential', label: 'Residential', icon: Home },
+    { href: '/employee-dashboard/timelines-of-bank/askari-bank', label: 'Askari Bank', icon: Landmark },
+    { href: '/employee-dashboard/timelines-of-bank/bank-alfalah', label: 'Bank Alfalah', icon: Landmark },
+    { href: '/employee-dashboard/timelines-of-bank/bank-al-habib', label: 'Bank Al Habib', icon: Landmark },
+    { href: '/employee-dashboard/timelines-of-bank/cbd', label: 'CBD', icon: Landmark },
+    { href: '/employee-dashboard/timelines-of-bank/dib', label: 'DIB', icon: Landmark },
+    { href: '/employee-dashboard/timelines-of-bank/fbl', label: 'FBL', icon: Landmark },
+    { href: '/employee-dashboard/timelines-of-bank/hbl', label: 'HBL', icon: Landmark },
+    { href: '/employee-dashboard/timelines-of-bank/mcb', label: 'MCB', icon: Landmark },
+    { href: '/employee-dashboard/timelines-of-bank/ubl', label: 'UBL', icon: Landmark },
 ];
 
 
@@ -182,6 +184,7 @@ export default function EmployeeDashboardSidebar() {
                            <SidebarMenuSubItem key={item.href}>
                             <Link href={item.href} passHref>
                                <SidebarMenuSubButton isActive={pathname === item.href}>
+                                  <item.icon className="size-4 mr-2" />
                                   {item.label}
                                </SidebarMenuSubButton>
                             </Link>
