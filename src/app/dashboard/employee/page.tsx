@@ -58,6 +58,7 @@ import { type Employee } from '@/lib/employees';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useEmployees } from '@/context/EmployeeContext';
+import { useCurrentUser } from '@/context/UserContext';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
@@ -87,6 +88,7 @@ interface jsPDFWithAutoTable extends jsPDF {
 
 export default function EmployeePage() {
   const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
+  const { user: currentUser } = useCurrentUser();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -95,8 +97,12 @@ export default function EmployeePage() {
   
   const { toast } = useToast();
 
+  const canManageEmployees = currentUser && ['software-engineer', 'admin', 'ceo'].includes(currentUser.department);
+
   const handleAddEmployee = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!canManageEmployees) return;
+    
     const formData = new FormData(event.currentTarget);
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
@@ -133,7 +139,7 @@ export default function EmployeePage() {
 
   const handleEditEmployee = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!selectedEmployee) return;
+    if (!selectedEmployee || !canManageEmployees) return;
 
     const formData = new FormData(event.currentTarget);
     const updatedData: Partial<Employee> = {
@@ -154,7 +160,7 @@ export default function EmployeePage() {
   };
 
   const handleDeleteEmployee = () => {
-    if (!selectedEmployee) return;
+    if (!selectedEmployee || !canManageEmployees) return;
 
     deleteEmployee(selectedEmployee.record);
     setIsDeleteDialogOpen(false);
@@ -228,59 +234,61 @@ export default function EmployeePage() {
               <CardTitle>Employee List</CardTitle>
               <CardDescription>Manage your company's employee records.</CardDescription>
             </div>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-1">
-                  <PlusCircle className="h-4 w-4" />
-                  Add Employee
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Add New Employee</DialogTitle>
-                  <DialogDescription>
-                    Enter the details of the new employee below.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleAddEmployee}>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="name" className="text-right">Name</Label>
-                      <Input id="name" name="name" className="col-span-3" required />
+            {canManageEmployees && (
+                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogTrigger asChild>
+                    <Button size="sm" className="gap-1">
+                    <PlusCircle className="h-4 w-4" />
+                    Add Employee
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                    <DialogTitle>Add New Employee</DialogTitle>
+                    <DialogDescription>
+                        Enter the details of the new employee below.
+                    </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleAddEmployee}>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">Name</Label>
+                        <Input id="name" name="name" className="col-span-3" required />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="email" className="text-right">Email</Label>
+                        <Input id="email" name="email" type="email" className="col-span-3" required />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="contact" className="text-right">Contact</Label>
+                        <Input id="contact" name="contact" className="col-span-3" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="department" className="text-right">Department</Label>
+                        <Select name="department" required>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select a department" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {departments.map(dept => (
+                                <SelectItem key={dept.slug} value={dept.slug}>{dept.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="password" className="text-right">Password</Label>
+                        <Input id="password" name="password" type="password" className="col-span-3" required />
+                        </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="email" className="text-right">Email</Label>
-                      <Input id="email" name="email" type="email" className="col-span-3" required />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="contact" className="text-right">Contact</Label>
-                      <Input id="contact" name="contact" className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="department" className="text-right">Department</Label>
-                      <Select name="department" required>
-                          <SelectTrigger className="col-span-3">
-                            <SelectValue placeholder="Select a department" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {departments.map(dept => (
-                              <SelectItem key={dept.slug} value={dept.slug}>{dept.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="password" className="text-right">Password</Label>
-                      <Input id="password" name="password" type="password" className="col-span-3" required />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                    <Button type="submit">Save Employee</Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+                    <DialogFooter>
+                        <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                        <Button type="submit">Save Employee</Button>
+                    </DialogFooter>
+                    </form>
+                </DialogContent>
+                </Dialog>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -293,9 +301,11 @@ export default function EmployeePage() {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Department</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
+                {canManageEmployees && (
+                    <TableHead>
+                        <span className="sr-only">Actions</span>
+                    </TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -312,21 +322,23 @@ export default function EmployeePage() {
                     </TableCell>
                     <TableCell>{employee.email}</TableCell>
                     <TableCell>{departments.find(d => d.slug === employee.department)?.name || employee.department}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => openEditDialog(employee)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openDeleteDialog(employee)} className="text-red-600">Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+                    {canManageEmployees && (
+                        <TableCell>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Toggle menu</span>
+                            </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => openEditDialog(employee)}>Edit</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openDeleteDialog(employee)} className="text-red-600">Delete</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        </TableCell>
+                    )}
                   </TableRow>
                 )
               )}
