@@ -51,6 +51,41 @@ type SavedRecord = {
     data: SavedRecordData[] | Record<string, any>; // Support both old and new formats
 };
 
+const generateTaskAssignmentPdf = (doc: jsPDF, record: SavedRecord) => {
+    let yPos = 20;
+
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Task Assignment", doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+    yPos += 15;
+    
+    doc.setFontSize(10);
+    const taskData = record.data[0].items.reduce((acc, item) => {
+        const [key, ...value] = (item as string).split(': ');
+        acc[key] = value.join(': ');
+        return acc;
+    }, {} as Record<string, string>);
+
+
+    const body = [
+        ['Project Name', taskData.projectName],
+        ['Task Name', taskData.taskName],
+        ['Task Description', taskData.taskDescription],
+        ['Assigned To', taskData.assignedTo],
+        ['Due Date', taskData.dueDate],
+        ['Assigned By', taskData.assignedBy],
+    ];
+
+    (doc as any).autoTable({
+        startY: yPos,
+        theme: 'grid',
+        head: [['Field', 'Details']],
+        body: body,
+        headStyles: { fillColor: [45, 95, 51] }
+    });
+};
+
+
 const generateDefaultPdf = (doc: jsPDF, record: SavedRecord) => {
     let yPos = 20;
 
@@ -179,7 +214,9 @@ const handleDownload = (record: SavedRecord) => {
         case 'Project Checklist':
             generateChecklistPdf(doc, record);
             break;
-        // Add cases for other specific formats here
+        case 'Task Assignment':
+            generateTaskAssignmentPdf(doc, record);
+            break;
         default:
             generateDefaultPdf(doc, record);
             break;

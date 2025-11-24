@@ -76,13 +76,17 @@ function AssignTaskForm() {
             employeeName: currentUser.name,
             fileName: "Task Assignment",
             projectName: projectName || `Task: ${taskName}`,
-            data: {
+            data: [{
                 category: 'Task Assignment',
                 items: Object.entries(dataToSave).map(([key, value]) => {
                     if (key === 'createdAt') return `${key}: ${new Date().toISOString()}`;
+                     if (key === 'assignedTo') {
+                         const assignedEmployee = employees.find(e => e.record === value);
+                         return `${key}: ${assignedEmployee?.name || value}`;
+                    }
                     return `${key}: ${value}`;
                 })
-            },
+            }],
             createdAt: serverTimestamp(),
         };
 
