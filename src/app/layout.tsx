@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { UserProvider } from '@/context/UserContext';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { EmployeeProvider } from '@/context/EmployeeContext';
 
 export default function RootLayout({
   children,
@@ -18,9 +19,11 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          <UserProvider>
-              {children}
-          </UserProvider>
+          <EmployeeProvider>
+            <UserProvider>
+                {children}
+            </UserProvider>
+          </EmployeeProvider>
         </FirebaseClientProvider>
         <Toaster />
       </body>
