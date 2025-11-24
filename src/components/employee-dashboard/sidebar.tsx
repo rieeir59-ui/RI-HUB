@@ -12,6 +12,9 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarSeparator,
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent
 } from '@/components/ui/sidebar';
 import {
   LogOut,
@@ -50,6 +53,7 @@ import {
   Clock,
   BookCopy,
   UserCog,
+  Landmark
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -100,6 +104,20 @@ const menuItems = [
     { href: '/employee-dashboard/employee-record', label: 'Employee Record', icon: UserCog },
 ];
 
+const bankTimelineItems = [
+    { href: '/employee-dashboard/timelines-of-bank/commercial', label: 'Commercial' },
+    { href: '/employee-dashboard/timelines-of-bank/residential', label: 'Residential' },
+    { href: '/employee-dashboard/timelines-of-bank/askari-bank', label: 'Askari Bank' },
+    { href: '/employee-dashboard/timelines-of-bank/bank-alfalah', label: 'Bank Alfalah' },
+    { href: '/employee-dashboard/timelines-of-bank/bank-al-habib', label: 'Bank Al Habib' },
+    { href: '/employee-dashboard/timelines-of-bank/cbd', label: 'CBD' },
+    { href: '/employee-dashboard/timelines-of-bank/dib', label: 'DIB' },
+    { href: '/employee-dashboard/timelines-of-bank/fbl', label: 'FBL' },
+    { href: '/employee-dashboard/timelines-of-bank/hbl', label: 'HBL' },
+    { href: '/employee-dashboard/timelines-of-bank/mcb', label: 'MCB' },
+    { href: '/employee-dashboard/timelines-of-bank/ubl', label: 'UBL' },
+];
+
 
 export default function EmployeeDashboardSidebar() {
   const pathname = usePathname();
@@ -140,6 +158,34 @@ export default function EmployeeDashboardSidebar() {
                 </Link>
               </SidebarMenuItem>
             ))}
+             <Collapsible asChild>
+                  <>
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                         <SidebarMenuButton
+                            className="group-data-[collapsible=icon]:justify-center"
+                            tooltip="Timelines of Bank"
+                          >
+                            <Landmark className="size-5" />
+                            <span className="group-data-[collapsible=icon]:hidden">Timelines of Bank</span>
+                          </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                    </SidebarMenuItem>
+                    <CollapsibleContent asChild>
+                      <SidebarMenuSub>
+                        {bankTimelineItems.map((item) => (
+                           <SidebarMenuSubItem key={item.href}>
+                            <Link href={item.href} passHref>
+                               <SidebarMenuSubButton isActive={pathname === item.href}>
+                                  {item.label}
+                               </SidebarMenuSubButton>
+                            </Link>
+                           </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </>
+              </Collapsible>
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="p-2">
