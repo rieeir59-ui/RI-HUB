@@ -5,6 +5,8 @@ import DashboardPageHeader from "@/components/dashboard/PageHeader";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Loader2 } from 'lucide-react';
 
+export const dynamic = "force-dynamic";
+
 function AssignTaskFormFallback() {
     return (
         <Card>

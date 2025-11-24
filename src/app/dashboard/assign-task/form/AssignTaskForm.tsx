@@ -10,8 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Save, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { useFirebase } from '@/firebase/provider';
 import { useCurrentUser } from '@/context/UserContext';
 import { useEmployees } from '@/context/EmployeeContext';
@@ -28,6 +26,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
+import type jsPDF from 'jspdf';
 
 export default function AssignTaskForm() {
     const searchParams = useSearchParams();
@@ -90,7 +89,10 @@ export default function AssignTaskForm() {
             });
     };
     
-    const handleDownloadPdf = () => {
+    const handleDownloadPdf = async () => {
+        const jsPDF = (await import('jspdf')).default;
+        await import('jspdf-autotable');
+
         const doc = new jsPDF();
         let yPos = 20;
         
@@ -102,7 +104,7 @@ export default function AssignTaskForm() {
         doc.setFontSize(10);
         const assignedEmployee = employees.find(e => e.record === assignedTo);
 
-        doc.autoTable({
+        (doc as any).autoTable({
             startY: yPos,
             theme: 'grid',
             head: [['Field', 'Details']],
