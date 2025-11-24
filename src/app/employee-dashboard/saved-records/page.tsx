@@ -61,7 +61,16 @@ const generateTaskAssignmentPdf = (doc: jsPDF, record: SavedRecord) => {
     yPos += 15;
     
     doc.setFontSize(10);
-    const taskData = record.data[0].items.reduce((acc, item) => {
+    const dataArray = Array.isArray(record.data) ? record.data : [record.data];
+    const taskSection = dataArray.find(d => d.category === 'Task Assignment');
+
+    if (!taskSection || !taskSection.items) {
+      console.error("Could not find Task Assignment data in the record.");
+      generateDefaultPdf(doc, record); // Fallback to default PDF
+      return;
+    }
+
+    const taskData = taskSection.items.reduce((acc, item) => {
         const [key, ...value] = (item as string).split(': ');
         acc[key] = value.join(': ');
         return acc;
@@ -309,6 +318,7 @@ export default function SavedRecordsPage() {
             setRecordToDelete(null);
         }
     };
+
 
     if (isLoading) {
         return (
