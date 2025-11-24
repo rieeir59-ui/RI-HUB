@@ -63,6 +63,7 @@ import {
   Home,
   Save,
   ClipboardCheck,
+  Briefcase as MyProjectsIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -72,6 +73,7 @@ import { useCurrentUser } from '@/context/UserContext';
 
 const menuItems = [
     { href: '/employee-dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/employee-dashboard/my-projects', label: 'My Projects', icon: MyProjectsIcon },
     { href: '/employee-dashboard/assign-task', label: 'Assign Task', icon: ClipboardCheck },
     { href: '/employee-dashboard/our-team', label: 'Our Team', icon: Users },
     { href: '/employee-dashboard/about-me', label: 'About Me', icon: User },
