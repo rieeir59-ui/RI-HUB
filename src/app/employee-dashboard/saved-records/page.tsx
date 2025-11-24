@@ -5,7 +5,7 @@ import { useFirebase } from '@/firebase/provider';
 import { collection, query, where, getDocs, orderBy, type Timestamp, onSnapshot, FirestoreError, doc, deleteDoc } from 'firebase/firestore';
 import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2, Edit, Trash2 } from 'lucide-react';
 import {
@@ -18,6 +18,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useCurrentUser } from '@/context/UserContext';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -167,7 +175,6 @@ export default function SavedRecordsPage() {
         const docRef = doc(firestore, 'savedRecords', recordToDelete.id);
         try {
             await deleteDoc(docRef);
-            // The onSnapshot listener will automatically update the UI
         } catch (serverError) {
             console.error("Error deleting document:", serverError);
             const permissionError = new FirestorePermissionError({
@@ -199,87 +206,61 @@ export default function SavedRecordsPage() {
                     imageUrl={image?.imageUrl || ''}
                     imageHint={image?.imageHint || ''}
                 />
-
-                {error && (
-                     <Card className="text-center py-12 bg-destructive/10 border-destructive">
-                        <CardHeader>
-                            <CardTitle className="text-destructive">Error</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-destructive/90">{error}</p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {!isLoading && !error && records.length === 0 && (
-                    <Card className="text-center py-12">
-                        <CardHeader>
-                            <CardTitle>No Saved Records Found</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground">You haven't saved any records yet. Save a document from another page to see it here.</p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {!isLoading && !error && records.length > 0 && (
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {records.map(record => {
-                            const formUrl = getFormUrlFromFileName(record.fileName, 'employee-dashboard');
-                            return (
-                            <Card key={record.id} className="flex flex-col">
-                                <CardHeader>
-                                    <CardTitle>{record.projectName}</CardTitle>
-                                    <CardDescription>{record.fileName}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-grow space-y-4">
-                                    <div className="text-sm text-muted-foreground">
-                                        Saved on: {record.createdAt.toDate().toLocaleDateString()}
-                                    </div>
-                                    <div className="space-y-2">
-                                      {record.data.slice(0, 2).map((section, index) => (
-                                        <div key={index}>
-                                          <h4 className="font-semibold">{section.category}</h4>
-                                          <ul className="list-disc list-inside text-sm text-muted-foreground">
-                                            {section.items.slice(0, 3).map((item, itemIndex) => {
-                                               try {
-                                                    const parsedItem = JSON.parse(item);
-                                                    return Object.entries(parsedItem).slice(0,1).map(([key, value]) => (
-                                                        <li key={`${itemIndex}-${key}`}>{`${key}: ${String(value).substring(0,20)}...`}</li>
-                                                    ));
-                                                } catch(e) {
-                                                    return <li key={itemIndex}>{String(item).substring(0,30)}...</li>
-                                                }
-                                            })}
-                                             {section.items.length > 3 && <li>...and more</li>}
-                                          </ul>
-                                        </div>
-                                      ))}
-                                       {record.data.length > 2 && <p className="text-sm text-muted-foreground">...and more categories</p>}
-                                    </div>
-                                </CardContent>
-                                <CardFooter className="flex-col items-stretch space-y-2">
-                                    <div className="flex gap-2">
-                                        {formUrl && (
-                                            <Button asChild className="flex-1">
-                                                <Link href={`${formUrl}?id=${record.id}`}>
-                                                    <Edit className="mr-2 h-4 w-4" /> Edit
-                                                </Link>
-                                            </Button>
-                                        )}
-                                        <Button variant="destructive" size="icon" onClick={() => openDeleteDialog(record)}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                    <Button onClick={() => handleDownload(record)} variant="outline" className="w-full">
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Download PDF
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        )})}
-                    </div>
-                )}
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>My Saved Records</CardTitle>
+                        <CardDescription>A list of all documents you have saved.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                       {error ? (
+                            <div className="text-center py-12 text-destructive">
+                                <p>{error}</p>
+                            </div>
+                        ) : records.length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <p>You haven't saved any records yet. Save a document from another page to see it here.</p>
+                            </div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Project Name</TableHead>
+                                        <TableHead>File Name</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {records.map(record => {
+                                        const formUrl = getFormUrlFromFileName(record.fileName, 'employee-dashboard');
+                                        return (
+                                            <TableRow key={record.id}>
+                                                <TableCell>{record.projectName}</TableCell>
+                                                <TableCell>{record.fileName}</TableCell>
+                                                <TableCell>{record.createdAt.toDate().toLocaleDateString()}</TableCell>
+                                                <TableCell className="flex gap-2">
+                                                    <Button variant="ghost" size="icon" onClick={() => handleDownload(record)}>
+                                                        <Download className="h-4 w-4" />
+                                                    </Button>
+                                                    {formUrl && (
+                                                        <Button asChild variant="ghost" size="icon">
+                                                            <Link href={`${formUrl}?id=${record.id}`}>
+                                                                <Edit className="h-4 w-4" />
+                                                            </Link>
+                                                        </Button>
+                                                    )}
+                                                    <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(record)}>
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    })}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </CardContent>
+                 </Card>
             </div>
              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <AlertDialogContent>
