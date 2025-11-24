@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -38,7 +39,7 @@ import 'jspdf-autotable';
 type SavedRecordData = {
     category: string;
     items: string[];
-}[];
+};
 
 type SavedRecord = {
     id: string;
@@ -47,7 +48,7 @@ type SavedRecord = {
     fileName: string;
     projectName: string;
     createdAt: Timestamp;
-    data: SavedRecordData;
+    data: SavedRecordData[] | Record<string, any>;
 };
 
 export default function SavedRecordsPage() {
@@ -112,8 +113,8 @@ export default function SavedRecordsPage() {
     }, [firestore, currentUser, isUserLoading]);
 
     const handleDownload = (record: SavedRecord) => {
-        const doc = new jsPDF();
-        let yPos = 15;
+        const doc = new jsPDF() as any;
+        let yPos = 20;
 
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
@@ -132,39 +133,46 @@ export default function SavedRecordsPage() {
             styles: { fontSize: 10 },
         });
 
-        yPos = (doc as any).autoTable.previous.finalY + 10;
+        yPos = doc.autoTable.previous.finalY + 10;
 
-        record.data.forEach(section => {
+        const dataArray = Array.isArray(record.data) ? record.data : [record.data];
+
+        dataArray.forEach((section: any) => {
             if (yPos > 260) {
                 doc.addPage();
                 yPos = 20;
             }
             
-            const body = section.items.map(item => {
-                try {
-                    // Handle JSON stringified objects
-                    const parsed = JSON.parse(item);
-                    return Object.entries(parsed).map(([key, value]) => [key, String(value)]);
-                } catch {
-                    // Handle simple "key: value" strings
-                    const parts = item.split(':');
-                    if (parts.length > 1) {
-                        return [parts[0], parts.slice(1).join(':').trim()];
+            let body: (string | number)[][] = [];
+
+            if (section.items && Array.isArray(section.items)) {
+                 body = section.items.map((item: any) => {
+                    try {
+                        const parsed = JSON.parse(item);
+                        return Object.entries(parsed).map(([key, value]) => [key, String(value)]);
+                    } catch {
+                        const parts = String(item).split(':');
+                        if (parts.length > 1) {
+                            return [parts[0], parts.slice(1).join(':').trim()];
+                        }
+                        return [item, ''];
                     }
-                    return [item, '']; // Fallback for items without a colon
-                }
-            }).flat();
+                }).flat();
+            } else if (typeof section.items === 'object' && section.items !== null) {
+                 body = Object.entries(section.items).map(([key, value]) => [key, String(value)]);
+            }
+
 
             doc.autoTable({
-                head: [[section.category]],
+                head: [[section.category || 'Details']],
                 body: body,
                 startY: yPos,
                 theme: 'grid',
-                headStyles: { fontStyle: 'bold', fillColor: [230, 230, 230], textColor: 20 },
+                headStyles: { fontStyle: 'bold', fillColor: [45, 95, 51], textColor: 255 },
                 styles: { fontSize: 9 }
             });
 
-            yPos = (doc as any).autoTable.previous.finalY + 10;
+            yPos = doc.autoTable.previous.finalY + 10;
         });
 
         doc.save(`${record.projectName.replace(/\s+/g, '_')}_${record.fileName.replace(/\s+/g, '_')}.pdf`);
@@ -230,6 +238,8 @@ export default function SavedRecordsPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead>Sr.No</TableHead>
+                                        <TableHead>Employee Name</TableHead>
                                         <TableHead>Project Name</TableHead>
                                         <TableHead>File Name</TableHead>
                                         <TableHead>Date</TableHead>
@@ -237,10 +247,12 @@ export default function SavedRecordsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {records.map(record => {
+                                    {records.map((record, index) => {
                                         const formUrl = getFormUrlFromFileName(record.fileName, 'employee-dashboard');
                                         return (
                                             <TableRow key={record.id}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell>{record.employeeName}</TableCell>
                                                 <TableCell>{record.projectName}</TableCell>
                                                 <TableCell>{record.fileName}</TableCell>
                                                 <TableCell>{record.createdAt.toDate().toLocaleDateString()}</TableCell>
@@ -285,3 +297,4 @@ export default function SavedRecordsPage() {
         </>
     );
 }
+
