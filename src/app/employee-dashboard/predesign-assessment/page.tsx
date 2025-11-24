@@ -19,75 +19,75 @@ const factorsData = {
       { label: 'Behavior', level: 0 },
       { label: 'Objectives / Goals', level: 0 },
       { label: 'Organization', level: 0 },
-      { label: 'Hierarchy', level: 1 },
-      { label: 'Groups', level: 2 },
-      { label: 'Positions', level: 2 },
-      { label: 'Classifications', level: 2 },
-      { label: 'Leadership', level: 3 },
+      { label: '---Hierarchy', level: 1 },
+      { label: '---Groups', level: 2 },
+      { label: '---Positions', level: 2 },
+      { label: '---Classifications', level: 2 },
+      { label: '---Leadership', level: 3 },
       { label: 'Characteristics', level: 0 },
       { label: '(Demographics)', level: 1 },
       { label: 'Social Forces', level: 0 },
       { label: 'Political Forces', level: 0 },
       { label: 'Interactions', level: 0 },
-      { label: 'Communication', level: 1 },
-      { label: 'Relationships', level: 1 },
-      { label: 'Transfer of materials', level: 2 },
+      { label: '---Communication', level: 1 },
+      { label: '---Relationships', level: 1 },
+      { label: '---Transfer of materials', level: 2 },
       { label: 'Policies / Codes', level: 0 },
       { label: 'Attitudes / Values', level: 0 },
       { label: 'Customs / Beliefs', level: 0 },
       { label: 'Perceptions', level: 0 },
       { label: 'Preferences', level: 0 },
       { label: 'Qualities', level: 0 },
-      { label: 'Comfort', level: 1 },
-      { label: 'Productivity', level: 2 },
-      { label: 'Efficiency', level: 2 },
-      { label: 'Security', level: 1 },
-      { label: 'Safety', level: 1 },
-      { label: 'Access', level: 1 },
-      { label: 'Privacy', level: 2 },
-      { label: 'Territory', level: 2 },
-      { label: 'Control', level: 1 },
-      { label: 'Convenience', level: 2 },
+      { label: '---Comfort', level: 1 },
+      { label: '---Productivity', level: 2 },
+      { label: '---Efficiency', level: 2 },
+      { label: '---Security', level: 1 },
+      { label: '---Safety', level: 2 },
+      { label: '---Access', level: 2 },
+      { label: '---Privacy', level: 2 },
+      { label: '---Territory', level: 2 },
+      { label: '---Control', level: 2 },
+      { label: '---Convenience', level: 2 },
     ],
   },
   physicalFactors: {
     title: 'Physical Factors',
     items: [
       { label: 'Location', level: 0 },
-      { label: 'Region', level: 1 },
-      { label: 'Locality', level: 1 },
-      { label: 'Community', level: 1 },
-      { label: 'Vicinity', level: 1 },
+      { label: '---Region', level: 1 },
+      { label: '---Locality', level: 1 },
+      { label: '---Community', level: 1 },
+      { label: '---Vicinity', level: 1 },
       { label: 'Site Conditions', level: 0 },
       { label: 'Building / Facility', level: 0 },
       { label: 'Envelope', level: 0 },
       { label: 'Structure', level: 0 },
       { label: 'Systems', level: 0 },
-      { label: 'Engineering', level: 1 },
-      { label: 'Communications', level: 2 },
-      { label: 'Lighting', level: 2 },
-      { label: 'Security', level: 2 },
+      { label: '---Engineering', level: 1 },
+      { label: '---Communications', level: 2 },
+      { label: '---Lighting', level: 2 },
+      { label: '---Security', level: 2 },
       { label: 'Space', level: 0 },
-      { label: 'Types', level: 1 },
-      { label: 'Dimensions', level: 1 },
-      { label: 'Relationship', level: 1 },
+      { label: '---Types', level: 1 },
+      { label: '---Dimensions', level: 1 },
+      { label: '---Relationship', level: 1 },
       { label: 'Equipment / Furnishings', level: 0 },
       { label: 'Materials / Finishes', level: 0 },
       { label: 'Support Services', level: 0 },
-      { label: 'Storage', level: 1 },
-      { label: 'Parking', level: 1 },
-      { label: 'Access', level: 1 },
-      { label: 'Waste removal', level: 1 },
-      { label: 'Utilities (water, sewage, telephone)', level: 1 },
+      { label: '---Storage', level: 1 },
+      { label: '---Parking', level: 1 },
+      { label: '---Access', level: 1 },
+      { label: '---Waste removal', level: 1 },
+      { label: '---Utilities (water, sewage, telephone)', level: 1 },
       { label: 'Uses', level: 0 },
       { label: 'Functions', level: 0 },
       { label: 'Behavior / Activity Settings', level: 0 },
       { label: 'Operations', level: 0 },
       { label: 'Circulation', level: 0 },
       { label: 'Environment', level: 0 },
-      { label: 'Comfort', level: 1 },
-      { label: 'Visual', level: 1 },
-      { label: 'Acoustical', level: 1 },
+      { label: '---Comfort', level: 1 },
+      { label: '---Visual', level: 1 },
+      { label: '---Acoustical', level: 1 },
       { label: 'Energy Use / Conservation', level: 0 },
       { label: 'Durability / Flexibility', level: 0 },
     ],
@@ -97,33 +97,33 @@ const factorsData = {
     items: [
       { label: 'Legal Restrictions', level: 0 },
       { label: '(Codes / Standards / Regulations)', level: 1 },
-      { label: 'Building', level: 2 },
-      { label: 'Land use', level: 2 },
-      { label: 'Systems', level: 2 },
-      { label: 'Energy', level: 2 },
-      { label: 'Environment', level: 2 },
-      { label: 'Materials', level: 2 },
-      { label: 'Safety', level: 2 },
-      { label: 'Solar access', level: 1 },
+      { label: '---Building', level: 2 },
+      { label: '---Land use', level: 2 },
+      { label: '---Systems', level: 2 },
+      { label: '---Energy', level: 2 },
+      { label: '---Environment', level: 2 },
+      { label: '---Materials', level: 2 },
+      { label: '---Safety', level: 2 },
+      { label: '---Solar access', level: 1 },
       { label: 'Topography', level: 0 },
       { label: 'Climate', level: 0 },
       { label: 'Ecology', level: 0 },
       { label: 'Resource Availability', level: 0 },
       { label: 'Energy Supplies / Prices', level: 0 },
-      { label: 'Conventional', level: 1 },
-      { label: 'Solar', level: 1 },
-      { label: 'Alternatives', level: 1 },
+      { label: '---Conventional', level: 1 },
+      { label: '---Solar', level: 1 },
+      { label: '---Alternatives', level: 1 },
       { label: 'Economy', level: 0 },
       { label: 'Financing', level: 0 },
       { label: 'Time', level: 0 },
-      { label: 'Schedule', level: 1 },
-      { label: 'Deadlines', level: 2 },
-      { label: 'Operations', level: 2 },
+      { label: '---Schedule', level: 1 },
+      { label: '---Deadlines', level: 2 },
+      { label: '---Operations', level: 2 },
       { label: 'Costs / Budget', level: 0 },
-      { label: 'Construction', level: 1 },
-      { label: 'Material', level: 2 },
-      { label: 'Services', level: 2 },
-      { label: 'Operations', level: 2 },
+      { label: '---Construction', level: 1 },
+      { label: '---Material', level: 2 },
+      { label: '---Services', level: 2 },
+      { label: '---Operations', level: 2 },
       { label: 'Cost / Benefits', level: 0 },
     ],
   },
@@ -136,8 +136,8 @@ interface jsPDFWithAutoTable extends jsPDF {
 const ChecklistItem = ({ item }: { item: { label: string; level: number } }) => {
   const inputId = item.label.replace(/\s+/g, '-').toLowerCase();
   return (
-    <div className="grid grid-cols-2 items-center gap-4 py-2 border-b" style={{ paddingLeft: `${item.level * 1.5}rem` }}>
-      <Label htmlFor={inputId} className="text-sm">{item.label}</Label>
+    <div className="grid grid-cols-2 items-center gap-4 py-2 border-b">
+      <Label htmlFor={inputId} className="text-sm" style={{ paddingLeft: `${item.level * 1}rem` }}>{item.label}</Label>
       <Input id={inputId} name={inputId} className="w-full h-8" />
     </div>
   );
@@ -156,71 +156,66 @@ export default function PredesignAssessmentPage() {
 
   const handleDownload = () => {
     const doc = new jsPDF() as jsPDFWithAutoTable;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 14;
     let yPos = 20;
 
     const getInputValue = (id: string) => {
         const element = document.getElementById(id) as HTMLInputElement;
         return element ? element.value : '';
     };
-
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('PREDESIGN ASSESSMENT', pageWidth / 2, yPos, { align: 'center' });
-    yPos += 15;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const projectInfo = [
-        { title: 'Project:', value: getInputValue('project-name') },
-        { title: 'Architect:', value: getInputValue('architect') },
-        { title: 'Architects Project No:', value: getInputValue('project-no') },
-        { title: 'Project Date:', value: getInputValue('project-date') }
-    ];
-
-    projectInfo.forEach(info => {
-        doc.text(info.title, margin, yPos);
-        doc.text(info.value, margin + 50, yPos);
-        yPos += 7;
-    });
-
-    yPos += 10;
     
-    Object.values(factorsData).forEach((factor) => {
-      if (yPos > 260) {
-          doc.addPage();
-          yPos = 20;
-      }
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text(factor.title, margin, yPos);
-      yPos += 8;
+    // Header
+    doc.setFontSize(10);
+    doc.text('Project:', 14, yPos);
+    doc.text(getInputValue('project-name'), 40, yPos);
+    doc.text('Architect:', 120, yPos);
+    doc.text(getInputValue('architect'), 145, yPos);
+    yPos += 5;
+    doc.text('(Name, Address)', 14, yPos);
+    yPos += 5;
+    doc.line(14, yPos, 100, yPos);
+    doc.text("Architects Project No:", 120, yPos);
+    doc.line(158, yPos, 196, yPos);
+    yPos += 5;
+    doc.line(14, yPos, 100, yPos);
+    doc.text("Project Date:", 120, yPos);
+    doc.line(145, yPos, 196, yPos);
+    yPos += 10;
+    doc.setLineWidth(1.5);
+    doc.line(10, yPos, 200, yPos);
+    yPos += 2;
+    doc.setLineWidth(0.2);
 
-      const body = factor.items.map(item => {
-        const inputId = item.label.replace(/\s+/g, '-').toLowerCase();
-        return [
-          { content: item.label, styles: { cellPadding: { left: item.level * 5 + 2 } } },
-          getInputValue(inputId)
-        ];
-      });
-      
-      doc.autoTable({
+
+    // Body
+    const humanFactors = factorsData.humanFactors.items.map(item => `${' '.repeat(item.level * 4)}${item.label}`).join('\n');
+    const physicalFactors = factorsData.physicalFactors.items.map(item => `${' '.repeat(item.level * 4)}${item.label}`).join('\n');
+    const externalFactors = factorsData.externalFactors.items.map(item => `${' '.repeat(item.level * 4)}${item.label}`).join('\n');
+
+    doc.autoTable({
         startY: yPos,
-        head: [['Factor', 'Value']],
-        body: body,
+        head: [['Human Factors', 'Physical Factors', 'External Factors']],
+        body: [
+            [humanFactors, physicalFactors, externalFactors]
+        ],
         theme: 'grid',
         headStyles: {
-            fillColor: [45, 95, 51],
-            textColor: 255,
+            fillColor: [255, 255, 255],
+            textColor: 0,
             fontStyle: 'bold',
+            halign: 'left',
+            lineWidth: { top: 0, bottom: 0.5 },
+            lineColor: 0,
         },
-        styles: {
-            fontSize: 8,
+        bodyStyles: {
+            valign: 'top',
+            fontSize: 9,
             cellPadding: 2,
         },
-      });
-      yPos = (doc as any).autoTable.previous.finalY + 10;
+        columnStyles: {
+            0: { cellWidth: 60 },
+            1: { cellWidth: 60 },
+            2: { cellWidth: 60 },
+        }
     });
 
     doc.save('predesign-assessment.pdf');
