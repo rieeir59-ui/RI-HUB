@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -236,6 +237,7 @@ export default function SavedRecordsPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead>Sr.No</TableHead>
                                         <TableHead>Employee Name</TableHead>
                                         <TableHead>Project Name</TableHead>
                                         <TableHead>File Name</TableHead>
@@ -244,10 +246,11 @@ export default function SavedRecordsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {records.map(record => {
+                                    {records.map((record, index) => {
                                         const formUrl = getFormUrlFromFileName(record.fileName, 'dashboard');
                                         return (
                                             <TableRow key={record.id}>
+                                                <TableCell>{index + 1}</TableCell>
                                                 <TableCell>{record.employeeName}</TableCell>
                                                 <TableCell>{record.projectName}</TableCell>
                                                 <TableCell>{record.fileName}</TableCell>
