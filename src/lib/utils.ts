@@ -39,6 +39,7 @@ const fileNameToUrlMap: Record<string, string> = {
   "HBL Timeline": "timelines-of-bank/hbl",
   "MCB Timeline": "timelines-of-bank/mcb",
   "UBL Timeline": "timelines-of-bank/ubl",
+  "My Projects": "my-projects",
 };
 
 export function getFormUrlFromFileName(fileName: string, dashboardPrefix: 'dashboard' | 'employee-dashboard'): string | null {

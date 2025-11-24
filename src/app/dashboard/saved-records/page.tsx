@@ -37,7 +37,8 @@ import 'jspdf-autotable';
 
 type SavedRecordData = {
     category: string;
-    items: string[];
+    items: (string | Record<string, any>)[];
+    [key: string]: any;
 };
 
 type SavedRecord = {
@@ -48,6 +49,143 @@ type SavedRecord = {
     projectName: string;
     createdAt: Timestamp;
     data: SavedRecordData[] | Record<string, any>; // Support both old and new formats
+};
+
+const generateDefaultPdf = (doc: jsPDF, record: SavedRecord) => {
+    let yPos = 20;
+
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(record.projectName, doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+    yPos += 10;
+    
+    doc.setFontSize(10);
+    
+    const headerData = [
+        [`File: ${record.fileName}`],
+        [`Saved by: ${record.employeeName}`],
+        [`Date: ${record.createdAt.toDate().toLocaleDateString()}`],
+    ];
+
+    (doc as any).autoTable({
+        startY: yPos,
+        theme: 'plain',
+        body: headerData,
+        styles: { fontSize: 10 },
+    });
+
+    yPos = (doc as any).autoTable.previous.finalY + 10;
+    
+    const dataArray = Array.isArray(record.data) ? record.data : [record.data];
+
+    dataArray.forEach((section: any) => {
+        if (yPos > 260) {
+            doc.addPage();
+            yPos = 20;
+        }
+        
+        const body: (string | number)[][] = [];
+
+        if (section.items && Array.isArray(section.items)) {
+            section.items.forEach((item: any) => {
+                try {
+                    const parsed = JSON.parse(item);
+                    Object.entries(parsed).forEach(([key, value]) => {
+                        if (typeof value !== 'object' && value !== null) {
+                            body.push([key, String(value)]);
+                        }
+                    });
+                } catch {
+                    const parts = String(item).split(':');
+                    if (parts.length > 1) {
+                        body.push([parts[0], parts.slice(1).join(':').trim()]);
+                    } else {
+                        body.push([item, '']);
+                    }
+                }
+            });
+        }
+
+        (doc as any).autoTable({
+            head: [[section.category || 'Details']],
+            body: body.length > 0 ? body : [['No items to display']],
+            startY: yPos,
+            theme: 'grid',
+            headStyles: { fontStyle: 'bold', fillColor: [45, 95, 51], textColor: 255 },
+            styles: { fontSize: 9 }
+        });
+
+        yPos = (doc as any).autoTable.previous.finalY + 10;
+    });
+}
+
+const generateChecklistPdf = (doc: jsPDF, record: SavedRecord) => {
+    let yPos = 20;
+
+    const data = Array.isArray(record.data) ? record.data : [record.data];
+    const headerInfo = data.find(d => d.category === 'Project Header');
+
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PROJECT CHECKLIST', doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+    yPos += 15;
+    
+    doc.setFontSize(10);
+    const projectDetails = [
+      ['Project:', record.projectName],
+      ['Name, Address: Architect:', headerInfo?.architectName || ''],
+      ["Architect's Project No:", headerInfo?.projectNo || ''],
+      ['Project Date:', headerInfo?.projectDate || ''],
+    ];
+
+    (doc as any).autoTable({
+      startY: yPos,
+      theme: 'plain',
+      body: projectDetails,
+      styles: { fontSize: 10 },
+      columnStyles: { 0: { fontStyle: 'bold' } },
+    });
+    yPos = (doc as any).autoTable.previous.finalY + 10;
+    
+    data.filter(d => d.category !== 'Project Header').forEach(section => {
+        if (yPos > 260) { doc.addPage(); yPos = 20; }
+        
+        const [mainTitle, subTitle] = section.category.split(' - ');
+        
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text(mainTitle, 14, yPos);
+        yPos += 7;
+
+        doc.setFont('helvetica', 'normal');
+        doc.text(subTitle, 20, yPos);
+        yPos += 7;
+
+        (doc as any).autoTable({
+            startY: yPos,
+            body: section.items.map((item: string) => [`[X]`, item]),
+            theme: 'plain',
+            styles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 10 } }
+        });
+        yPos = (doc as any).autoTable.previous.finalY + 5;
+    });
+}
+
+const handleDownload = (record: SavedRecord) => {
+    const doc = new jsPDF() as any;
+    
+    switch (record.fileName) {
+        case 'Project Checklist':
+            generateChecklistPdf(doc, record);
+            break;
+        // Add cases for other specific formats here
+        default:
+            generateDefaultPdf(doc, record);
+            break;
+    }
+
+    doc.save(`${record.projectName.replace(/\s+/g, '_')}_${record.fileName.replace(/\s+/g, '_')}.pdf`);
 };
 
 export default function SavedRecordsPage() {
@@ -115,81 +253,6 @@ export default function SavedRecordsPage() {
         return () => unsubscribe();
             
     }, [firestore, currentUser, isUserLoading]);
-
-    const handleDownload = (record: SavedRecord) => {
-        const doc = new jsPDF() as any;
-        let yPos = 20;
-
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.text(record.projectName, doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
-        yPos += 10;
-        
-        doc.setFontSize(10);
-        
-        const headerData = [
-            [`File: ${record.fileName}`],
-            [`Saved by: ${record.employeeName}`],
-            [`Date: ${record.createdAt.toDate().toLocaleDateString()}`],
-        ];
-
-        doc.autoTable({
-            startY: yPos,
-            theme: 'plain',
-            body: headerData,
-            styles: { fontSize: 10 },
-        });
-
-        yPos = doc.autoTable.previous.finalY + 10;
-        
-        const dataArray = Array.isArray(record.data) ? record.data : [record.data];
-
-        dataArray.forEach((section: any) => {
-            if (yPos > 260) {
-                doc.addPage();
-                yPos = 20;
-            }
-            
-            const body: (string | number)[][] = [];
-
-            if (section.items && Array.isArray(section.items)) {
-                section.items.forEach((item: any) => {
-                    try {
-                        const parsed = JSON.parse(item);
-                        Object.entries(parsed).forEach(([key, value]) => {
-                            if (typeof value !== 'object' && value !== null) {
-                                body.push([key, String(value)]);
-                            }
-                        });
-                    } catch {
-                        const parts = String(item).split(':');
-                        if (parts.length > 1) {
-                            body.push([parts[0], parts.slice(1).join(':').trim()]);
-                        } else {
-                            body.push([item, '']);
-                        }
-                    }
-                });
-            } else if (typeof section.items === 'object' && section.items !== null) {
-                 Object.entries(section.items).forEach(([key, value]) => {
-                     body.push([key, String(value)]);
-                 });
-            }
-
-            doc.autoTable({
-                head: [[section.category || 'Details']],
-                body: body.length > 0 ? body : [['No items to display']],
-                startY: yPos,
-                theme: 'grid',
-                headStyles: { fontStyle: 'bold', fillColor: [45, 95, 51], textColor: 255 },
-                styles: { fontSize: 9 }
-            });
-
-            yPos = doc.autoTable.previous.finalY + 10;
-        });
-
-        doc.save(`${record.projectName.replace(/\s+/g, '_')}_${record.fileName.replace(/\s+/g, '_')}.pdf`);
-    };
 
     const openDeleteDialog = (record: SavedRecord) => {
         setRecordToDelete(record);
