@@ -143,137 +143,101 @@ export default function ProjectDataPage() {
     };
 
     const handleDownloadPdf = () => {
-        const form = document.getElementById('site-survey-form') as HTMLFormElement;
         const doc = new jsPDF() as jsPDFWithAutoTable;
-        let yPos = 20;
-
+        const form = document.getElementById('site-survey-form') as HTMLFormElement;
+    
         const getInputValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.value || '';
-        const getRadioValue = (name: string) => (form.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || 'N/A';
+        const getRadioValue = (name: string) => (form.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || '';
         const getCheckboxValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.checked;
-
-        doc.setFontSize(14);
+    
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 14;
+        let y = 15;
+    
+        // --- HEADER ---
         doc.setFont('helvetica', 'bold');
-        doc.text('IHA PROJECT MANAGEMENT - Premises Review', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text('IHA PROJECT MANAGEMENT', margin, y);
+        doc.text('Premises Review', pageWidth - margin, y, { align: 'right' });
+        y += 5;
+        doc.setFont('helvetica', 'normal');
+        doc.text('For Residential Project', pageWidth - margin, y, { align: 'right' });
+        y += 5;
+        doc.setFontSize(8);
+        doc.text('This questionnaire form provides preliminary information for determining the suitability of premises or property to be acquired', margin, y);
+        y += 10;
+    
+        // --- LOCATION ---
+        const drawSection = (title: string, content: () => void) => {
+          doc.setLineWidth(0.5);
+          doc.rect(margin, y, pageWidth - margin * 2, 8);
+          doc.setFillColor(230, 230, 230);
+          doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.text(title, margin + 2, y + 5.5);
+          y += 8;
+          content();
+        };
+    
+        const drawField = (label: string, value: string, customY?: number) => {
+          const fieldY = customY || y;
+          doc.setLineWidth(0.2);
+          doc.rect(margin, fieldY, pageWidth - margin * 2, 10);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.text(label, margin + 2, fieldY + 6);
+          doc.text(value, margin + 40, fieldY + 6);
+          if(!customY) y += 10;
+        };
+    
+        drawSection('Location', () => {
+          doc.rect(margin, y, pageWidth - margin * 2, 10);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.text('Purpose', margin + 2, y + 6);
+          doc.rect(margin + 40, y + 2.5, 5, 5); // House checkbox
+          if (getCheckboxValue('purpose_house')) doc.text('X', margin + 41, y + 6);
+          doc.text('House', margin + 47, y + 6);
+          doc.rect(pageWidth - margin - 60, y + 2.5, 5, 5); // Other checkbox
+          if (getCheckboxValue('purpose_other_check')) doc.text('X', pageWidth - margin - 59, y + 6);
+          doc.text('Other: ' + getInputValue('purpose_other_text'), pageWidth - margin - 53, y + 6);
+          
+          doc.text('Date: ' + getInputValue('location_date'), pageWidth - margin - 100, y - 5);
+          y += 10;
 
-        const addTableSection = (title: string, data: (string|string[])[][]) => {
-             if (yPos > 250) { doc.addPage(); yPos = 20; }
-             doc.autoTable({
-                head: [[title]],
-                body: data,
-                startY: yPos,
-                theme: 'grid',
-                headStyles: { fillColor: [45, 95, 51], fontStyle: 'bold' },
-             });
-             yPos = (doc as any).lastAutoTable.finalY + 10;
-        }
-
-        yPos = 25;
-
-        let purpose = [];
-        if (getCheckboxValue('purpose_house')) purpose.push('House');
-        if (getCheckboxValue('purpose_other_check')) purpose.push(`Other: ${getInputValue('purpose_other_text')}`);
-
-        addTableSection('Location', [
-            ['Purpose', purpose.join(', ')],
-            ['Date', getInputValue('location_date')],
-            ['City', getInputValue('location_city')],
-            ['Region', getInputValue('location_region')],
-            ['Address', getInputValue('location_address')],
-        ]);
-
-        addTableSection('Legal File', [
-            ['Name of Owner', getInputValue('legal_owner_name')],
-            ['Completion Certificate available', getRadioValue('completion_cert')],
-            ['Property Leased', getRadioValue('is_leased')],
-        ]);
-
-        addTableSection('Area', [
-            ['Dimension - Max Frontage', getInputValue('area_frontage')],
-            ['Dimension - Max Depth', getInputValue('area_depth')],
-            ['Total Area in Sqft', getInputValue('area_total')],
-            ['Min Clear Height (ft)', getInputValue('area_height')],
-            ['Building Plot Size', getInputValue('area_plot_size')],
-            ['Covered Area', getInputValue('area_covered')],
-            ['No. of Stories', getInputValue('area_stories')],
-        ]);
-
-        addTableSection('Bounded As', [
-            ['Front', getInputValue('bounded_front')],
-            ['Back', getInputValue('bounded_back')],
-            ['Right', getInputValue('bounded_right')],
-            ['Left', getInputValue('bounded_left')],
-        ]);
-
-        addTableSection('Utilities', [
-            ['Sanctioned electrical load', getInputValue('sanctioned_load_text') + (getCheckboxValue('sanctioned_load_na') ? ' (N/A)' : '')],
-            ['Type of electrical load', getRadioValue('electrical_load_type')],
-            ['Electrical Meter', getInputValue('electrical_meter')],
-            ['Piped water available', getRadioValue('piped_water')],
-            ['Underground tank', getRadioValue('underground_tank')],
-            ['Overhead tank', getRadioValue('overhead_tank')],
-            ['Type of Overhead tank', getInputValue('overhead_tank_type')],
-            ['Type of water', getInputValue('water_type')],
-            ['Gas Connection', getRadioValue('gas_connection')],
-            ['Connected to Sewerage line', getRadioValue('sewerage_connection')],
-        ]);
+          drawField('City', getInputValue('location_city'));
+          drawField('Region', getInputValue('location_region'));
+          drawField('Address', getInputValue('location_address'));
+        });
         
-        doc.addPage();
-        yPos = 20;
-
-        addTableSection('Building Overview', [
-            ['Independent premises', getRadioValue('independent_premises')],
-            ['Status', getRadioValue('property_status') + (getRadioValue('property_status') === 'other' ? `: ${getInputValue('status_other_text')}` : '')],
-            ['Type of Premises', getRadioValue('premises_type') + (getRadioValue('premises_type') === 'other' ? `: ${getInputValue('prem_other_text')}` : '')],
-            ['Age of Premises', getRadioValue('building_age')],
-            ['Interior of Premises', getRadioValue('interior_type')],
-            ['Type of construction', getRadioValue('construction_type')],
-        ]);
-
-        const propertyUtil = ['Residential', 'Commercial', 'Dual', 'Industrial'].filter((_, i) => getCheckboxValue(`util_${['residential', 'commercial', 'dual', 'industrial'][i]}`)).join(', ');
-        const parking = ['Yes', 'On Main Road', 'No'].filter((_, i) => getCheckboxValue(`parking_${['yes', 'main_road', 'no'][i]}`)).join(', ');
-        const retainable = ['Water Tank', 'Subflooring', 'Staircase'].filter((_, i) => getCheckboxValue(`retainable_${['water_tank', 'subflooring', 'staircase'][i]}`)).join(', ');
-        const retainableOther = getCheckboxValue('retainable_other_check') ? `Other: ${getInputValue('retainable_other_text')}` : '';
-
-        addTableSection('Building Details', [
-            ['Seepage', getRadioValue('seepage')],
-            ['Area of seepage', getInputValue('seepage_area')],
-            ['Cause of Seepage', getInputValue('seepage_cause')],
-            ['Property Utilization', propertyUtil || 'None'],
-            ['Condition of roof waterproofing', getInputValue('roof_waterproofing')],
-            ['Parking available', parking || 'None'],
-            ['Approachable through Road', getRadioValue('approachable')],
-            ['Wall masonary material', getInputValue('wall_material')],
-            ['Major retainable building elements', [retainable, retainableOther].filter(Boolean).join(', ') || 'None'],
-            ['Plot level from road', getInputValue('plot_level')],
-            ['Building Control Violations', getRadioValue('violations') + (getCheckboxValue('violation_informed') ? ' (As informed by Owner)' : '')],
-        ]);
-
-        addTableSection('Rental Detail', [
-            ['Acquisition', getInputValue('rental_acquisition')],
-            ['Expected Rental /month', getInputValue('rental_expected_rent')],
-            ['Expected Advance (# months)', getInputValue('rental_expected_advance')],
-            ['Expected period of lease', getInputValue('rental_lease_period')],
-            ['Annual increase in rental', getInputValue('rental_annual_increase')],
-        ]);
-
-        doc.addPage();
-        yPos = 20;
-
-        const createChecklistTable = (title: string, items: {no: number; title: string}[], prefix: string) => {
-            doc.autoTable({
-                head: [[{content: title, colSpan: 3, styles: {halign: 'center', fillColor: [45, 95, 51]}}], ['Sr.No', 'Drawing Title', 'Remarks']],
-                body: items.map(item => [item.no, item.title, getInputValue(`${prefix}_remarks_${item.no}`)]),
-                startY: yPos,
-                theme: 'grid',
-                headStyles: { fontStyle: 'bold' }
-            });
-            yPos = (doc as any).lastAutoTable.finalY + 10;
-        }
-
-        createChecklistTable("Architectural Drawings", checklistItems, 'checklist');
-        createChecklistTable("Structure Drawings", structureDrawingItems, 'structure');
-        createChecklistTable("Plumbing Drawings", plumbingDrawingItems, 'plumbing');
-        createChecklistTable("Electrification Drawings", electrificationDrawingItems, 'electrification');
+        y += 5;
+    
+        // --- LEGAL FILE ---
+        drawSection('Legal File', () => {
+          drawField('Name of Owner', getInputValue('legal_owner_name'));
+          doc.rect(margin, y, pageWidth - margin * 2, 10);
+          doc.text('Is Completion Certificate available', margin + 2, y + 6);
+          doc.rect(margin + 80, y + 2.5, 5, 5); // Yes
+          if (getRadioValue('completion_cert') === 'yes') doc.text('X', margin + 81, y + 6);
+          doc.text('Yes', margin + 87, y + 6);
+          doc.text('As informed by Owner Representative', margin + 100, y + 6);
+          doc.rect(pageWidth - margin - 20, y + 2.5, 5, 5); // No
+          if (getRadioValue('completion_cert') === 'no') doc.text('X', pageWidth - margin - 19, y + 6);
+          doc.text('No', pageWidth - margin - 13, y + 6);
+          y += 10;
+    
+          doc.rect(margin, y, pageWidth - margin * 2, 10);
+          doc.text('Is the property leased', margin + 2, y + 6);
+          doc.rect(margin + 80, y + 2.5, 5, 5); // Yes
+          if (getRadioValue('is_leased') === 'yes') doc.text('X', margin + 81, y + 6);
+          doc.text('Yes', margin + 87, y + 6);
+          doc.text('As informed by Owner Representative', margin + 100, y + 6);
+          doc.rect(pageWidth - margin - 20, y + 2.5, 5, 5); // No
+          if (getRadioValue('is_leased') === 'no') doc.text('X', pageWidth - margin - 19, y + 6);
+          doc.text('No', pageWidth - margin - 13, y + 6);
+          y += 10;
+        });
 
         doc.save('site-survey.pdf');
         toast({ title: 'Download Started', description: 'Your site survey PDF is being generated.' });
