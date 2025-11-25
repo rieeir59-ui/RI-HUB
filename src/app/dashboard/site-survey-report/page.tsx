@@ -48,7 +48,10 @@ export default function SiteSurveyReportPage() {
         { id: 2, name: 'Mr. Muhammad Awais', designation: 'Engineer – KS & Associates' }
     ]);
     const [observations, setObservations] = useState(
-        'Our team surveyed the existing HBL- Expo Center Lahore branch on 03rd April 2025. The building was documented through photographs. The information collected is summarized in the following pictorial report.'
+        "1- The said building is located at Abdul-Haq Road at Expo Center, Lahore.\n2- There are buildings on branch’s left & right sides and a house on back side.\n3- Existing HBL branch is present on ground floor with covered area of 3102 sft.\n4- Building construction is a composite structure in RCC columns & beams and load bearing brick walls.\n5- Parking space is available in front of the building.\n6- The branch's plinth level is at +1’-3’’ from the road level.\n7- The said branch is equipped with electricity, water supply and drainage connection.\n8- Emergency exit is not available at present but it can be provided towards branch’s right or back side passage.\n9- Kitchen cabinets are damaged.\n10- Generator is placed on branch’s back side passage.\n11- AC outdoor units are installed on branch rights side external wall and on roof top.\n12- Solar system can be installed on the roof top and its load calculation will be applicable at the time of solar system design.\n13- Water tank is placed on roof top.\n14- There is no staircase available to access the rooftop.\n15- Roof waterproofing is missing, which is causing moisture penetration from the wall and slab joints. Roof waterproofing work needs to be done to avoid seepage into the building.\n16- Most of the walls in the branch are heavily moisturized with the rain water coming from roof top because of missing roof waterproofing. PVC cladding is done on the walls to cover the dampness.\n17- Cracks are visible on the building boundary walls and tuff pavers are damaged in side passages.\n18- Roof parapet wall is showing cracks and needs serious maintenance.\n19- All openings made in slab for piping & cabling work needs to be sealed and waterproofed properly."
+    );
+    const [recommendations, setRecommendations] = useState(
+        "Although, most of the walls inside branch are cladded with PVC panels to avoid dampness which is being caused by rain water ingress from the joints as roof waterproofing is missing. Referring to Site Survey Form Item no. D-7, structural stability evaluation is not done. Apparently, structure seems stable and the site itself is at a good location. We would recommend Bank may purchase the property for its use provided that all of the highlighted above remedial points are taken care of."
     );
     const [pictures, setPictures] = useState<Picture[]>([]);
 
@@ -95,6 +98,7 @@ export default function SiteSurveyReportPage() {
                 { category: 'Report Details', items: [`Bank: ${bankName}`, `Branch: ${branchName}`, `Report Date: ${reportDate}`, `Survey Date: ${surveyDate}`] },
                 { category: 'Personnel Present', items: personnel.map(p => `${p.name} (${p.designation})`) },
                 { category: 'Observations', items: [observations] },
+                { category: 'Recommendations', items: [recommendations] },
                 { category: 'Pictures', items: pictures.map(p => `Image: ${p.previewUrl}, Description: ${p.description}`) }
             ],
             createdAt: serverTimestamp(),
@@ -111,6 +115,8 @@ export default function SiteSurveyReportPage() {
 
     const handleDownload = async () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
+        const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
+        const footerText = "M/S Isbah Hassan & Associates Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522";
         const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 14;
         let yPos = 20;
@@ -155,6 +161,16 @@ export default function SiteSurveyReportPage() {
         doc.text(obsLines, margin, yPos);
         yPos += obsLines.length * 5 + 10;
         
+        if (yPos > 240) { doc.addPage(); yPos = 20; }
+        doc.setFont('helvetica', 'bold');
+        doc.text('RECOMMENDATION:', margin, yPos);
+        yPos += 7;
+        doc.setFont('helvetica', 'normal');
+        const recLines = doc.splitTextToSize(recommendations, pageWidth - (margin * 2));
+        doc.text(recLines, margin, yPos);
+        yPos += recLines.length * 5 + 10;
+
+        
         for (const pic of pictures) {
             if (pic.previewUrl) {
                  if (yPos > 180) { // Check if space is enough for image + text
@@ -176,6 +192,14 @@ export default function SiteSurveyReportPage() {
                 yPos += doc.splitTextToSize(pic.description, 160).length * 5 + 10;
             }
         }
+
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.text(footerText, doc.internal.pageSize.getWidth() / 2, pageHeight - 10, { align: 'center' });
+        }
+
 
         doc.save('Site_Survey_Report.pdf');
         toast({ title: "Download Started", description: "Your Site Survey Report is being generated." });
@@ -212,7 +236,12 @@ export default function SiteSurveyReportPage() {
                 
                 <div className="space-y-2">
                     <Label className="font-bold text-lg">OBSERVATIONS AND REMARKS:</Label>
-                    <Textarea value={observations} onChange={e => setObservations(e.target.value)} rows={5} />
+                    <Textarea value={observations} onChange={e => setObservations(e.target.value)} rows={15} />
+                </div>
+                
+                <div className="space-y-2">
+                    <Label className="font-bold text-lg">RECOMMENDATION:</Label>
+                    <Textarea value={recommendations} onChange={e => setRecommendations(e.target.value)} rows={5} />
                 </div>
 
                 <div className="space-y-4">
