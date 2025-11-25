@@ -107,10 +107,13 @@ export default function ProjectAgreementPage() {
 
     const handleDownloadPdf = () => {
         const doc = new jsPDF();
+        const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
+        const footerText = "M/S Isbah Hassan & Associates Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522";
+
         let yPos = 20;
 
         const addText = (text: string, isBold = false, indent = 0) => {
-            if (yPos > 280) {
+            if (yPos > 260) { // Check before adding text
                 doc.addPage();
                 yPos = 20;
             }
@@ -181,6 +184,14 @@ export default function ProjectAgreementPage() {
         addText('The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.', false, 10);
         
         yPos += 5;
+        
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.text(footerText, doc.internal.pageSize.getWidth() / 2, pageHeight - 10, { align: 'center' });
+        }
+
         doc.save('Project-Agreement.pdf');
 
         toast({

@@ -54,6 +54,8 @@ export default function ProjectDataPage() {
         }
 
         const doc = new jsPDF() as jsPDFWithAutoTable;
+        const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
+        const footerText = "M/S Isbah Hassan & Associates Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522";
         const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 14;
         let yPos = 22;
@@ -198,6 +200,13 @@ export default function ProjectDataPage() {
         // --- Sketch of Property ---
         addSectionTitle("Sketch of Property");
         addTextArea('Notations:', getInputValue('sketch_notes'));
+
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.text(footerText, doc.internal.pageSize.getWidth() / 2, pageHeight - 10, { align: 'center' });
+        }
 
         doc.save('project-data.pdf');
         
@@ -377,5 +386,3 @@ export default function ProjectDataPage() {
         </div>
     );
 }
-
-    

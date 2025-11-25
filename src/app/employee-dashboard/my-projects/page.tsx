@@ -143,6 +143,9 @@ export default function MyProjectsPage() {
 
     const handleDownload = () => {
         const doc = new jsPDF();
+        const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
+        const footerText = "M/S Isbah Hassan & Associates Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522";
+
         let yPos = 20;
 
         doc.setFontSize(16);
@@ -171,6 +174,13 @@ export default function MyProjectsPage() {
         doc.setFont('helvetica', 'normal');
         doc.text(doc.splitTextToSize(remarks, doc.internal.pageSize.width - 28), 14, yPos);
         
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.text(footerText, doc.internal.pageSize.getWidth() / 2, pageHeight - 10, { align: 'center' });
+        }
+
         doc.save(`${user?.name}_projects.pdf`);
         toast({ title: 'Download Started', description: 'Your project PDF is being generated.' });
     };
@@ -251,5 +261,3 @@ export default function MyProjectsPage() {
         </div>
     );
 }
-
-    
