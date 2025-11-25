@@ -106,8 +106,13 @@ export default function EmployeeDashboardPage() {
   const [schedule, setSchedule] = useState({ start: '', end: '' });
   const [remarks, setRemarks] = useState('');
 
+  const isCEO = user?.department === 'ceo';
+
   useEffect(() => {
-    if (isUserLoading) return;
+    if (isUserLoading || isCEO) { // Skip fetching if CEO
+        setIsLoadingTasks(false);
+        return;
+    }
     if (!firestore || !user) {
         setIsLoadingTasks(false);
         return;
@@ -152,7 +157,7 @@ export default function EmployeeDashboardPage() {
     });
 
     return () => unsubscribe();
-  }, [firestore, user, isUserLoading, toast]);
+  }, [firestore, user, isUserLoading, toast, isCEO]);
   
   const handleStatusChange = async (taskId: string, newStatus: Project['status']) => {
     if (!firestore) return;
@@ -285,153 +290,158 @@ export default function EmployeeDashboardPage() {
         </CardContent>
       </Card>
       
-      <Card>
-        <CardHeader>
-            <CardTitle>My Assigned Tasks</CardTitle>
-            <CardDescription>A list of tasks assigned to you.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            {isLoadingTasks ? (
-                <div className="flex justify-center items-center h-40">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                    <p className="ml-4">Loading tasks...</p>
-                </div>
-            ) : (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Project</TableHead>
-                            <TableHead>Task</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Due Date</TableHead>
-                            <TableHead>Assigned By</TableHead>
-                            <TableHead>Status</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {projects.length === 0 ? (
-                           <TableRow>
-                                <TableCell colSpan={6} className="text-center h-24">You have no assigned tasks.</TableCell>
-                           </TableRow>
-                        ) : projects.map((project) => (
-                            <TableRow key={project.id}>
-                                <TableCell>{project.projectName}</TableCell>
-                                <TableCell>{project.taskName}</TableCell>
-                                <TableCell className="max-w-[200px] truncate">{project.taskDescription}</TableCell>
-                                <TableCell>{project.dueDate}</TableCell>
-                                <TableCell>{project.assignedBy}</TableCell>
-                                <TableCell>
-                                     <Select
-                                        value={project.status}
-                                        onValueChange={(newStatus: Project['status']) => handleStatusChange(project.id, newStatus)}
-                                      >
-                                        <SelectTrigger className="w-[180px]">
-                                           <div className="flex items-center gap-2">
-                                             <StatusIcon status={project.status} />
-                                             <SelectValue placeholder="Set status" />
-                                           </div>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="not-started">
-                                             <div className="flex items-center gap-2"><XCircle className="h-5 w-5 text-red-500" />Not Started</div>
-                                          </SelectItem>
-                                          <SelectItem value="in-progress">
-                                            <div className="flex items-center gap-2"><Clock className="h-5 w-5 text-blue-500" />In Progress</div>
-                                          </SelectItem>
-                                          <SelectItem value="completed">
-                                            <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-green-500" />Completed</div>
-                                          </SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                </TableCell>
+      {!isCEO && (
+        <>
+        <Card>
+            <CardHeader>
+                <CardTitle>My Assigned Tasks</CardTitle>
+                <CardDescription>A list of tasks assigned to you.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isLoadingTasks ? (
+                    <div className="flex justify-center items-center h-40">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <p className="ml-4">Loading tasks...</p>
+                    </div>
+                ) : (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Project</TableHead>
+                                <TableHead>Task</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead>Due Date</TableHead>
+                                <TableHead>Assigned By</TableHead>
+                                <TableHead>Status</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            )}
-        </CardContent>
-      </Card>
-      
-      <div className="space-y-8">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title="Total Projects" value={projectStats.total} icon={<Briefcase className="h-4 w-4 text-muted-foreground" />} />
-                <StatCard title="Completed" value={projectStats.completed} icon={<CheckCircle2 className="h-4 w-4 text-green-500" />} />
-                <StatCard title="In Progress" value={projectStats.inProgress} icon={<Clock className="h-4 w-4 text-blue-500" />} />
-                <StatCard title="Not Started" value={projectStats.notStarted} icon={<XCircle className="h-4 w-4 text-red-500" />} />
-            </div>
-
-            <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
-                    <Avatar className="h-16 w-16 border-4 border-primary">
-                        <AvatarFallback className="bg-secondary text-secondary-foreground font-bold text-2xl">{user ? getInitials(user.name) : ''}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <CardTitle className="text-2xl font-bold">{user?.name.toUpperCase()}</CardTitle>
-                        <p className="text-muted-foreground">{user ? formatDepartmentName(user.department) : ''}</p>
-                    </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <Label className="font-semibold">Work Schedule</Label>
-                        <div className="flex gap-4">
-                            <Input type="date" value={schedule.start} onChange={e => setSchedule({ ...schedule, start: e.target.value })} />
-                            <Input type="date" value={schedule.end} onChange={e => setSchedule({ ...schedule, end: e.target.value })} />
-                        </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Project Name</TableHead>
-                                    <TableHead>Detail</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Start Date</TableHead>
-                                    <TableHead>End Date</TableHead>
-                                    <TableHead>Action</TableHead>
+                        </TableHeader>
+                        <TableBody>
+                            {projects.length === 0 ? (
+                            <TableRow>
+                                    <TableCell colSpan={6} className="text-center h-24">You have no assigned tasks.</TableCell>
+                            </TableRow>
+                            ) : projects.map((project) => (
+                                <TableRow key={project.id}>
+                                    <TableCell>{project.projectName}</TableCell>
+                                    <TableCell>{project.taskName}</TableCell>
+                                    <TableCell className="max-w-[200px] truncate">{project.taskDescription}</TableCell>
+                                    <TableCell>{project.dueDate}</TableCell>
+                                    <TableCell>{project.assignedBy}</TableCell>
+                                    <TableCell>
+                                        <Select
+                                            value={project.status}
+                                            onValueChange={(newStatus: Project['status']) => handleStatusChange(project.id, newStatus)}
+                                        >
+                                            <SelectTrigger className="w-[180px]">
+                                            <div className="flex items-center gap-2">
+                                                <StatusIcon status={project.status} />
+                                                <SelectValue placeholder="Set status" />
+                                            </div>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                            <SelectItem value="not-started">
+                                                <div className="flex items-center gap-2"><XCircle className="h-5 w-5 text-red-500" />Not Started</div>
+                                            </SelectItem>
+                                            <SelectItem value="in-progress">
+                                                <div className="flex items-center gap-2"><Clock className="h-5 w-5 text-blue-500" />In Progress</div>
+                                            </SelectItem>
+                                            <SelectItem value="completed">
+                                                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-green-500" />Completed</div>
+                                            </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </TableCell>
                                 </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {rows.map(row => (
-                                    <TableRow key={row.id}>
-                                        <TableCell><Input value={row.projectName} onChange={e => handleRowChange(row.id, 'projectName', e.target.value)} /></TableCell>
-                                        <TableCell><Textarea value={row.detail} onChange={e => handleRowChange(row.id, 'detail', e.target.value)} rows={1} /></TableCell>
-                                        <TableCell>
-                                            <Select value={row.status} onValueChange={(val: ProjectStatus) => handleRowChange(row.id, 'status', val)}>
-                                                <SelectTrigger className="w-[180px]">
-                                                   <div className="flex items-center gap-2">
-                                                     <StatusIcon status={row.status} />
-                                                     <SelectValue placeholder="Set status" />
-                                                   </div>
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  <SelectItem value="not-started"><div className="flex items-center gap-2"><XCircle className="h-5 w-5 text-red-500" />Not Started</div></SelectItem>
-                                                  <SelectItem value="in-progress"><div className="flex items-center gap-2"><Clock className="h-5 w-5 text-blue-500" />In Progress</div></SelectItem>
-                                                  <SelectItem value="completed"><div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-green-500" />Completed</div></SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </TableCell>
-                                        <TableCell><Input type="date" value={row.startDate} onChange={e => handleRowChange(row.id, 'startDate', e.target.value)} /></TableCell>
-                                        <TableCell><Input type="date" value={row.endDate} onChange={e => handleRowChange(row.id, 'endDate', e.target.value)} /></TableCell>
-                                        <TableCell><Button variant="destructive" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4"/></Button></TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                    <Button onClick={addRow} size="sm"><PlusCircle className="mr-2 h-4 w-4"/>Add Project</Button>
+                            ))}
+                        </TableBody>
+                    </Table>
+                )}
+            </CardContent>
+        </Card>
+        
+        <div className="space-y-8">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <StatCard title="Total Projects" value={projectStats.total} icon={<Briefcase className="h-4 w-4 text-muted-foreground" />} />
+                    <StatCard title="Completed" value={projectStats.completed} icon={<CheckCircle2 className="h-4 w-4 text-green-500" />} />
+                    <StatCard title="In Progress" value={projectStats.inProgress} icon={<Clock className="h-4 w-4 text-blue-500" />} />
+                    <StatCard title="Not Started" value={projectStats.notStarted} icon={<XCircle className="h-4 w-4 text-red-500" />} />
+                </div>
 
-                    <div className="space-y-2 pt-4">
-                        <Label htmlFor="remarks" className="font-semibold">Remarks</Label>
-                        <Textarea id="remarks" value={remarks} onChange={e => setRemarks(e.target.value)} />
-                    </div>
-                    
-                    <div className="flex justify-end gap-4 mt-8">
-                        <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4"/>Save Record</Button>
-                        <Button onClick={handleDownload}><Download className="mr-2 h-4 w-4"/>Download PDF</Button>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+                <Card>
+                    <CardHeader className="flex flex-row items-center gap-4">
+                        <Avatar className="h-16 w-16 border-4 border-primary">
+                            <AvatarFallback className="bg-secondary text-secondary-foreground font-bold text-2xl">{user ? getInitials(user.name) : ''}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <CardTitle className="text-2xl font-bold">{user?.name.toUpperCase()}</CardTitle>
+                            <p className="text-muted-foreground">{user ? formatDepartmentName(user.department) : ''}</p>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                            <Label className="font-semibold">Work Schedule</Label>
+                            <div className="flex gap-4">
+                                <Input type="date" value={schedule.start} onChange={e => setSchedule({ ...schedule, start: e.target.value })} />
+                                <Input type="date" value={schedule.end} onChange={e => setSchedule({ ...schedule, end: e.target.value })} />
+                            </div>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Project Name</TableHead>
+                                        <TableHead>Detail</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Start Date</TableHead>
+                                        <TableHead>End Date</TableHead>
+                                        <TableHead>Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {rows.map(row => (
+                                        <TableRow key={row.id}>
+                                            <TableCell><Input value={row.projectName} onChange={e => handleRowChange(row.id, 'projectName', e.target.value)} /></TableCell>
+                                            <TableCell><Textarea value={row.detail} onChange={e => handleRowChange(row.id, 'detail', e.target.value)} rows={1} /></TableCell>
+                                            <TableCell>
+                                                <Select value={row.status} onValueChange={(val: ProjectStatus) => handleRowChange(row.id, 'status', val)}>
+                                                    <SelectTrigger className="w-[180px]">
+                                                    <div className="flex items-center gap-2">
+                                                        <StatusIcon status={row.status} />
+                                                        <SelectValue placeholder="Set status" />
+                                                    </div>
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                    <SelectItem value="not-started"><div className="flex items-center gap-2"><XCircle className="h-5 w-5 text-red-500" />Not Started</div></SelectItem>
+                                                    <SelectItem value="in-progress"><div className="flex items-center gap-2"><Clock className="h-5 w-5 text-blue-500" />In Progress</div></SelectItem>
+                                                    <SelectItem value="completed"><div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-green-500" />Completed</div></SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </TableCell>
+                                            <TableCell><Input type="date" value={row.startDate} onChange={e => handleRowChange(row.id, 'startDate', e.target.value)} /></TableCell>
+                                            <TableCell><Input type="date" value={row.endDate} onChange={e => handleRowChange(row.id, 'endDate', e.target.value)} /></TableCell>
+                                            <TableCell><Button variant="destructive" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4"/></Button></TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                        <Button onClick={addRow} size="sm"><PlusCircle className="mr-2 h-4 w-4"/>Add Project</Button>
+
+                        <div className="space-y-2 pt-4">
+                            <Label htmlFor="remarks" className="font-semibold">Remarks</Label>
+                            <Textarea id="remarks" value={remarks} onChange={e => setRemarks(e.target.value)} />
+                        </div>
+                        
+                        <div className="flex justify-end gap-4 mt-8">
+                            <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4"/>Save Record</Button>
+                            <Button onClick={handleDownload}><Download className="mr-2 h-4 w-4"/>Download PDF</Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </>
+      )}
     </div>
   );
 }
+
