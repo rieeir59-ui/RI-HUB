@@ -108,24 +108,43 @@ export default function ProjectAgreementPage() {
     const handleDownloadPdf = () => {
         const doc = new jsPDF();
         const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
+        const pageWidth = doc.internal.pageSize.width || doc.internal.pageSize.getWidth();
+        const margin = 14;
         const footerText = "M/S Isbah Hassan & Associates Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522";
 
         let yPos = 20;
 
-        const addText = (text: string, isBold = false, indent = 0) => {
-            if (yPos > 260) { // Check before adding text
+        const addText = (text: string, isBold = false, indent = 0, size = 10, spaceAfter = 7) => {
+            if (yPos > pageHeight - margin - 20) {
                 doc.addPage();
                 yPos = 20;
             }
             doc.setFont('helvetica', isBold ? 'bold' : 'normal');
-            doc.text(text, 14 + indent, yPos);
-            yPos += 7;
+            doc.setFontSize(size);
+            const splitText = doc.splitTextToSize(text, pageWidth - (margin * 2) - indent);
+            doc.text(splitText, margin + indent, yPos);
+            yPos += (splitText.length * (size / 2.5)) + spaceAfter;
         };
         
-        doc.setFontSize(14);
-        addText('COMMERCIAL AGREEMENT', true);
-        yPos += 5;
-        doc.setFontSize(10);
+        const addList = (items: string[], indent = 5) => {
+            items.forEach(item => {
+                addText(`• ${item}`, false, indent, 10, 4);
+            });
+        }
+
+        const addSignatureLines = () => {
+            if (yPos > pageHeight - margin - 40) {
+                doc.addPage();
+                yPos = 20;
+            }
+            doc.line(margin, yPos, margin + 60, yPos);
+            doc.text('Architect', margin, yPos + 5);
+
+            doc.line(pageWidth - margin - 60, yPos, pageWidth - margin, yPos);
+            doc.text('Client', pageWidth - margin - 60, yPos + 5);
+        }
+
+        addText('COMMERCIAL AGREEMENT', true, 0, 14, 10);
         
         addText(`Made as of the day ${day || '________________'}`);
         addText(`Between the Owner: ${owner || '________________'}`);
@@ -134,7 +153,7 @@ export default function ProjectAgreementPage() {
         addText(`Address: ${address || '________________'}`);
         yPos += 5;
 
-        doc.autoTable({
+        (doc as any).autoTable({
             startY: yPos,
             body: [
                 ['Covered Area of Project:', coveredArea],
@@ -145,14 +164,12 @@ export default function ProjectAgreementPage() {
             ],
             theme: 'plain',
             styles: { fontSize: 10 },
-            bodyStyles: {
-                0: { fontStyle: 'bold' }
-            }
+            columnStyles: { 0: { fontStyle: 'bold' } }
         });
-        yPos = (doc as any).lastAutoTable.finalY + 10;
+        yPos = (doc as any).autoTable.previous.finalY + 10;
         
         addText('PAYMENT SCHEDULE:', true);
-        doc.autoTable({
+        (doc as any).autoTable({
             startY: yPos,
             body: [
                 ['On mobilization (advance payment)', '20 %'],
@@ -166,11 +183,11 @@ export default function ProjectAgreementPage() {
             theme: 'plain',
             styles: { fontSize: 10 }
         });
-        yPos = (doc as any).lastAutoTable.finalY + 10;
+        yPos = (doc as any).autoTable.previous.finalY + 10;
 
         addText('Project Management:', true);
         addText('Top Supervision:', true, 5);
-        const supervisionItems = [
+        addList([
             'Please find attached the site visit schedule for the project please intimate the office one week in advance before the required visit for timely surveillance. Any Unscheduled visits would be charged as under.',
             'For out of station visits, the travelling by air and lodging in a five-star hotel will be paid by the client.',
             "Rs. 50,000 for Principal Architect's site visit per day.",
@@ -178,18 +195,76 @@ export default function ProjectAgreementPage() {
             'For International visits, the travelling by air and lodging in a five-star hotel will be paid by the client.',
             "Rs. 150,000 for Principal Architect' s fee per day.",
             "Rs. 30,000 for Associate Architect' s fee per day."
-        ];
-        supervisionItems.forEach(item => addText(`• ${item}`, false, 10));
+        ], 10);
         addText('Detailed Supervision:', true, 5);
         addText('The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.', false, 10);
         
-        yPos += 5;
+        addText('Please Note:', true);
+        addList([
+            'The above quoted rates do not include any kind of tax.',
+            'The contract value is lumpsum for the area between 90,000 to 120,000 Sft, if however, the area increases the above amount only the sub-consultants fee @ Rs. 70/Sft will be charged.',
+            'The above consultancy charges quoted are valid for only two months.'
+        ]);
+
+        addText('Architectural Design Services:', true);
+        addList(['Space Planning', 'Design Concept', 'Design Development & 3Ds (Facade)', 'Budgeting Bil of Quantity’s.', 'Work Drawings', 'Structure Drawing', 'Electrification Drawings', 'Plumbing Drawings', 'Miscelaneous Services', 'Extra Services']);
         
+        addText('Interior Design Services:', true);
+        addList(['Flooring', 'Wood Work', 'Doors', 'Windows', 'False Ceiling', 'Lighting', 'Bath Details', 'Kitchen Details', 'Wall Textures.', 'Stairways', 'Built-in Features Fire Places', 'Patios', 'Water bodies', 'Trellis', 'Skylights', 'Furniture', 'Partitioning']);
+
+        addText('Note:', true);
+        addText('The item number 9 & 10 is under the head of extra services if the client requests these services, the extra charges will be as mentioned above.');
+
+        addText("Architect's Responsibilities.", true);
+        addList([
+            "The architect will produce a maximum of two proposals are revisions for the client for the said amount of consultancy every proposal or revision after this will be charged @ Rs. 500,000 /- per Proposal.",
+            "The architect will require a minimum period of one month for the design development. 2 months will be required for work drawings.",
+            "The architect will represent the owner and will advise and consult with the owner regarding construction.",
+            "The architect will be responsible for checking the contractor's progress and giving the approval for payments due to the contractor.",
+            "The architect is to prepare a maximum of 2 design proposals for the proposal stage for the client. If one proposal is developed, it can be revised two times, free of cost to the client. If, however, 2 design proposals are made, the second proposal can be revised three times, free of cost to the client. If the client wishes for another revision of the proposal, the architect will be paid Rs. 300,000 in advance for each drawing. If the client wishes to develop a third proposal, the architect will be paid Rs. 500,000 as advance payment for the task and Rs. 300,000 per revision of the third proposal.",
+            "No revision will be made after the Issuance of Construction Drawings. If client wants the revision, he will have to pay for the amount ascertained in the contract.",
+            "No revision will be made for working drawings. If client wants the revision, he will be required to pay the amount.",
+            "Project supervision will include visits as mentioned in Construction Activity Schedule.",
+            "The Architect will provide 3 Sets of working drawings to the client. For additional sets of working drawings Rs. 50,000 per set will be charged.",
+            "The Architect will provide only two options/revisions of 3Ds for the Facade after which any option/revision wil be charged based on normal market rates. For Interior renderings Rs. 500,000/- will be charged."
+        ]);
+
+        addText("The Architect will not be responsible for the following things:", true);
+        addList([
+            "Continuous site supervision.",
+            "Technical sequences and procedures of the contractors.",
+            "Change of acts and omissions of the contractor. These are the contractor's responsibilities.",
+            "Changes and omissions made on the owner's directions."
+        ]);
+
+        addText("ARTICLE-1: Termination of the Agreement", true);
+        addList([
+            "The agreement may be terminated by any of the parties on 7 days written notice. The other party will substantially perform in accordance with its items though no fault of the party initiating the termination.",
+            "The owner at least on 7 days’ notice to the designer may terminate the agreement in the event that the project is permanently abandoned.",
+            "In the event of termination not the fault of the design builder, the design builder will be compensated for services performed till termination date.",
+            "No reimbursable then due and termination expenses. The termination expenses are the expenses directly attributable to the termination including a reasonable amount of overhead and profit for which the design/builder is not otherwise compensated under this agreement."
+        ]);
+
+        addText("ARTICLE-2: Bases of Compensation", true);
+        addText("The owner will compensate the design/builder in accordance with this agreement, payments, and the other provisions of this agreement as described below.");
+        addList([
+            "Compensation for basic services",
+            "Basic services will be as mentioned",
+            "Subsequent payments will be as mentioned",
+            "Compensation for additional services",
+            "For additional services compensation will be as mentioned",
+            "Travel expenses of Architect, Engineer, Sub-Engineer and Sub Consultant will be separately billed",
+            "Computer Animation will be charged at the normal market rates",
+            "The rate of interest past due payments will be 15 % per month"
+        ]);
+        yPos += 10;
+        addSignatureLines();
+
         const pageCount = (doc as any).internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
           doc.setPage(i);
           doc.setFontSize(8);
-          doc.text(footerText, doc.internal.pageSize.getWidth() / 2, pageHeight - 10, { align: 'center' });
+          doc.text(footerText, pageWidth / 2, pageHeight - 10, { align: 'center' });
         }
 
         doc.save('Project-Agreement.pdf');
@@ -419,3 +494,4 @@ export default function ProjectAgreementPage() {
 }
 
     
+
