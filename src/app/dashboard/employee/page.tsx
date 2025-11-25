@@ -197,7 +197,7 @@ export default function EmployeePage() {
       ]),
     });
 
-    const pageCount = doc.internal.pages.length;
+    const pageCount = doc.internal.pages.length -1;
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
