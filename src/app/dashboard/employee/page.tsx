@@ -186,7 +186,7 @@ export default function EmployeePage() {
   const handleDownloadPdf = () => {
     const doc = new jsPDF() as jsPDFWithAutoTable;
     const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
-    const footerText = "M/S Isbah Hassan & Associates Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522";
+    const footerText = "Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522, info@isbahhassan.com, www.isbahhassan.com";
 
     doc.autoTable({
       head: [['Name', 'Email', 'Department']],
@@ -197,7 +197,7 @@ export default function EmployeePage() {
       ]),
     });
 
-    const pageCount = doc.internal.pages.length -1;
+    const pageCount = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
