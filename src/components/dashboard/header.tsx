@@ -2,7 +2,6 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useCurrentUser } from "@/context/UserContext";
-import Image from "next/image";
 
 export function Header() {
   const { user } = useCurrentUser();

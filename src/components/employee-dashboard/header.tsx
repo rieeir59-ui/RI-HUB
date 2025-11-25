@@ -5,7 +5,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useCurrentUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import Image from "next/image";
 
 export function Header() {
   const { user } = useCurrentUser();
@@ -31,14 +30,9 @@ export function Header() {
          <div className="flex items-center gap-3">
             <span className="font-semibold text-sm hidden sm:inline-block">{user.name}</span>
              <Avatar className="h-9 w-9 border-2 border-primary">
-                <div className="relative w-full h-full rounded-full overflow-hidden">
-                    <Image 
-                        src={`https://media.licdn.com/dms/image/D4D03AQFw5q0ePZz-5w/profile-displayphoto-shrink_800_800/0/1715848529321?e=1727308800&v=beta&t=H3iJqHwmyoPj91wDQD9nE0mJm2RkHnEx-ISlHhWcQ6U`}
-                        alt={user.name}
-                        layout="fill"
-                        objectFit="cover"
-                    />
-                </div>
+                <AvatarFallback className="bg-secondary text-secondary-foreground font-bold">
+                    {getInitials(user.name)}
+                </AvatarFallback>
             </Avatar>
         </div>
       )}
