@@ -30,6 +30,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useCurrentUser } from '@/context/UserContext';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 
 const menuItems = [
@@ -45,6 +46,14 @@ const menuItems = [
     { href: '/dashboard/credentials', label: 'Credentials', icon: KeyRound, roles: ['software-engineer', 'admin'] },
   ];
 
+const getInitials = (name: string) => {
+    if (!name) return '';
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1 && nameParts[nameParts.length - 1]) {
+        return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
+    }
+    return name[0] ? name[0].toUpperCase() : '';
+}
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
@@ -76,6 +85,19 @@ export default function DashboardSidebar() {
             </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">
+           {currentUser && (
+            <>
+              <div className="flex flex-col items-center text-center p-4 group-data-[collapsible=icon]:hidden">
+                <Avatar className="h-16 w-16 mb-2 border-2 border-primary">
+                    <AvatarFallback className="bg-secondary text-secondary-foreground font-bold text-2xl">
+                    {getInitials(currentUser.name)}
+                    </AvatarFallback>
+                </Avatar>
+                <p className="font-semibold text-sidebar-foreground">{currentUser.name}</p>
+              </div>
+              <SidebarSeparator />
+            </>
+          )}
           <SidebarMenu>
             {visibleMenuItems.map((item) => (
               <SidebarMenuItem key={item.href}>
