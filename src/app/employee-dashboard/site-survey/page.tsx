@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import DashboardPageHeader from "@/components/dashboard/PageHeader";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -309,7 +309,7 @@ export default function ProjectDataPage() {
         generateChecklistTable('Structure Drawings', structureDrawingItems, 'structure');
         generateChecklistTable('Plumbing Drawings', plumbingDrawingItems, 'plumbing');
         generateChecklistTable('Electrification Drawings', electrificationDrawingItems, 'electrification');
-
+        
         const pageCount = (doc as any).internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
           doc.setPage(i);
@@ -574,3 +574,4 @@ export default function ProjectDataPage() {
     
 
     
+
