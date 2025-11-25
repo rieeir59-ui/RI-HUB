@@ -30,22 +30,21 @@ type RecordRow = {
   recordNo: string;
   specSectionNo: string;
   drawingNo: string;
-  contractor: string;
-  subcontractor: string;
-  trade: string;
+  contractorSubcontractorTrade: string;
   title: string;
   referredTo: string;
-  action: string;
   dateSent: string;
   numCopies: string;
-  dateRetd: string;
+  dateRetdReferred: string;
+  action: string;
+  dateRetdAction: string;
   copiesTo: string[];
 };
 
 const initialRow: Omit<RecordRow, 'id'> = {
-  date: '', recordNo: '', specSectionNo: '', drawingNo: '', contractor: '', subcontractor: '',
-  trade: '', title: '', referredTo: '', action: '', dateSent: '', numCopies: '',
-  dateRetd: '', copiesTo: []
+  date: '', recordNo: '', specSectionNo: '', drawingNo: '', contractorSubcontractorTrade: '', 
+  title: '', referredTo: '', dateSent: '', numCopies: '',
+  dateRetdReferred: '', action: '', dateRetdAction: '', copiesTo: []
 };
 
 
@@ -71,12 +70,12 @@ export default function ShopDrawingsRecordPage() {
         setRows(rows.map(row => row.id === id ? { ...row, [field]: value } : row));
     };
     
-    const handleCheckboxChange = (id: number, field: keyof RecordRow, value: string) => {
+    const handleActionCheckboxChange = (id: number, value: string) => {
         const currentAction = rows.find(row => row.id === id)?.action;
-        handleRowChange(id, field, currentAction === value ? '' : value);
+        handleRowChange(id, 'action', currentAction === value ? '' : value);
     };
 
-    const handleMultiCheckboxChange = (id: number, field: keyof RecordRow, value: string) => {
+    const handleCopiesCheckboxChange = (id: number, value: string) => {
         const currentValues = rows.find(row => row.id === id)?.copiesTo || [];
         const newValues = currentValues.includes(value)
             ? currentValues.filter(v => v !== value)
@@ -133,15 +132,35 @@ export default function ShopDrawingsRecordPage() {
         doc.text(`Contractor: ${contractor}`, 14, yPos);
         yPos += 10;
         
-        const head = [[
-            'Date', 'Record #', 'Spec Section', 'Drawing No.', 'Contractor', 'Subcontractor', 
-            'Trade', 'Title', 'Referred To', 'Action', 'Date Sent', '# Copies', 'Date Ret\'d.', 'Copies To'
-        ]];
+        const head = [
+            [
+                { content: 'Date Record', rowSpan: 2 },
+                { content: 'Spec. Section No. __________\nShop Drawing or Sample Drawing No. __________\n\nTitle', rowSpan: 2, styles: { halign: 'center' } },
+                { content: 'Contractor\nSubcontractor\nTrade', rowSpan: 2 },
+                { content: '# Record', rowSpan: 2 },
+                { content: 'Referred', colSpan: 4 },
+                { content: 'Action', rowSpan: 2 },
+                { content: 'Date Ret\'d.', rowSpan: 2 },
+                { content: 'Copies To', colSpan: 4 },
+            ],
+            ['To', 'Date Sent', '# Copies', "Date Ret'd.", 'Contractor', 'Owner', 'Field', 'File']
+        ];
         
         const body = rows.map(row => [
-            row.date, row.recordNo, row.specSectionNo, row.drawingNo, row.contractor, row.subcontractor,
-            row.trade, row.title, row.referredTo, row.action, row.dateSent, row.numCopies,
-            row.dateRetd, row.copiesTo.join(', ')
+            row.date,
+            `${row.specSectionNo}\n${row.drawingNo}\n\n${row.title}`,
+            row.contractorSubcontractorTrade,
+            row.recordNo,
+            row.referredTo,
+            row.dateSent,
+            row.numCopies,
+            row.dateRetdReferred,
+            row.action,
+            row.dateRetdAction,
+            row.copiesTo.includes('Contractor') ? 'X' : '',
+            row.copiesTo.includes('Owner') ? 'X' : '',
+            row.copiesTo.includes('Field') ? 'X' : '',
+            row.copiesTo.includes('File') ? 'X' : '',
         ]);
 
         doc.autoTable({
@@ -149,14 +168,8 @@ export default function ShopDrawingsRecordPage() {
             body: body,
             startY: yPos,
             theme: 'grid',
-            headStyles: { fillColor: [45, 95, 51], fontSize: 8 },
-            styles: { fontSize: 8, cellPadding: 1 },
-            columnStyles: {
-                0: { cellWidth: 18 }, 1: { cellWidth: 15 }, 2: { cellWidth: 18 }, 3: { cellWidth: 20 },
-                4: { cellWidth: 20 }, 5: { cellWidth: 22 }, 6: { cellWidth: 15 }, 7: { cellWidth: 25 },
-                8: { cellWidth: 18 }, 9: { cellWidth: 22 }, 10: { cellWidth: 18 }, 11: { cellWidth: 15 },
-                12: { cellWidth: 18 }, 13: { cellWidth: 'auto' }
-            }
+            headStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: 'bold', halign: 'center' },
+            styles: { fontSize: 7, cellPadding: 1, overflow: 'linebreak' },
         });
         
         doc.save('shop-drawing-record.pdf');
@@ -174,7 +187,7 @@ export default function ShopDrawingsRecordPage() {
 
             <Card>
                  <CardHeader>
-                    <CardTitle className="text-center font-headline text-3xl text-primary">Shop Drawing and Sample Record</CardTitle>
+                    <CardTitle className="text-center font-headline text-2xl text-primary">Shop Drawing and Sample Record</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 md:p-6">
                     <form className="space-y-4 mb-6">
@@ -187,59 +200,58 @@ export default function ShopDrawingsRecordPage() {
 
                     <div className="overflow-x-auto">
                         <Table>
-                             <TableHeader>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableHead className="w-[120px]">Date</TableHead>
-                                    <TableHead>Record #</TableHead>
-                                    <TableHead>Spec. Section</TableHead>
-                                    <TableHead>Drawing No.</TableHead>
-                                    <TableHead>Contractor</TableHead>
-                                    <TableHead>Subcontractor</TableHead>
-                                    <TableHead>Trade</TableHead>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead>Referred To</TableHead>
-                                    <TableHead className="min-w-[200px]">Action</TableHead>
-                                    <TableHead className="w-[120px]">Date Sent</TableHead>
+                                    <TableHead rowSpan={2} className="align-bottom">Date Record</TableHead>
+                                    <TableHead rowSpan={2} className="align-bottom text-center">Spec/Drawing Info</TableHead>
+                                    <TableHead rowSpan={2} className="align-bottom">Contractor/Trade</TableHead>
+                                    <TableHead rowSpan={2} className="align-bottom"># Record</TableHead>
+                                    <TableHead colSpan={4} className="text-center">Referred</TableHead>
+                                    <TableHead rowSpan={2} className="align-bottom">Action</TableHead>
+                                    <TableHead rowSpan={2} className="align-bottom">Date Ret'd.</TableHead>
+                                    <TableHead colSpan={4} className="text-center">Copies To</TableHead>
+                                    <TableHead rowSpan={2} className="align-bottom">Actions</TableHead>
+                                </TableRow>
+                                <TableRow>
+                                    <TableHead>To</TableHead>
+                                    <TableHead>Date Sent</TableHead>
                                     <TableHead># Copies</TableHead>
-                                    <TableHead className="w-[120px]">Date Ret'd.</TableHead>
-                                    <TableHead className="min-w-[220px]">Copies To</TableHead>
-                                    <TableHead>Actions</TableHead>
+                                    <TableHead>Date Ret'd.</TableHead>
+                                    <TableHead>Contractor</TableHead>
+                                    <TableHead>Owner</TableHead>
+                                    <TableHead>Field</TableHead>
+                                    <TableHead>File</TableHead>
                                 </TableRow>
                             </TableHeader>
                              <TableBody>
                                 {rows.map(row => (
                                     <TableRow key={row.id}>
-                                        <TableCell><Input type="date" value={row.date} onChange={e => handleRowChange(row.id, 'date', e.target.value)} /></TableCell>
-                                        <TableCell><Input value={row.recordNo} onChange={e => handleRowChange(row.id, 'recordNo', e.target.value)} /></TableCell>
-                                        <TableCell><Input value={row.specSectionNo} onChange={e => handleRowChange(row.id, 'specSectionNo', e.target.value)} /></TableCell>
-                                        <TableCell><Input value={row.drawingNo} onChange={e => handleRowChange(row.id, 'drawingNo', e.target.value)} /></TableCell>
-                                        <TableCell><Input value={row.contractor} onChange={e => handleRowChange(row.id, 'contractor', e.target.value)} /></TableCell>
-                                        <TableCell><Input value={row.subcontractor} onChange={e => handleRowChange(row.id, 'subcontractor', e.target.value)} /></TableCell>
-                                        <TableCell><Input value={row.trade} onChange={e => handleRowChange(row.id, 'trade', e.target.value)} /></TableCell>
-                                        <TableCell><Textarea value={row.title} onChange={e => handleRowChange(row.id, 'title', e.target.value)} rows={1} /></TableCell>
+                                        <TableCell><Input type="date" value={row.date} onChange={e => handleRowChange(row.id, 'date', e.target.value)} className="w-32"/></TableCell>
+                                        <TableCell className="min-w-[200px]">
+                                          <Input placeholder="Spec. Section No." value={row.specSectionNo} onChange={e => handleRowChange(row.id, 'specSectionNo', e.target.value)} />
+                                          <Input placeholder="Shop/Sample Drawing No." value={row.drawingNo} onChange={e => handleRowChange(row.id, 'drawingNo', e.target.value)} className="mt-1" />
+                                          <Textarea placeholder="Title" value={row.title} onChange={e => handleRowChange(row.id, 'title', e.target.value)} rows={2} className="mt-1" />
+                                        </TableCell>
+                                        <TableCell><Input value={row.contractorSubcontractorTrade} onChange={e => handleRowChange(row.id, 'contractorSubcontractorTrade', e.target.value)} /></TableCell>
+                                        <TableCell><Input value={row.recordNo} onChange={e => handleRowChange(row.id, 'recordNo', e.target.value)} className="w-20" /></TableCell>
                                         <TableCell><Input value={row.referredTo} onChange={e => handleRowChange(row.id, 'referredTo', e.target.value)} /></TableCell>
-                                        <TableCell>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2"><Checkbox checked={row.action === 'approved'} onCheckedChange={() => handleCheckboxChange(row.id, 'action', 'approved')} id={`approved-${row.id}`} /><Label htmlFor={`approved-${row.id}`}>Approved</Label></div>
-                                                <div className="flex items-center gap-2"><Checkbox checked={row.action === 'approved_as_noted'} onCheckedChange={() => handleCheckboxChange(row.id, 'action', 'approved_as_noted')} id={`approved_as_noted-${row.id}`} /><Label htmlFor={`approved_as_noted-${row.id}`}>App'd as Noted</Label></div>
-                                                <div className="flex items-center gap-2"><Checkbox checked={row.action === 'revise_resubmit'} onCheckedChange={() => handleCheckboxChange(row.id, 'action', 'revise_resubmit')} id={`revise-${row.id}`} /><Label htmlFor={`revise-${row.id}`}>Revise & Resubmit</Label></div>
-                                                <div className="flex items-center gap-2"><Checkbox checked={row.action === 'not_approved'} onCheckedChange={() => handleCheckboxChange(row.id, 'action', 'not_approved')} id={`not_approved-${row.id}`} /><Label htmlFor={`not_approved-${row.id}`}>Not Approved</Label></div>
+                                        <TableCell><Input type="date" value={row.dateSent} onChange={e => handleRowChange(row.id, 'dateSent', e.target.value)} className="w-32" /></TableCell>
+                                        <TableCell><Input type="number" value={row.numCopies} onChange={e => handleRowChange(row.id, 'numCopies', e.target.value)} className="w-20" /></TableCell>
+                                        <TableCell><Input type="date" value={row.dateRetdReferred} onChange={e => handleRowChange(row.id, 'dateRetdReferred', e.target.value)} className="w-32" /></TableCell>
+                                        <TableCell className="min-w-[150px]">
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-1"><Checkbox checked={row.action === 'approved'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'approved')} id={`approved-${row.id}`} /><Label htmlFor={`approved-${row.id}`}>Approved</Label></div>
+                                                <div className="flex items-center gap-1"><Checkbox checked={row.action === 'approved_as_noted'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'approved_as_noted')} id={`approved_as_noted-${row.id}`} /><Label htmlFor={`approved_as_noted-${row.id}`}>App'd as Noted</Label></div>
+                                                <div className="flex items-center gap-1"><Checkbox checked={row.action === 'revise_resubmit'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'revise_resubmit')} id={`revise-${row.id}`} /><Label htmlFor={`revise-${row.id}`}>Revise & Resubmit</Label></div>
+                                                <div className="flex items-center gap-1"><Checkbox checked={row.action === 'not_approved'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'not_approved')} id={`not_approved-${row.id}`} /><Label htmlFor={`not_approved-${row.id}`}>Not Approved</Label></div>
                                             </div>
                                         </TableCell>
-                                        <TableCell><Input type="date" value={row.dateSent} onChange={e => handleRowChange(row.id, 'dateSent', e.target.value)} /></TableCell>
-                                        <TableCell><Input type="number" value={row.numCopies} onChange={e => handleRowChange(row.id, 'numCopies', e.target.value)} /></TableCell>
-                                        <TableCell><Input type="date" value={row.dateRetd} onChange={e => handleRowChange(row.id, 'dateRetd', e.target.value)} /></TableCell>
-                                         <TableCell>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2"><Checkbox checked={row.copiesTo.includes('contractor')} onCheckedChange={() => handleMultiCheckboxChange(row.id, 'copiesTo', 'contractor')} id={`ct_contractor-${row.id}`} /><Label htmlFor={`ct_contractor-${row.id}`}>Contractor</Label></div>
-                                                <div className="flex items-center gap-2"><Checkbox checked={row.copiesTo.includes('owner')} onCheckedChange={() => handleMultiCheckboxChange(row.id, 'copiesTo', 'owner')} id={`ct_owner-${row.id}`} /><Label htmlFor={`ct_owner-${row.id}`}>Owner</Label></div>
-                                                <div className="flex items-center gap-2"><Checkbox checked={row.copiesTo.includes('field')} onCheckedChange={() => handleMultiCheckboxChange(row.id, 'copiesTo', 'field')} id={`ct_field-${row.id}`} /><Label htmlFor={`ct_field-${row.id}`}>Field</Label></div>
-                                                <div className="flex items-center gap-2"><Checkbox checked={row.copiesTo.includes('file')} onCheckedChange={() => handleMultiCheckboxChange(row.id, 'copiesTo', 'file')} id={`ct_file-${row.id}`} /><Label htmlFor={`ct_file-${row.id}`}>File</Label></div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Button variant="destructive" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4" /></Button>
-                                        </TableCell>
+                                        <TableCell><Input type="date" value={row.dateRetdAction} onChange={e => handleRowChange(row.id, 'dateRetdAction', e.target.value)} className="w-32" /></TableCell>
+                                        <TableCell><div className="flex gap-1"><Checkbox checked={row.copiesTo.includes('Contractor')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'Contractor')} /></div></TableCell>
+                                        <TableCell><div className="flex gap-1"><Checkbox checked={row.copiesTo.includes('Owner')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'Owner')} /></div></TableCell>
+                                        <TableCell><div className="flex gap-1"><Checkbox checked={row.copiesTo.includes('Field')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'Field')} /></div></TableCell>
+                                        <TableCell><div className="flex gap-1"><Checkbox checked={row.copiesTo.includes('File')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'File')} /></div></TableCell>
+                                        <TableCell><Button variant="destructive" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4" /></Button></TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -258,4 +270,3 @@ export default function ShopDrawingsRecordPage() {
         </div>
     );
 }
-    
