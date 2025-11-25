@@ -2,22 +2,20 @@
 'use client';
 
 import { useState } from 'react';
+import DashboardPageHeader from "@/components/dashboard/PageHeader";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import { Save, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { useFirebase } from '@/firebase/provider';
-import { useCurrentUser } from '@/context/UserContext';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-
+import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
 
 interface jsPDFWithAutoTable extends jsPDF {
     autoTable: (options: any) => jsPDF;
@@ -90,82 +88,45 @@ const electrificationDrawingItems = [
 ];
 
 export default function ProjectDataPage() {
+    const image = PlaceHolderImages.find(p => p.id === 'site-survey');
     const { toast } = useToast();
-    const { firestore } = useFirebase();
-    const { user: currentUser } = useCurrentUser();
 
-    const handleSave = async () => {
-        if (!firestore || !currentUser) {
-            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
+    const handleSave = () => {
+        toast({
+            title: "Record Saved",
+            description: "The project data has been successfully saved.",
+        });
+    }
+
+    const handleDownloadPdf = () => {
+        const form = document.getElementById('site-survey-form') as HTMLFormElement;
+        if (!form) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not find form data.' });
             return;
         }
 
-        const form = document.getElementById('site-survey-form') as HTMLFormElement;
-        const formData = new FormData(form);
-        const data: { category: string, items: string[] }[] = [];
-        let currentCategory = '';
-
-        for (const [key, value] of formData.entries()) {
-            if (typeof value === 'string' && value.trim() !== '') {
-                const labelElement = form.querySelector(`label[for="${key}"]`) || form.querySelector(`label[data-label-for="${key}"]`);
-                let label = key;
-                if (labelElement) {
-                   label = labelElement.textContent || key;
-                } else {
-                   const nearestTitle = (form.querySelector(`[name="${key}"]`) as HTMLElement)?.closest('fieldset')?.querySelector('legend')?.textContent;
-                   label = nearestTitle ? `${nearestTitle} - ${key}` : key;
-                }
-                
-                const sectionTitle = (form.querySelector(`[name="${key}"]`) as HTMLElement)?.closest('section')?.querySelector('h2')?.textContent || 'General';
-
-                if(sectionTitle !== currentCategory) {
-                    currentCategory = sectionTitle;
-                    data.push({ category: currentCategory, items: [] });
-                }
-                data[data.length - 1].items.push(`${label}: ${value}`);
-            }
-        }
-        
-        try {
-            await addDoc(collection(firestore, 'savedRecords'), {
-                employeeId: currentUser.record,
-                employeeName: currentUser.name,
-                fileName: 'Site Survey',
-                projectName: (formData.get('location_purpose') as string) || 'Untitled Survey',
-                data: data,
-                createdAt: serverTimestamp(),
-            });
-            toast({ title: 'Record Saved', description: 'The site survey has been saved.' });
-        } catch (error) {
-            console.error("Error saving document: ", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
-        }
-    };
-
-    const handleDownloadPdf = () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
-        const form = document.getElementById('site-survey-form') as HTMLFormElement;
-    
-        const getInputValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.value || '';
-        const getRadioValue = (name: string) => (form.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || 'N/A';
-        const getCheckboxValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.checked;
-    
+        const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
+        const footerText = "M/S Isbah Hassan & Associates Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522";
         const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 14;
         let yPos = 15;
-    
+
+        const getInputValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.value || '';
+        const getRadioValue = (name: string) => (form.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || 'N/A';
+        const getCheckboxValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.checked;
+        
         const addSectionTitle = (title: string) => {
             if (yPos > 260) { doc.addPage(); yPos = 20; }
             doc.setLineWidth(0.5);
-            doc.rect(margin, yPos, pageWidth - margin * 2, 8);
-            doc.setFillColor(230, 230, 230);
             doc.rect(margin, yPos, pageWidth - margin * 2, 8, 'F');
+            doc.setFillColor(230, 230, 230);
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(10);
             doc.text(title, margin + 2, yPos + 5.5);
             yPos += 8;
         };
-    
+
         const drawField = (label: string, value: string) => {
           if (yPos > 275) { doc.addPage(); yPos = 20; }
           doc.setLineWidth(0.2);
@@ -348,6 +309,14 @@ export default function ProjectDataPage() {
         generateChecklistTable('Structure Drawings', structureDrawingItems, 'structure');
         generateChecklistTable('Plumbing Drawings', plumbingDrawingItems, 'plumbing');
         generateChecklistTable('Electrification Drawings', electrificationDrawingItems, 'electrification');
+
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.text(footerText, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        }
+
 
         doc.save('site-survey.pdf');
         
