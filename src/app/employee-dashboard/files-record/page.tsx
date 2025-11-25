@@ -225,9 +225,9 @@ export default function FilesRecordPage() {
                                             <td className="p-2">{file.createdAt.toDate().toLocaleDateString()}</td>
                                             <td className="p-2 flex gap-1 justify-end">
                                                 <Button asChild variant="ghost" size="icon">
-                                                    <Link href={file.fileUrl || '#'} target="_blank" rel="noopener noreferrer">
+                                                    <a href={file.fileUrl || '#'} target="_blank" rel="noopener noreferrer" download={file.originalName}>
                                                         <Download className="h-4 w-4"/>
-                                                    </Link>
+                                                    </a>
                                                 </Button>
                                                 <Button variant="ghost" size="icon" onClick={() => openEditDialog(file)}><Edit className="h-4 w-4"/></Button>
                                                 <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(file)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
