@@ -134,16 +134,16 @@ export default function ShopDrawingsRecordPage() {
         
         const head = [
             [
-                { content: 'Date Record', rowSpan: 2 },
-                { content: 'Spec. Section No. __________\nShop Drawing or Sample Drawing No. __________\n\nTitle', rowSpan: 2, styles: { halign: 'center' } },
-                { content: 'Contractor\nSubcontractor\nTrade', rowSpan: 2 },
-                { content: '# Record', rowSpan: 2 },
-                { content: 'Referred', colSpan: 4 },
-                { content: 'Action', rowSpan: 2 },
-                { content: 'Date Ret\'d.', rowSpan: 2 },
-                { content: 'Copies To', colSpan: 4 },
+                { content: 'Date Record', rowSpan: 2, styles: { halign: 'center', valign: 'middle'} },
+                { content: 'Spec. Section No. / Shop Drawing or Sample Drawing No. / Title', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+                { content: 'Contractor\nSubcontractor\nTrade', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+                { content: '# Record', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+                { content: 'Referred', colSpan: 4, styles: { halign: 'center'} },
+                { content: 'Action', colSpan: 4, styles: { halign: 'center'} },
+                { content: 'Date Ret\'d.', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+                { content: 'Copies To', colSpan: 4, styles: { halign: 'center'} },
             ],
-            ['To', 'Date Sent', '# Copies', "Date Ret'd.", 'Contractor', 'Owner', 'Field', 'File']
+            ['To', 'Date Sent', '# Copies', "Date Ret'd.", 'Approved', 'App\'d as Noted', 'Revise & Resubmit', 'Not Approved', 'Contractor', 'Owner', 'Field', 'File']
         ];
         
         const body = rows.map(row => [
@@ -155,7 +155,10 @@ export default function ShopDrawingsRecordPage() {
             row.dateSent,
             row.numCopies,
             row.dateRetdReferred,
-            row.action,
+            row.action === 'approved' ? 'X' : '',
+            row.action === 'approved_as_noted' ? 'X' : '',
+            row.action === 'revise_resubmit' ? 'X' : '',
+            row.action === 'not_approved' ? 'X' : '',
             row.dateRetdAction,
             row.copiesTo.includes('Contractor') ? 'X' : '',
             row.copiesTo.includes('Owner') ? 'X' : '',
@@ -191,10 +194,10 @@ export default function ShopDrawingsRecordPage() {
                 </CardHeader>
                 <CardContent className="p-4 md:p-6">
                     <form className="space-y-4 mb-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div><Label htmlFor="project">Project</Label><Input id="project" value={projectName} onChange={e => setProjectName(e.target.value)} /></div>
                             <div><Label htmlFor="architects_no">Architect's Project No</Label><Input id="architects_no" value={architectsProjectNo} onChange={e => setArchitectsProjectNo(e.target.value)} /></div>
-                            <div><Label htmlFor="contractor_main">Contractor</Label><Input id="contractor_main" value={contractor} onChange={e => setContractor(e.target.value)} /></div>
+                            <div className="md:col-span-2"><Label htmlFor="contractor_main">Contractor</Label><Input id="contractor_main" value={contractor} onChange={e => setContractor(e.target.value)} /></div>
                         </div>
                     </form>
 
@@ -202,56 +205,56 @@ export default function ShopDrawingsRecordPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead rowSpan={2} className="align-bottom">Date Record</TableHead>
-                                    <TableHead rowSpan={2} className="align-bottom text-center">Spec/Drawing Info</TableHead>
-                                    <TableHead rowSpan={2} className="align-bottom">Contractor/Trade</TableHead>
-                                    <TableHead rowSpan={2} className="align-bottom"># Record</TableHead>
-                                    <TableHead colSpan={4} className="text-center">Referred</TableHead>
-                                    <TableHead rowSpan={2} className="align-bottom">Action</TableHead>
-                                    <TableHead rowSpan={2} className="align-bottom">Date Ret'd.</TableHead>
-                                    <TableHead colSpan={4} className="text-center">Copies To</TableHead>
-                                    <TableHead rowSpan={2} className="align-bottom">Actions</TableHead>
+                                    <TableHead rowSpan={2} className="align-middle text-center border">Date Record</TableHead>
+                                    <TableHead rowSpan={2} className="align-middle text-center border w-[250px]">Spec / Drawing / Title</TableHead>
+                                    <TableHead rowSpan={2} className="align-middle text-center border">Contractor/<br/>Subcontractor/<br/>Trade</TableHead>
+                                    <TableHead rowSpan={2} className="align-middle text-center border"># Record</TableHead>
+                                    <TableHead colSpan={4} className="text-center border">Referred</TableHead>
+                                    <TableHead colSpan={4} className="text-center border">Action</TableHead>
+                                    <TableHead rowSpan={2} className="align-middle text-center border">Date Ret'd.</TableHead>
+                                    <TableHead colSpan={4} className="text-center border">Copies To</TableHead>
+                                    <TableHead rowSpan={2} className="align-middle text-center border">Actions</TableHead>
                                 </TableRow>
                                 <TableRow>
-                                    <TableHead>To</TableHead>
-                                    <TableHead>Date Sent</TableHead>
-                                    <TableHead># Copies</TableHead>
-                                    <TableHead>Date Ret'd.</TableHead>
-                                    <TableHead>Contractor</TableHead>
-                                    <TableHead>Owner</TableHead>
-                                    <TableHead>Field</TableHead>
-                                    <TableHead>File</TableHead>
+                                    <TableHead className="border">To</TableHead>
+                                    <TableHead className="border">Date Sent</TableHead>
+                                    <TableHead className="border"># Copies</TableHead>
+                                    <TableHead className="border">Date Ret'd.</TableHead>
+                                    <TableHead className="border text-xs rotate-[-90deg] p-1 h-[140px] w-[30px]">Approved</TableHead>
+                                    <TableHead className="border text-xs rotate-[-90deg] p-1 h-[140px] w-[30px]">App'd as Noted</TableHead>
+                                    <TableHead className="border text-xs rotate-[-90deg] p-1 h-[140px] w-[30px]">Revise & Resubmit</TableHead>
+                                    <TableHead className="border text-xs rotate-[-90deg] p-1 h-[140px] w-[30px]">Not Approved</TableHead>
+                                    <TableHead className="border text-xs rotate-[-90deg] p-1 h-[140px] w-[30px]">Contractor</TableHead>
+                                    <TableHead className="border text-xs rotate-[-90deg] p-1 h-[140px] w-[30px]">Owner</TableHead>
+                                    <TableHead className="border text-xs rotate-[-90deg] p-1 h-[140px] w-[30px]">Field</TableHead>
+                                    <TableHead className="border text-xs rotate-[-90deg] p-1 h-[140px] w-[30px]">File</TableHead>
                                 </TableRow>
                             </TableHeader>
                              <TableBody>
                                 {rows.map(row => (
                                     <TableRow key={row.id}>
-                                        <TableCell><Input type="date" value={row.date} onChange={e => handleRowChange(row.id, 'date', e.target.value)} className="w-32"/></TableCell>
-                                        <TableCell className="min-w-[200px]">
+                                        <TableCell className="border"><Input type="date" value={row.date} onChange={e => handleRowChange(row.id, 'date', e.target.value)} className="w-32"/></TableCell>
+                                        <TableCell className="border">
                                           <Input placeholder="Spec. Section No." value={row.specSectionNo} onChange={e => handleRowChange(row.id, 'specSectionNo', e.target.value)} />
                                           <Input placeholder="Shop/Sample Drawing No." value={row.drawingNo} onChange={e => handleRowChange(row.id, 'drawingNo', e.target.value)} className="mt-1" />
                                           <Textarea placeholder="Title" value={row.title} onChange={e => handleRowChange(row.id, 'title', e.target.value)} rows={2} className="mt-1" />
                                         </TableCell>
-                                        <TableCell><Input value={row.contractorSubcontractorTrade} onChange={e => handleRowChange(row.id, 'contractorSubcontractorTrade', e.target.value)} /></TableCell>
-                                        <TableCell><Input value={row.recordNo} onChange={e => handleRowChange(row.id, 'recordNo', e.target.value)} className="w-20" /></TableCell>
-                                        <TableCell><Input value={row.referredTo} onChange={e => handleRowChange(row.id, 'referredTo', e.target.value)} /></TableCell>
-                                        <TableCell><Input type="date" value={row.dateSent} onChange={e => handleRowChange(row.id, 'dateSent', e.target.value)} className="w-32" /></TableCell>
-                                        <TableCell><Input type="number" value={row.numCopies} onChange={e => handleRowChange(row.id, 'numCopies', e.target.value)} className="w-20" /></TableCell>
-                                        <TableCell><Input type="date" value={row.dateRetdReferred} onChange={e => handleRowChange(row.id, 'dateRetdReferred', e.target.value)} className="w-32" /></TableCell>
-                                        <TableCell className="min-w-[150px]">
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-1"><Checkbox checked={row.action === 'approved'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'approved')} id={`approved-${row.id}`} /><Label htmlFor={`approved-${row.id}`}>Approved</Label></div>
-                                                <div className="flex items-center gap-1"><Checkbox checked={row.action === 'approved_as_noted'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'approved_as_noted')} id={`approved_as_noted-${row.id}`} /><Label htmlFor={`approved_as_noted-${row.id}`}>App'd as Noted</Label></div>
-                                                <div className="flex items-center gap-1"><Checkbox checked={row.action === 'revise_resubmit'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'revise_resubmit')} id={`revise-${row.id}`} /><Label htmlFor={`revise-${row.id}`}>Revise & Resubmit</Label></div>
-                                                <div className="flex items-center gap-1"><Checkbox checked={row.action === 'not_approved'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'not_approved')} id={`not_approved-${row.id}`} /><Label htmlFor={`not_approved-${row.id}`}>Not Approved</Label></div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell><Input type="date" value={row.dateRetdAction} onChange={e => handleRowChange(row.id, 'dateRetdAction', e.target.value)} className="w-32" /></TableCell>
-                                        <TableCell><div className="flex gap-1"><Checkbox checked={row.copiesTo.includes('Contractor')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'Contractor')} /></div></TableCell>
-                                        <TableCell><div className="flex gap-1"><Checkbox checked={row.copiesTo.includes('Owner')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'Owner')} /></div></TableCell>
-                                        <TableCell><div className="flex gap-1"><Checkbox checked={row.copiesTo.includes('Field')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'Field')} /></div></TableCell>
-                                        <TableCell><div className="flex gap-1"><Checkbox checked={row.copiesTo.includes('File')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'File')} /></div></TableCell>
-                                        <TableCell><Button variant="destructive" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                                        <TableCell className="border"><Input value={row.contractorSubcontractorTrade} onChange={e => handleRowChange(row.id, 'contractorSubcontractorTrade', e.target.value)} /></TableCell>
+                                        <TableCell className="border"><Input value={row.recordNo} onChange={e => handleRowChange(row.id, 'recordNo', e.target.value)} className="w-20" /></TableCell>
+                                        <TableCell className="border"><Input value={row.referredTo} onChange={e => handleRowChange(row.id, 'referredTo', e.target.value)} className="w-24"/></TableCell>
+                                        <TableCell className="border"><Input type="date" value={row.dateSent} onChange={e => handleRowChange(row.id, 'dateSent', e.target.value)} className="w-32" /></TableCell>
+                                        <TableCell className="border"><Input type="number" value={row.numCopies} onChange={e => handleRowChange(row.id, 'numCopies', e.target.value)} className="w-20" /></TableCell>
+                                        <TableCell className="border"><Input type="date" value={row.dateRetdReferred} onChange={e => handleRowChange(row.id, 'dateRetdReferred', e.target.value)} className="w-32" /></TableCell>
+                                        <TableCell className="border text-center"><Checkbox checked={row.action === 'approved'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'approved')} /></TableCell>
+                                        <TableCell className="border text-center"><Checkbox checked={row.action === 'approved_as_noted'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'approved_as_noted')} /></TableCell>
+                                        <TableCell className="border text-center"><Checkbox checked={row.action === 'revise_resubmit'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'revise_resubmit')} /></TableCell>
+                                        <TableCell className="border text-center"><Checkbox checked={row.action === 'not_approved'} onCheckedChange={() => handleActionCheckboxChange(row.id, 'not_approved')} /></TableCell>
+                                        <TableCell className="border"><Input type="date" value={row.dateRetdAction} onChange={e => handleRowChange(row.id, 'dateRetdAction', e.target.value)} className="w-32" /></TableCell>
+                                        <TableCell className="border text-center"><Checkbox checked={row.copiesTo.includes('Contractor')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'Contractor')} /></TableCell>
+                                        <TableCell className="border text-center"><Checkbox checked={row.copiesTo.includes('Owner')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'Owner')} /></TableCell>
+                                        <TableCell className="border text-center"><Checkbox checked={row.copiesTo.includes('Field')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'Field')} /></TableCell>
+                                        <TableCell className="border text-center"><Checkbox checked={row.copiesTo.includes('File')} onCheckedChange={() => handleCopiesCheckboxChange(row.id, 'File')} /></TableCell>
+                                        <TableCell className="border text-center"><Button variant="destructive" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4" /></Button></TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
