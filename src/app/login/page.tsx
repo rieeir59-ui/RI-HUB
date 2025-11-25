@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/context/UserContext';
-import { useEmployees } from '@/context/EmployeeContext';
+import { employees } from '@/lib/employees';
 import Header from '@/components/layout/header';
 
 export default function LoginPage() {
@@ -17,7 +17,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { login } = useCurrentUser();
-  const { employees } = useEmployees();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
