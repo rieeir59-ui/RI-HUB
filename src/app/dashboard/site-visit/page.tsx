@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -130,7 +131,7 @@ export default function SiteVisitPage() {
             doc.text(title, 14, yPos);
             yPos += 8;
 
-            const body = items.map(item => [`[${checklistState[item] ? 'X' : ' '}]`, item]);
+            const body = items.map(item => [checklistState[item] ? '☑' : '☐', item]);
             (doc as any).autoTable({ startY: yPos, body, theme: 'plain', columnStyles: { 0: { cellWidth: 10 } } });
             yPos = (doc as any).autoTable.previous.finalY + 5;
         });
