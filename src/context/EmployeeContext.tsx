@@ -26,16 +26,7 @@ export const EmployeeProvider = ({ children }: { children: ReactNode }) => {
         if (savedEmployees) {
             try {
                 const parsed = JSON.parse(savedEmployees);
-                // Simple check if the data from local storage is outdated
-                // by comparing the number of employees. A more robust check
-                // could involve a version number.
-                if (parsed.length === initialEmployees.length) {
-                    setEmployees(parsed);
-                } else {
-                    // Data is outdated, use initialEmployees and update localStorage
-                    setEmployees(initialEmployees);
-                    localStorage.setItem('employees', JSON.stringify(initialEmployees));
-                }
+                setEmployees(parsed);
             } catch (e) {
                 console.error("Failed to parse employees from localStorage", e);
                 // If parsing fails, fall back to initial employees
