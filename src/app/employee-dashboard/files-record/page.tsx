@@ -32,6 +32,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 type UploadedFile = {
     id: string;
@@ -43,6 +44,7 @@ type UploadedFile = {
     size: number;
     createdAt: Timestamp;
     employeeName: string;
+    fileUrl?: string;
 };
 
 const categories = [
@@ -212,13 +214,21 @@ export default function FilesRecordPage() {
                                 <tbody>
                                     {files[selectedCategory].map(file => (
                                         <tr key={file.id} className="border-b">
-                                            <td className="p-2 font-medium">{file.customName}</td>
+                                            <td className="p-2 font-medium">
+                                                <Link href={file.fileUrl || '#'} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
+                                                    {file.customName}
+                                                </Link>
+                                            </td>
                                             {selectedCategory === 'Banks' && <td className="p-2">{file.bankName || 'N/A'}</td>}
                                             <td className="p-2 text-muted-foreground">{file.originalName}</td>
                                             <td className="p-2">{formatBytes(file.size)}</td>
                                             <td className="p-2">{file.createdAt.toDate().toLocaleDateString()}</td>
                                             <td className="p-2 flex gap-1 justify-end">
-                                                <Button variant="ghost" size="icon"><Download className="h-4 w-4"/></Button>
+                                                <Button asChild variant="ghost" size="icon">
+                                                    <Link href={file.fileUrl || '#'} target="_blank" rel="noopener noreferrer">
+                                                        <Download className="h-4 w-4"/>
+                                                    </Link>
+                                                </Button>
                                                 <Button variant="ghost" size="icon" onClick={() => openEditDialog(file)}><Edit className="h-4 w-4"/></Button>
                                                 <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(file)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                                             </td>

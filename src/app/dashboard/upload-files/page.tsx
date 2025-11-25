@@ -12,6 +12,7 @@ import { FileUp, PlusCircle, Trash2, Building, Home, Hotel, Landmark } from "luc
 import { useFirebase } from "@/firebase/provider";
 import { useCurrentUser } from "@/context/UserContext";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { errorEmitter } from "@/firebase/error-emitter";
 import { FirestorePermissionError } from "@/firebase/errors";
 import { Label } from "@/components/ui/label";
@@ -59,7 +60,7 @@ const UploadForm = ({ category, onUploadSuccess }: { category: string, onUploadS
         setUploads(prev => prev.filter(up => up.id !== id));
     };
 
-    const handleUpload = (upload: FileUpload) => {
+    const handleUpload = async (upload: FileUpload) => {
         if (!upload.file || !upload.customName) {
             toast({ variant: 'destructive', title: 'Missing Information', description: 'Please provide a custom name and choose a file.' });
             return;
@@ -72,36 +73,55 @@ const UploadForm = ({ category, onUploadSuccess }: { category: string, onUploadS
             toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in.' });
             return;
         }
+        
+        toast({ title: 'Uploading...', description: `"${upload.customName}" is being uploaded.` });
+        
+        const storage = getStorage();
+        const storageRef = ref(storage, `uploads/${currentUser.record}/${Date.now()}-${upload.file.name}`);
+        
+        try {
+            const snapshot = await uploadBytes(storageRef, upload.file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
 
-        const recordData: any = {
-            employeeId: currentUser.record,
-            employeeName: currentUser.name,
-            fileName: 'Uploaded File',
-            category: category,
-            customName: upload.customName,
-            originalName: upload.file.name,
-            fileType: upload.file.type,
-            size: upload.file.size,
-            createdAt: serverTimestamp(),
-        };
+            const recordData: any = {
+                employeeId: currentUser.record,
+                employeeName: currentUser.name,
+                fileName: 'Uploaded File',
+                category: category,
+                customName: upload.customName,
+                originalName: upload.file.name,
+                fileType: upload.file.type,
+                size: upload.file.size,
+                fileUrl: downloadURL,
+                createdAt: serverTimestamp(),
+            };
 
-        if (category === 'Banks' && upload.bankName) {
-            recordData.bankName = upload.bankName;
-        }
+            if (category === 'Banks' && upload.bankName) {
+                recordData.bankName = upload.bankName;
+            }
 
-        addDoc(collection(firestore, 'uploadedFiles'), recordData)
-            .then(() => {
-                toast({ title: 'File Uploaded', description: `"${upload.customName}" has been successfully uploaded.` });
-                onUploadSuccess(upload.id);
-            })
-            .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                    path: 'uploadedFiles',
-                    operation: 'create',
-                    requestResourceData: recordData,
+            await addDoc(collection(firestore, 'uploadedFiles'), recordData);
+
+            toast({ title: 'File Uploaded', description: `"${upload.customName}" has been successfully uploaded.` });
+            onUploadSuccess(upload.id);
+            // Optionally clear the successful upload
+            setUploads(prev => prev.filter(up => up.id !== upload.id));
+            if (uploads.length === 1) {
+              setUploads([{ id: 1, file: null, customName: '', bankName: '' }])
+            }
+
+        } catch (error: any) {
+            console.error("Upload failed", error);
+            if (error.code && error.code.includes('storage/unauthorized')) {
+                 const permissionError = new FirestorePermissionError({
+                    path: `uploads/${currentUser.record}/${upload.file.name}`,
+                    operation: 'write',
                 });
                 errorEmitter.emit('permission-error', permissionError);
-            });
+            } else {
+                 toast({ variant: 'destructive', title: 'Upload Failed', description: error.message || 'Could not upload file.' });
+            }
+        }
     };
 
     return (
@@ -162,21 +182,21 @@ export default function UploadFilesPage() {
                     <CardDescription>Choose a category to upload files to.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                        <SelectTrigger className="w-[280px]">
-                            <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {categories.map(({ name, icon: Icon }) => (
-                                <SelectItem key={name} value={name}>
-                                    <div className="flex items-center gap-2">
-                                        <Icon className="h-4 w-4" />
-                                        <span>{name}</span>
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {categories.map(({ name, icon: Icon }) => (
+                             <Card
+                                key={name}
+                                className={cn(
+                                    "p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-accent hover:border-primary transition-all",
+                                    selectedCategory === name ? "bg-accent border-primary ring-2 ring-primary" : ""
+                                )}
+                                onClick={() => setSelectedCategory(name)}
+                            >
+                                <Icon className="w-12 h-12 text-primary" />
+                                <p className="font-semibold text-lg">{name}</p>
+                            </Card>
+                        ))}
+                    </div>
 
                     {selectedCategory && (
                         <div className="mt-8">
@@ -192,3 +212,4 @@ export default function UploadFilesPage() {
         </div>
     );
 }
+
