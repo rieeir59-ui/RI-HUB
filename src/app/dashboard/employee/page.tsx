@@ -1,3 +1,4 @@
+
 'use client';
 
 import { MoreHorizontal, PlusCircle, Download, FileText as FileDown } from 'lucide-react';
@@ -196,7 +197,7 @@ export default function EmployeePage() {
       ]),
     });
 
-    const pageCount = doc.internal.pages.length - 1;
+    const pageCount = doc.internal.pages.length;
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
