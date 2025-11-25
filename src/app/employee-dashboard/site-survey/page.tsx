@@ -16,6 +16,9 @@ import 'jspdf-autotable';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
+import { useFirebase } from '@/firebase/provider';
+import { useCurrentUser } from '@/context/UserContext';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 interface jsPDFWithAutoTable extends jsPDF {
     autoTable: (options: any) => jsPDF;
@@ -90,12 +93,44 @@ const electrificationDrawingItems = [
 export default function ProjectDataPage() {
     const image = PlaceHolderImages.find(p => p.id === 'site-survey');
     const { toast } = useToast();
+    const { firestore } = useFirebase();
+    const { user: currentUser } = useCurrentUser();
 
-    const handleSave = () => {
-        toast({
-            title: "Record Saved",
-            description: "The project data has been successfully saved.",
-        });
+    const handleSave = async () => {
+        if (!currentUser || !firestore) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
+            return;
+        }
+
+        const form = document.getElementById('site-survey-form') as HTMLFormElement;
+        const formData = new FormData(form);
+        const data = {
+            'location_purpose_house': formData.get('purpose_house'),
+            'location_purpose_other': formData.get('purpose_other_text'),
+            'location_date': formData.get('location_date'),
+            'location_city': formData.get('location_city'),
+            //... and so on for all form fields
+        };
+
+        const record = {
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: 'Site Survey',
+            projectName: (formData.get('location_address') as string) || `Survey on ${new Date().toLocaleDateString()}`,
+            data: [{ category: 'Site Survey Data', items: Object.entries(data).map(([key, value]) => `${key}: ${value}`) }],
+            createdAt: serverTimestamp(),
+        };
+
+        try {
+            await addDoc(collection(firestore, 'savedRecords'), record);
+            toast({
+                title: "Record Saved",
+                description: "The site survey has been successfully saved.",
+            });
+        } catch (error) {
+            console.error("Error saving document: ", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
+        }
     }
 
     const handleDownloadPdf = () => {
@@ -584,3 +619,6 @@ export default function ProjectDataPage() {
 }
 
     
+
+    
+

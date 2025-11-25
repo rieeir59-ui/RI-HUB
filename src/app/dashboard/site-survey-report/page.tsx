@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -11,6 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import Image from 'next/image';
+import { useFirebase } from '@/firebase/provider';
+import { useCurrentUser } from '@/context/UserContext';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 interface Personnel {
   id: number;
@@ -32,6 +36,9 @@ interface jsPDFWithAutoTable extends jsPDF {
 
 export default function SiteSurveyReportPage() {
     const { toast } = useToast();
+    const { firestore } = useFirebase();
+    const { user: currentUser } = useCurrentUser();
+
     const [bankName, setBankName] = useState('HABIB BANK LIMITED');
     const [branchName, setBranchName] = useState('EXPO CENTER BRANCH, LAHORE');
     const [reportDate, setReportDate] = useState(new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }));
@@ -73,8 +80,33 @@ export default function SiteSurveyReportPage() {
     };
 
 
-    const handleSave = () => {
-        toast({ title: "Record Saved", description: "The site survey report has been saved." });
+    const handleSave = async () => {
+        if (!currentUser || !firestore) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
+            return;
+        }
+
+        const dataToSave = {
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: 'Site Survey Report',
+            projectName: branchName || `Survey Report ${reportDate}`,
+            data: [
+                { category: 'Report Details', items: [`Bank: ${bankName}`, `Branch: ${branchName}`, `Report Date: ${reportDate}`, `Survey Date: ${surveyDate}`] },
+                { category: 'Personnel Present', items: personnel.map(p => `${p.name} (${p.designation})`) },
+                { category: 'Observations', items: [observations] },
+                { category: 'Pictures', items: pictures.map(p => `Image: ${p.previewUrl}, Description: ${p.description}`) }
+            ],
+            createdAt: serverTimestamp(),
+        };
+
+        try {
+            await addDoc(collection(firestore, 'savedRecords'), dataToSave);
+            toast({ title: "Record Saved", description: "The site survey report has been saved." });
+        } catch (error) {
+            console.error(error);
+            toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save the record.' });
+        }
     };
 
     const handleDownload = async () => {
