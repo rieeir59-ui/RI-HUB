@@ -111,6 +111,10 @@ export default function ProjectDataPage() {
         const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 14;
         let yPos = 15;
+        
+        const primaryColor = [45, 95, 51];
+        const headingFillColor = [240, 240, 240];
+
 
         const getInputValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.value || '';
         const getRadioValue = (name: string) => (form.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || 'N/A';
@@ -119,10 +123,11 @@ export default function ProjectDataPage() {
         const addSectionTitle = (title: string) => {
             if (yPos > 260) { doc.addPage(); yPos = 20; }
             doc.setLineWidth(0.5);
+            doc.setFillColor(headingFillColor[0], headingFillColor[1], headingFillColor[2]);
             doc.rect(margin, yPos, pageWidth - margin * 2, 8, 'F');
-            doc.setFillColor(230, 230, 230);
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
             doc.text(title, margin + 2, yPos + 5.5);
             yPos += 8;
         };
@@ -176,6 +181,7 @@ export default function ProjectDataPage() {
         // --- HEADER ---
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         doc.text('IHA PROJECT MANAGEMENT', margin, yPos);
         doc.text('Premises Review', pageWidth - margin, yPos, { align: 'right' });
         yPos += 5;
@@ -183,6 +189,7 @@ export default function ProjectDataPage() {
         doc.text('For Residential Project', pageWidth - margin, yPos, { align: 'right' });
         yPos += 5;
         doc.setFontSize(8);
+        doc.setTextColor(0, 0, 0);
         doc.text('This questionnaire form provides preliminary information for determining the suitability of premises or property to be acquired', margin, yPos);
         yPos += 10;
 
@@ -230,6 +237,9 @@ export default function ProjectDataPage() {
         drawRadioField('Gas Connection', 'gas_connection', ['Yes', 'No']);
         drawRadioField('Connected to Sewerage line', 'sewerage_connection', ['Yes', 'No']);
         yPos += 5;
+        
+        doc.addPage();
+        yPos = 20;
 
         addSectionTitle('Building overview');
         drawRadioField('Independent premises', 'independent_premises', ['Yes', 'No']);
@@ -241,9 +251,6 @@ export default function ProjectDataPage() {
         drawRadioField('Interior of Premises', 'interior_type', ['Single Hall', 'Rooms']);
         drawRadioField('Type of construction', 'construction_type', ['Beam-Column in RCC', 'Composite', 'Load Bearing']);
         yPos += 5;
-        
-        doc.addPage();
-        yPos = 20;
 
         addSectionTitle('Building Details');
         drawRadioField('Seepage', 'seepage', ['Yes', 'No']);
@@ -280,6 +287,9 @@ export default function ProjectDataPage() {
         drawField('Expected period of lease', getInputValue('rental_lease_period'));
         drawField('Annual increase in rental', getInputValue('rental_annual_increase'));
         yPos += 5;
+        
+        doc.addPage();
+        yPos = 20;
 
         addSectionTitle('Survey Checklist');
         drawField('Project', getInputValue('survey_project'));
@@ -293,14 +303,16 @@ export default function ProjectDataPage() {
         const generateChecklistTable = (title: string, items: {no: number, title: string}[], prefix: string) => {
             if (yPos > 250) { doc.addPage(); yPos = 20; }
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
             doc.text(title, margin, yPos);
             yPos += 8;
+            doc.setTextColor(0, 0, 0);
             doc.autoTable({
                 startY: yPos,
                 head: [['Sr.No', 'Drawing Title', 'Remarks']],
                 body: items.map(item => [item.no.toString(), item.title, getInputValue(`${prefix}_remarks_${item.no}`)]),
                 theme: 'grid',
-                headStyles: { fillColor: [230, 230, 230], textColor: 0 }
+                headStyles: { fillColor: headingFillColor, textColor: 0 }
             });
             yPos = (doc as any).autoTable.previous.finalY + 10;
         }
@@ -572,6 +584,3 @@ export default function ProjectDataPage() {
 }
 
     
-
-    
-
