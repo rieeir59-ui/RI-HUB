@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -12,7 +13,6 @@ import DashboardPageHeader from '@/components/dashboard/PageHeader';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const departments = [
-    { name: 'CEO', slug: 'ceo' },
     { name: 'ADMIN', slug: 'admin' },
     { name: 'HR', slug: 'hr' },
     { name: 'SOFTWARE ENGINEER', slug: 'software-engineer' },

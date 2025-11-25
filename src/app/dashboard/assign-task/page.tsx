@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -15,7 +16,6 @@ import { useFirebase } from '@/firebase/provider';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 
 const departments = [
-    { name: 'CEO', slug: 'ceo' },
     { name: 'ADMIN', slug: 'admin' },
     { name: 'HR', slug: 'hr' },
     { name: 'SOFTWARE ENGINEER', slug: 'software-engineer' },
