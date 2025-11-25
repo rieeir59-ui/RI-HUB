@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Save, Download, PlusCircle, Trash2, ImageUp } from 'lucide-react';
+import { Save, Download, PlusCircle, Trash2, ImageUp, FileSearch } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -113,7 +113,7 @@ export default function SiteSurveyReportPage() {
         }
     };
 
-    const handleDownload = async () => {
+    const handleDownloadPdf = async () => {
         const doc = new jsPDF() as jsPDFWithAutoTable;
         const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
         const footerText = "M/S Isbah Hassan & Associates Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522";
@@ -152,24 +152,11 @@ export default function SiteSurveyReportPage() {
             yPos += 7;
         });
         yPos += 5;
-
-        doc.setFont('helvetica', 'bold');
-        doc.text('OBSERVATIONS AND REMARKS BY KS & ASSOCIATES:', margin, yPos);
-        yPos += 7;
-        doc.setFont('helvetica', 'normal');
-        const obsLines = doc.splitTextToSize(observations, pageWidth - (margin * 2));
-        doc.text(obsLines, margin, yPos);
-        yPos += obsLines.length * 5 + 10;
         
-        if (yPos > 240) { doc.addPage(); yPos = 20; }
         doc.setFont('helvetica', 'bold');
-        doc.text('RECOMMENDATION:', margin, yPos);
-        yPos += 7;
-        doc.setFont('helvetica', 'normal');
-        const recLines = doc.splitTextToSize(recommendations, pageWidth - (margin * 2));
-        doc.text(recLines, margin, yPos);
-        yPos += recLines.length * 5 + 10;
-
+        doc.setFontSize(12);
+        doc.text('Pictorial Report', pageWidth / 2, yPos, { align: 'center' });
+        yPos += 10;
         
         for (const pic of pictures) {
             if (pic.previewUrl) {
@@ -193,11 +180,30 @@ export default function SiteSurveyReportPage() {
             }
         }
         
+        if (yPos > 240) { doc.addPage(); yPos = 20; }
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.text('OBSERVATIONS AND REMARKS BY KS & ASSOCIATES:', margin, yPos);
+        yPos += 7;
+        doc.setFont('helvetica', 'normal');
+        const obsLines = doc.splitTextToSize(observations, pageWidth - (margin * 2));
+        doc.text(obsLines, margin, yPos);
+        yPos += obsLines.length * 5 + 10;
+        
+        if (yPos > 240) { doc.addPage(); yPos = 20; }
+        doc.setFont('helvetica', 'bold');
+        doc.text('RECOMMENDATION:', margin, yPos);
+        yPos += 7;
+        doc.setFont('helvetica', 'normal');
+        const recLines = doc.splitTextToSize(recommendations, pageWidth - (margin * 2));
+        doc.text(recLines, margin, yPos);
+        yPos += recLines.length * 5 + 10;
+
         const pageCount = (doc as any).internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.text(footerText, doc.internal.pageSize.getWidth() / 2, pageHeight - 10, { align: 'center' });
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.text(footerText, doc.internal.pageSize.getWidth() / 2, pageHeight - 10, { align: 'center' });
         }
 
 
@@ -208,7 +214,7 @@ export default function SiteSurveyReportPage() {
     return (
          <Card>
             <CardHeader>
-                <CardTitle className="text-center font-headline text-3xl text-primary">Site Survey Report</CardTitle>
+                <CardTitle className="text-center font-headline text-3xl text-primary flex items-center justify-center gap-2"><FileSearch />Site Survey Report</CardTitle>
             </CardHeader>
             <CardContent className="max-w-4xl mx-auto space-y-8">
                 <div className="text-center space-y-2">
@@ -234,17 +240,7 @@ export default function SiteSurveyReportPage() {
                     <Button variant="outline" size="sm" onClick={addPersonnel}><PlusCircle className="mr-2 h-4 w-4" />Add Personnel</Button>
                 </div>
                 
-                <div className="space-y-2">
-                    <Label className="font-bold text-lg">OBSERVATIONS AND REMARKS:</Label>
-                    <Textarea value={observations} onChange={e => setObservations(e.target.value)} rows={15} />
-                </div>
-                
-                <div className="space-y-2">
-                    <Label className="font-bold text-lg">RECOMMENDATION:</Label>
-                    <Textarea value={recommendations} onChange={e => setRecommendations(e.target.value)} rows={5} />
-                </div>
-
-                <div className="space-y-4">
+                 <div className="space-y-4">
                     <Label className="font-bold text-lg">Pictorial Report</Label>
                     {pictures.map((pic, index) => (
                         <Card key={pic.id} className="p-4">
@@ -271,9 +267,19 @@ export default function SiteSurveyReportPage() {
                     <Button variant="outline" size="sm" onClick={addPicture}><PlusCircle className="mr-2 h-4 w-4" />Add Image</Button>
                 </div>
 
+                <div className="space-y-2">
+                    <Label className="font-bold text-lg">OBSERVATIONS AND REMARKS:</Label>
+                    <Textarea value={observations} onChange={e => setObservations(e.target.value)} rows={15} />
+                </div>
+                
+                <div className="space-y-2">
+                    <Label className="font-bold text-lg">RECOMMENDATION:</Label>
+                    <Textarea value={recommendations} onChange={e => setRecommendations(e.target.value)} rows={5} />
+                </div>
+
                 <div className="flex justify-end gap-4 pt-8">
                     <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4" />Save</Button>
-                    <Button onClick={handleDownload}><Download className="mr-2 h-4 w-4" />Download PDF</Button>
+                    <Button onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" />Download PDF</Button>
                 </div>
             </CardContent>
         </Card>
