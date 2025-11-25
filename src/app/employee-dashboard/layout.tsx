@@ -12,15 +12,13 @@ export default function EmployeeDashboardLayout({
   return (
     <EmployeeProvider>
       <SidebarProvider>
-        <div className="flex">
-            <EmployeeDashboardSidebar />
-            <main className="flex-1">
-                <Header />
-                <div className="p-4 sm:p-6 lg:p-8">
-                    {children}
-                </div>
-            </main>
-        </div>
+          <EmployeeDashboardSidebar />
+          <SidebarInset>
+              <Header />
+              <div className="p-4 sm:p-6 lg:p-8">
+                  {children}
+              </div>
+          </SidebarInset>
       </SidebarProvider>
     </EmployeeProvider>
   );
