@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -48,6 +47,23 @@ export default function TransmittalLetterPage() {
         const getChecked = (id: string) => (document.getElementById(id) as HTMLInputElement)?.checked;
         const getRadio = (name: string) => (document.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || '';
 
+        const drawCheckbox = (x: number, y: number, checked: boolean) => {
+            doc.setLineWidth(0.2);
+            doc.rect(x, y - 3, 3.5, 3.5);
+            if (checked) {
+                doc.setFont('helvetica', 'bold');
+                doc.text('X', x + 0.8, y);
+            }
+        };
+
+        const drawRadio = (x: number, y: number, checked: boolean) => {
+            doc.setLineWidth(0.2);
+            doc.circle(x + 1.75, y - 1.75, 1.75);
+            if (checked) {
+                doc.circle(x + 1.75, y - 1.75, 1, 'F');
+            }
+        };
+
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.text('ISBAH HASSAN & ASSOCIATES', doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
@@ -62,7 +78,7 @@ export default function TransmittalLetterPage() {
         yPos += 15;
 
         doc.setFontSize(10);
-        doc.autoTable({
+        (doc as any).autoTable({
             startY: yPos,
             theme: 'plain',
             body: [
@@ -70,64 +86,82 @@ export default function TransmittalLetterPage() {
                 [``, `Date: ${getVal('date')}`]
             ],
         });
-        yPos = (doc as any).lastAutoTable.finalY + 5;
+        yPos = (doc as any).lastAutoTable.previous.finalY + 5;
 
-        // "To" section
         doc.rect(14, yPos, 90, 25);
         doc.text("To:", 16, yPos-2);
         doc.text(getVal('to_attn'), 16, yPos + 5);
         
-        // "If Enclosures" section
         doc.rect(110, yPos, 86, 25);
         const ifNotesText = "If Enclosures are not as noted,\nPlease Inform us immediately.";
         doc.text(ifNotesText, 112, yPos + 5);
-        if (getChecked('ack_receipt')) doc.text("[X] Acknowledge Receipt of Enclosures.", 112, yPos + 15);
-        if (getChecked('return_enclosures')) doc.text("[X] Return Enclosures to us.", 112, yPos + 20);
+        drawCheckbox(112, yPos + 15, getChecked('ack_receipt'));
+        doc.text("Acknowledge Receipt of Enclosures.", 117, yPos + 15);
+        drawCheckbox(112, yPos + 20, getChecked('return_enclosures'));
+        doc.text("Return Enclosures to us.", 117, yPos + 20);
         yPos += 30;
 
-        // Transmit section
-        let transmitText = "We Transmit: ";
-        if(getRadio('transmit_type') === 'herewith') transmitText += "[X] herewith ";
-        if(getRadio('transmit_type') === 'separate') transmitText += `[X] under separate cover via ${getVal('transmit_via')} `;
-        if(getRadio('transmit_type') === 'request') transmitText += `[X] in accordance with your request ${getVal('transmit_request')} `;
-        doc.text(transmitText, 14, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text("We Transmit: ", 14, yPos);
+        drawRadio(35, yPos, getRadio('transmit_type') === 'herewith');
+        doc.text("herewith ", 40, yPos);
+        yPos += 7;
+        drawRadio(35, yPos, getRadio('transmit_type') === 'separate');
+        doc.text(`under separate cover via ${getVal('transmit_via')} `, 40, yPos);
+        yPos += 7;
+        drawRadio(35, yPos, getRadio('transmit_type') === 'request');
+        doc.text(`in accordance with your request ${getVal('transmit_request')} `, 40, yPos);
         yPos += 10;
         
-        // For Your section
-        let forYourText = "For Your: ";
-        if(getChecked('foryour_approval')) forYourText += "[X] approval ";
-        if(getChecked('foryour_distribute')) forYourText += "[X] distribution to parties ";
-        if(getChecked('foryour_info')) forYourText += "[X] information ";
-        if(getChecked('foryour_review')) forYourText += "[X] review & comment ";
-        if(getChecked('foryour_record')) forYourText += "[X] record ";
-        if(getChecked('foryour_use')) forYourText += "[X] use ";
-        if(getVal('foryour_other')) forYourText += `[X] ${getVal('foryour_other')}`;
-        doc.text(forYourText, 14, yPos);
-        yPos += 10;
-        
-        // The Following section
-        let followingText = "The Following: ";
-        if(getChecked('following_drawings')) followingText += "[X] Drawings ";
-        if(getChecked('following_shop_prints')) followingText += "[X] Shop Drawing Prints ";
-        if(getChecked('following_samples')) followingText += "[X] Samples ";
-        if(getChecked('following_specs')) followingText += "[X] Specifications ";
-        if(getChecked('following_shop_repro')) followingText += "[X] Shop Drawing Reproducible ";
-        if(getChecked('following_prod_lit')) followingText += "[X] Product Literature ";
-        if(getChecked('following_change_order')) followingText += "[X] Change Order ";
-        if(getVal('following_other')) followingText += `[X] ${getVal('following_other')}`;
-        doc.text(followingText, 14, yPos);
+        doc.text("For Your:", 14, yPos);
+        drawCheckbox(30, yPos, getChecked('foryour_approval'));
+        doc.text("approval", 35, yPos);
+        drawCheckbox(60, yPos, getChecked('foryour_distribute'));
+        doc.text("distribution to parties", 65, yPos);
+        drawCheckbox(110, yPos, getChecked('foryour_info'));
+        doc.text("information", 115, yPos);
+        yPos += 7;
+        drawCheckbox(30, yPos, getChecked('foryour_review'));
+        doc.text("review & comment", 35, yPos);
+        drawCheckbox(75, yPos, getChecked('foryour_record'));
+        doc.text("record", 80, yPos);
+        drawCheckbox(100, yPos, getChecked('foryour_use'));
+        doc.text("use", 105, yPos);
+        yPos += 7;
+        drawCheckbox(30, yPos, getVal('foryour_other') !== '');
+        doc.text(`Other: ${getVal('foryour_other')}`, 35, yPos);
         yPos += 10;
 
-        // Items table
+        doc.text("The Following:", 14, yPos);
+        const followingOptions = [
+          {id: 'following_drawings', label: 'Drawings'}, {id: 'following_shop_prints', label: 'Shop Drawing Prints'},
+          {id: 'following_samples', label: 'Samples'}, {id: 'following_specs', label: 'Specifications'},
+          {id: 'following_shop_repro', label: 'Shop Drawing Reproducible'}, {id: 'following_prod_lit', label: 'Product Literature'},
+          {id: 'following_change_order', label: 'Change Order'}
+        ];
+        let xOffset = 38;
+        for (let i = 0; i < followingOptions.length; i++) {
+          if (i > 0 && i % 3 === 0) {
+            yPos += 7;
+            xOffset = 38;
+          }
+          drawCheckbox(xOffset, yPos, getChecked(followingOptions[i].id));
+          doc.text(followingOptions[i].label, xOffset + 5, yPos);
+          xOffset += 55;
+        }
+        yPos += 7;
+        drawCheckbox(38, yPos, getVal('following_other') !== '');
+        doc.text(`Other: ${getVal('following_other')}`, 43, yPos);
+        yPos += 10;
+
         const head = [['Copies', 'Date', 'Rev. No.', 'Description', 'Action Code']];
         const body = items.map(item => [item.copies, item.date, item.revNo, item.description, item.actionCode]);
-        doc.autoTable({ head, body, startY: yPos, theme: 'striped' });
-        yPos = (doc as any).lastAutoTable.finalY + 10;
+        (doc as any).autoTable({ head, body, startY: yPos, theme: 'striped' });
+        yPos = (doc as any).lastAutoTable.previous.finalY + 10;
         
-        // Action Code table
         doc.text("Action Code:", 14, yPos);
         yPos += 5;
-        doc.autoTable({
+        (doc as any).autoTable({
             startY: yPos,
             theme: 'plain',
             body: [
@@ -137,7 +171,7 @@ export default function TransmittalLetterPage() {
             ],
             styles: { fontSize: 8 },
         });
-        yPos = (doc as any).lastAutoTable.finalY + 10;
+        yPos = (doc as any).lastAutoTable.previous.finalY + 10;
         
         doc.text("Remarks:", 14, yPos);
         yPos += 5;
