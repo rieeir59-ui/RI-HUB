@@ -1,6 +1,8 @@
+
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -18,6 +20,9 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { useEmployees } from '@/context/EmployeeContext';
+import { type Employee } from '@/lib/employees';
+import { Suspense } from 'react';
 
 const departments: Record<string, string> = {
     'ceo': 'CEO',
@@ -80,10 +85,19 @@ const StatCard = ({ title, value, icon }: { title: string, value: number, icon: 
     </Card>
 );
 
-export default function MyProjectsPage() {
-    const { user } = useCurrentUser();
+function MyProjectsComponent() {
+    const { user: currentUser } = useCurrentUser();
+    const { employees } = useEmployees();
+    const searchParams = useSearchParams();
     const { toast } = useToast();
     const { firestore } = useFirebase();
+
+    const employeeId = searchParams.get('employeeId');
+    const displayUser = useMemo(() => {
+        return employeeId ? employees.find(e => e.record === employeeId) : currentUser;
+    }, [employeeId, employees, currentUser]);
+    
+    const isOwner = currentUser && displayUser && currentUser.record === displayUser.record;
 
     const [rows, setRows] = useState<ProjectRow[]>([{ id: 1, projectName: '', detail: '', status: 'not-started', startDate: '', endDate: '' }]);
     const [schedule, setSchedule] = useState({ start: '', end: '' });
@@ -110,16 +124,16 @@ export default function MyProjectsPage() {
     };
 
     const handleSave = () => {
-        if (!firestore || !user) {
+        if (!firestore || !currentUser) {
             toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
             return;
         }
 
         const dataToSave = {
-            employeeId: user.record,
-            employeeName: user.name,
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
             fileName: "My Projects",
-            projectName: `Projects for ${user.name}`,
+            projectName: `Projects for ${currentUser.name}`,
             data: {
                 category: 'My Projects',
                 schedule,
@@ -150,7 +164,7 @@ export default function MyProjectsPage() {
 
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
-        doc.text(`Project Overview for ${user?.name || 'Employee'}`, doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+        doc.text(`Project Overview for ${displayUser?.name || 'Employee'}`, doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
         yPos += 15;
 
         doc.setFontSize(10);
@@ -181,7 +195,7 @@ export default function MyProjectsPage() {
           doc.text(footerText, doc.internal.pageSize.getWidth() / 2, pageHeight - 10, { align: 'center' });
         }
 
-        doc.save(`${user?.name}_projects.pdf`);
+        doc.save(`${displayUser?.name}_projects.pdf`);
         toast({ title: 'Download Started', description: 'Your project PDF is being generated.' });
     };
 
@@ -190,19 +204,19 @@ export default function MyProjectsPage() {
             <Card>
                 <CardHeader className="flex flex-row items-center gap-4">
                     <Avatar className="h-16 w-16 border-4 border-primary">
-                        <AvatarFallback className="bg-secondary text-secondary-foreground font-bold text-2xl">{user ? getInitials(user.name) : ''}</AvatarFallback>
+                        <AvatarFallback className="bg-secondary text-secondary-foreground font-bold text-2xl">{displayUser ? getInitials(displayUser.name) : ''}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <CardTitle className="text-2xl font-bold">{user?.name.toUpperCase()}</CardTitle>
-                        <p className="text-muted-foreground">{user ? formatDepartmentName(user.department) : ''}</p>
+                        <CardTitle className="text-2xl font-bold">{displayUser?.name.toUpperCase()}</CardTitle>
+                        <p className="text-muted-foreground">{displayUser ? formatDepartmentName(displayUser.department) : ''}</p>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
                         <Label className="font-semibold">Work Schedule</Label>
                         <div className="flex gap-4">
-                            <Input type="date" value={schedule.start} onChange={e => setSchedule({ ...schedule, start: e.target.value })} />
-                            <Input type="date" value={schedule.end} onChange={e => setSchedule({ ...schedule, end: e.target.value })} />
+                            <Input type="date" value={schedule.start} onChange={e => setSchedule({ ...schedule, start: e.target.value })} disabled={!isOwner} />
+                            <Input type="date" value={schedule.end} onChange={e => setSchedule({ ...schedule, end: e.target.value })} disabled={!isOwner} />
                         </div>
                     </div>
                     <div className="overflow-x-auto">
@@ -214,16 +228,16 @@ export default function MyProjectsPage() {
                                     <TableHead>Status</TableHead>
                                     <TableHead>Start Date</TableHead>
                                     <TableHead>End Date</TableHead>
-                                    <TableHead>Action</TableHead>
+                                    {isOwner && <TableHead>Action</TableHead>}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {rows.map(row => (
                                     <TableRow key={row.id}>
-                                        <TableCell><Input value={row.projectName} onChange={e => handleRowChange(row.id, 'projectName', e.target.value)} /></TableCell>
-                                        <TableCell><Textarea value={row.detail} onChange={e => handleRowChange(row.id, 'detail', e.target.value)} rows={1} /></TableCell>
+                                        <TableCell><Input value={row.projectName} onChange={e => handleRowChange(row.id, 'projectName', e.target.value)} disabled={!isOwner} /></TableCell>
+                                        <TableCell><Textarea value={row.detail} onChange={e => handleRowChange(row.id, 'detail', e.target.value)} rows={1} disabled={!isOwner} /></TableCell>
                                         <TableCell>
-                                            <Select value={row.status} onValueChange={(val: ProjectStatus) => handleRowChange(row.id, 'status', val)}>
+                                            <Select value={row.status} onValueChange={(val: ProjectStatus) => handleRowChange(row.id, 'status', val)} disabled={!isOwner}>
                                                 <SelectTrigger className="w-[180px]">
                                                    <div className="flex items-center gap-2">
                                                      <StatusIcon status={row.status} />
@@ -237,27 +251,35 @@ export default function MyProjectsPage() {
                                                 </SelectContent>
                                             </Select>
                                         </TableCell>
-                                        <TableCell><Input type="date" value={row.startDate} onChange={e => handleRowChange(row.id, 'startDate', e.target.value)} /></TableCell>
-                                        <TableCell><Input type="date" value={row.endDate} onChange={e => handleRowChange(row.id, 'endDate', e.target.value)} /></TableCell>
-                                        <TableCell><Button variant="destructive" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4"/></Button></TableCell>
+                                        <TableCell><Input type="date" value={row.startDate} onChange={e => handleRowChange(row.id, 'startDate', e.target.value)} disabled={!isOwner} /></TableCell>
+                                        <TableCell><Input type="date" value={row.endDate} onChange={e => handleRowChange(row.id, 'endDate', e.target.value)} disabled={!isOwner} /></TableCell>
+                                        {isOwner && <TableCell><Button variant="destructive" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4"/></Button></TableCell>}
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </div>
-                    <Button onClick={addRow} size="sm"><PlusCircle className="mr-2 h-4 w-4"/>Add Project</Button>
+                    {isOwner && <Button onClick={addRow} size="sm"><PlusCircle className="mr-2 h-4 w-4"/>Add Project</Button>}
 
                     <div className="space-y-2 pt-4">
                         <Label htmlFor="remarks" className="font-semibold">Remarks</Label>
-                        <Textarea id="remarks" value={remarks} onChange={e => setRemarks(e.target.value)} />
+                        <Textarea id="remarks" value={remarks} onChange={e => setRemarks(e.target.value)} disabled={!isOwner} />
                     </div>
                     
                     <div className="flex justify-end gap-4 mt-8">
-                        <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4"/>Save Record</Button>
+                        {isOwner && <Button onClick={handleSave} variant="outline"><Save className="mr-2 h-4 w-4"/>Save Record</Button>}
                         <Button onClick={handleDownload}><Download className="mr-2 h-4 w-4"/>Download PDF</Button>
                     </div>
                 </CardContent>
             </Card>
         </div>
     );
+}
+
+export default function MyProjectsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <MyProjectsComponent />
+        </Suspense>
+    )
 }

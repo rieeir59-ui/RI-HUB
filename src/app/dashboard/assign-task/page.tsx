@@ -60,31 +60,36 @@ function EmployeeCard({ employee }: { employee: Employee }) {
     }, [firestore, employee.record]);
 
     return (
-        <Link href={`/dashboard/assign-task/form?employeeId=${employee.record}`}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-yellow-500">
-                <CardContent className="p-4">
-                    <p className="font-bold text-center">{employee.name.toUpperCase()}</p>
-                    <div className="mt-2 text-sm text-muted-foreground space-y-1">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-1"><Briefcase size={14} /><span>Tasks</span></div>
-                            <span>{taskStats.total}</span>
+         <div className="flex flex-col">
+            <Link href={`/dashboard/assign-task/form?employeeId=${employee.record}`} className="flex-grow">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full border-2 border-yellow-500">
+                    <CardContent className="p-4">
+                        <p className="font-bold text-center">{employee.name.toUpperCase()}</p>
+                        <div className="mt-2 text-sm text-muted-foreground space-y-1">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-1"><Briefcase size={14} /><span>Tasks</span></div>
+                                <span>{taskStats.total}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                 <div className="flex items-center gap-1"><XCircle size={14} className="text-red-500" /><span>Overdue</span></div>
+                                <span className="text-red-500">{taskStats.overdue}</span>
+                            </div>
+                             <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-1"><Clock size={14} className="text-blue-500" /><span>In Progress</span></div>
+                                <span className="text-blue-500">{taskStats.inProgress}</span>
+                            </div>
+                             <div className="flex justify-between items-center">
+                               <div className="flex items-center gap-1"><CheckCircle2 size={14} className="text-green-500" /><span>Completed</span></div>
+                                <span className="text-green-500">{taskStats.completed}</span>
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center">
-                             <div className="flex items-center gap-1"><XCircle size={14} className="text-red-500" /><span>Overdue</span></div>
-                            <span className="text-red-500">{taskStats.overdue}</span>
-                        </div>
-                         <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-1"><Clock size={14} className="text-blue-500" /><span>In Progress</span></div>
-                            <span className="text-blue-500">{taskStats.inProgress}</span>
-                        </div>
-                         <div className="flex justify-between items-center">
-                           <div className="flex items-center gap-1"><CheckCircle2 size={14} className="text-green-500" /><span>Completed</span></div>
-                            <span className="text-green-500">{taskStats.completed}</span>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </Link>
+                    </CardContent>
+                </Card>
+            </Link>
+             <Link href={`/employee-dashboard/my-projects?employeeId=${employee.record}`} className="mt-2 text-center text-sm text-primary hover:underline">
+                View Projects
+            </Link>
+        </div>
     );
 }
 
@@ -96,7 +101,7 @@ export default function AssignTaskPage() {
         <div className="space-y-8">
             <DashboardPageHeader
                 title="Assign Task"
-                description="Select an employee to assign a new task."
+                description="Select an employee to assign a new task or view their projects."
                 imageUrl={image?.imageUrl || ''}
                 imageHint={image?.imageHint || ''}
             />
