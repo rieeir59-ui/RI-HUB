@@ -14,6 +14,11 @@ import { Save, Download, PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { useFirebase } from '@/firebase/provider';
+import { useCurrentUser } from '@/context/UserContext';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface jsPDFWithAutoTable extends jsPDF {
     autoTable: (options: any) => jsPDF;
@@ -47,6 +52,8 @@ const initialRow: Omit<RecordRow, 'id'> = {
 export default function ShopDrawingsRecordPage() {
     const image = PlaceHolderImages.find(p => p.id === 'shop-drawings-record');
     const { toast } = useToast();
+    const { firestore } = useFirebase();
+    const { user: currentUser } = useCurrentUser();
     const [projectName, setProjectName] = useState('');
     const [architectsProjectNo, setArchitectsProjectNo] = useState('');
     const [contractor, setContractor] = useState('');
@@ -77,8 +84,36 @@ export default function ShopDrawingsRecordPage() {
         handleRowChange(id, 'copiesTo', newValues);
     };
 
-    const handleSave = () => {
-        toast({ title: 'Record Saved', description: 'The shop drawing record has been saved.' });
+    const handleSave = async () => {
+        if (!firestore || !currentUser) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
+            return;
+        }
+
+        const dataToSave = {
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: 'Shop Drawing and Sample Record',
+            projectName: projectName || 'Untitled Record',
+            data: {
+                category: 'Shop Drawing and Sample Record',
+                header: { projectName, architectsProjectNo, contractor },
+                items: rows.map(row => JSON.stringify(row)),
+            },
+            createdAt: serverTimestamp(),
+        };
+
+        try {
+            await addDoc(collection(firestore, 'savedRecords'), dataToSave);
+            toast({ title: 'Record Saved', description: 'The shop drawing record has been saved.' });
+        } catch (serverError) {
+            const permissionError = new FirestorePermissionError({
+                path: 'savedRecords',
+                operation: 'create',
+                requestResourceData: dataToSave,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
     };
 
     const handleDownloadPdf = () => {
@@ -223,3 +258,4 @@ export default function ShopDrawingsRecordPage() {
         </div>
     );
 }
+    
