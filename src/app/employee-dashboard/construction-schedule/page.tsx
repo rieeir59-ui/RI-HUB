@@ -115,7 +115,6 @@ export default function Page() {
     const doc = new jsPDF({ orientation: 'landscape' });
     const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
     const footerText = "M/S Isbah Hassan & Associates Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522";
-
     let yPos = 15;
 
     doc.setFontSize(14);

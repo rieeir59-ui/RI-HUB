@@ -183,7 +183,7 @@ export default function Page() {
         });
 
         // Add footer to all pages
-        const pageCount = doc.internal.pages.length - 1;
+        const pageCount = (doc as any).internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
           doc.setPage(i);
           doc.setFontSize(8);
