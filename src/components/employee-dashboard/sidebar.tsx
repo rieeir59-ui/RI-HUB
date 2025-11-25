@@ -63,6 +63,7 @@ import {
   Home,
   Save,
   ClipboardCheck,
+  Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -78,6 +79,7 @@ const menuItems = [
     { href: '/employee-dashboard/our-team', label: 'Our Team', icon: Users },
     { href: '/employee-dashboard/about-me', label: 'About Me', icon: User },
     { href: '/employee-dashboard/services', label: 'Services', icon: FileText },
+    { href: '/employee-dashboard/site-visit', label: 'Site Visit', icon: Eye },
     { href: '/employee-dashboard/project-checklist', label: 'Project Checklist', icon: ListChecks },
     { href: '/employee-dashboard/project-information', label: 'Project Information', icon: Folder },
     { href: '/employee-dashboard/predesign-assessment', label: 'Predesign Assessment', icon: FileSearch },
