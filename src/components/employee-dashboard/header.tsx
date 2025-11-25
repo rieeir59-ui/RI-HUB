@@ -26,7 +26,7 @@ export function Header() {
             <Link href="/dashboard">Back to Main Dashboard</Link>
         </Button>
       </div>
-      {user && (
+       {user && (
          <div className="flex items-center gap-3">
             <span className="font-semibold text-sm hidden sm:inline-block">{user.name}</span>
              <Avatar className="h-9 w-9 border-2 border-primary">

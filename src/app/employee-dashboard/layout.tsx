@@ -1,4 +1,3 @@
-
 'use client';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import EmployeeDashboardSidebar from "@/components/employee-dashboard/sidebar";
@@ -13,13 +12,15 @@ export default function EmployeeDashboardLayout({
   return (
     <EmployeeProvider>
       <SidebarProvider>
-        <EmployeeDashboardSidebar />
-        <SidebarInset>
-          <Header />
-          <div className="p-4 sm:p-6 lg:p-8">
-            {children}
-          </div>
-        </SidebarInset>
+        <div className="flex">
+            <EmployeeDashboardSidebar />
+            <main className="flex-1">
+                <Header />
+                <div className="p-4 sm:p-6 lg:p-8">
+                    {children}
+                </div>
+            </main>
+        </div>
       </SidebarProvider>
     </EmployeeProvider>
   );
