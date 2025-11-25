@@ -39,7 +39,7 @@
     {
       "id": "bill-of-quantity",
       "description": "A document with financial calculations.",
-      "imageUrl": "https://images.unsplash.com/photo-1758523418784-efcd368723c42?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxmaW5hbmNpYWwlMjBkb2N1bWVudHxlbnwwfHx8fDE3NjM2NjM0MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1758523418784-efcd168723c42?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxmaW5hbmNpYWwlMjBkb2N1bWVudHxlbnwwfHx8fDE3NjM2NjM0MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "financial document"
     },
     {
@@ -93,7 +93,7 @@
     {
       "id": "drawings",
       "description": "Architectural drawings and sketches.",
-      "imageUrl": "https://images.unsplash.com/photo-1717445307996-5c494d77a6ba?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhcmNoaXRlY3R1cmFsJTIwc2tldGNoZXN8ZW58MHx8fHwxNzYzNzA5MzI4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1717445130414-8fb934c38302?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhcmNoaXRlY3R1cmFsJTIwc2tldGNoZXN8ZW58MHx8fHwxNzYzNzA5MzI4fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "architectural sketches"
     },
     {
@@ -263,6 +263,18 @@
       "description": "A list of services offered.",
       "imageUrl": "https://images.unsplash.com/photo-1763479169474-728a7de108c3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzZXJ2aWNlcyUyMGxpc3R8ZW58MHx8fHwxNzYzNzA5MzI4fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "services list"
+    },
+    {
+      "id": "upload-files",
+      "description": "An upload cloud icon.",
+      "imageUrl": "https://images.unsplash.com/photo-1585432959445-38b02c17658a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx1cGxvYWQlMjBjbG91ZHxlbnwwfHx8fDE3NjQxMDQwODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "upload cloud"
+    },
+    {
+      "id": "files-record",
+      "description": "A stack of organized files.",
+      "imageUrl": "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxmaWxlJTIwcmVjb3JkfGVufDB8fHx8MTc2NDEwNDA4Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "file record"
     }
   ]
 }

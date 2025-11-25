@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -114,6 +113,8 @@ const menuItems = [
     { href: '/employee-dashboard/architects-instructions', label: 'Architects Instructions', icon: User },
     { href: '/employee-dashboard/construction-change-director', label: 'Construction Change Director', icon: Users },
     { href: '/employee-dashboard/document-summarizer', label: 'Document Summarizer', icon: FileText },
+    { href: '/employee-dashboard/upload-files', label: 'Upload Files', icon: FileUp },
+    { href: '/employee-dashboard/files-record', label: 'Files Record', icon: Database },
     { href: '/employee-dashboard/saved-records', label: 'Saved Records', icon: Database },
     { href: '/employee-dashboard/data-entry', label: 'Data Entry', icon: FileUp },
     { href: '/employee-dashboard/employee-record', label: 'Employee Record', icon: UserCog },

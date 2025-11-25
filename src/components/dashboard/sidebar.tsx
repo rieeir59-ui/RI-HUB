@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -26,7 +25,7 @@ import {
   ClipboardCheck,
   Eye,
   Search,
-  FileSearch,
+  FileSearch as FileSearchIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -44,7 +43,9 @@ const menuItems = [
     { href: '/dashboard/about-me', label: 'About Me', icon: User },
     { href: '/dashboard/services', label: 'Services', icon: FileText },
     { href: '/dashboard/site-visit', label: 'Site Visit', icon: Eye },
-    { href: '/dashboard/site-survey-report', label: 'Site Survey Report', icon: FileSearch },
+    { href: '/dashboard/site-survey-report', label: 'Site Survey Report', icon: FileSearchIcon },
+    { href: '/dashboard/upload-files', label: 'Upload Files', icon: FileUp },
+    { href: '/dashboard/files-record', label: 'Files Record', icon: Database },
     { href: '/dashboard/data-entry', label: 'Data Entry', icon: FileUp, roles: ['admin'] },
     { href: '/dashboard/saved-records', label: 'Saved Records', icon: Database, roles: ['admin', 'software-engineer', 'ceo'] },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['software-engineer', 'admin'] },
