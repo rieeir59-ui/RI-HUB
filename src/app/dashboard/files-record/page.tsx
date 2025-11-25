@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -5,7 +6,7 @@ import DashboardPageHeader from "@/components/dashboard/PageHeader";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
-import { Download, Trash2, Edit, Loader2 } from "lucide-react";
+import { Download, Trash2, Edit, Loader2, Landmark, Home, Building, Hotel } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
 import { collection, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, type Timestamp, FirestoreError } from 'firebase/firestore';
@@ -30,6 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 type UploadedFile = {
     id: string;
@@ -43,7 +45,12 @@ type UploadedFile = {
     employeeName: string;
 };
 
-const categories = ["Banks", "Residential", "Commercial", "Hotels"];
+const categories = [
+    { name: "Banks", icon: Landmark },
+    { name: "Residential", icon: Home },
+    { name: "Commercial", icon: Building },
+    { name: "Hotels", icon: Hotel }
+];
 
 export default function FilesRecordPage() {
   const image = PlaceHolderImages.find(p => p.id === 'files-record');
@@ -61,6 +68,8 @@ export default function FilesRecordPage() {
   const [fileToEdit, setFileToEdit] = useState<UploadedFile | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newFileName, setNewFileName] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (!firestore) {
@@ -74,7 +83,7 @@ export default function FilesRecordPage() {
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const groupedFiles: Record<string, UploadedFile[]> = {};
-      categories.forEach(cat => groupedFiles[cat] = []);
+      categories.forEach(cat => groupedFiles[cat.name] = []);
 
       snapshot.forEach((doc) => {
         const file = { id: doc.id, ...doc.data() } as UploadedFile;
@@ -153,28 +162,42 @@ export default function FilesRecordPage() {
         <div className="flex items-center justify-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>
       ) : error ? (
         <Card className="text-center py-8"><CardContent><p className="text-destructive">{error}</p></CardContent></Card>
-      ) : !hasAnyFiles ? (
-        <Card className="text-center py-12">
-            <CardHeader>
-                <CardTitle>No Files Found</CardTitle>
-                <CardDescription>No files have been uploaded yet.</CardDescription>
-            </CardHeader>
-        </Card>
       ) : (
-        categories.map(category => (
-            files[category]?.length > 0 && (
-                <Card key={category}>
-                    <CardHeader>
-                        <CardTitle>{category} Files</CardTitle>
-                        <CardDescription>Documents uploaded under the {category.toLowerCase()} category.</CardDescription>
+        <Card>
+          <CardHeader>
+              <CardTitle>Select a Category</CardTitle>
+              <CardDescription>Choose a category to view its files.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {categories.map(({ name, icon: Icon }) => (
+                    <Card
+                        key={name}
+                        className={cn(
+                            "p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-accent hover:border-primary transition-all",
+                            selectedCategory === name ? "bg-accent border-primary ring-2 ring-primary" : ""
+                        )}
+                        onClick={() => setSelectedCategory(name)}
+                    >
+                        <Icon className="w-12 h-12 text-primary" />
+                        <p className="font-semibold text-lg">{name}</p>
+                    </Card>
+                ))}
+            </div>
+
+            {selectedCategory && (files[selectedCategory]?.length > 0 ? (
+                <div className="mt-8">
+                     <CardHeader>
+                        <CardTitle>{selectedCategory} Files</CardTitle>
+                        <CardDescription>Documents uploaded under the {selectedCategory.toLowerCase()} category.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="overflow-x-auto">
+                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="text-left">
                                     <tr className="border-b">
                                         <th className="p-2">File Name</th>
-                                        {category === 'Banks' && <th className="p-2">Bank</th>}
+                                        {selectedCategory === 'Banks' && <th className="p-2">Bank</th>}
                                         <th className="p-2">Original Name</th>
                                         <th className="p-2">Size</th>
                                         <th className="p-2">Uploaded By</th>
@@ -183,10 +206,10 @@ export default function FilesRecordPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {files[category].map(file => (
+                                    {files[selectedCategory].map(file => (
                                         <tr key={file.id} className="border-b">
                                             <td className="p-2 font-medium">{file.customName}</td>
-                                            {category === 'Banks' && <td className="p-2">{file.bankName || 'N/A'}</td>}
+                                            {selectedCategory === 'Banks' && <td className="p-2">{file.bankName || 'N/A'}</td>}
                                             <td className="p-2 text-muted-foreground">{file.originalName}</td>
                                             <td className="p-2">{formatBytes(file.size)}</td>
                                             <td className="p-2">{file.employeeName}</td>
@@ -202,9 +225,17 @@ export default function FilesRecordPage() {
                             </table>
                         </div>
                     </CardContent>
+                </div>
+            ): selectedCategory && (
+                 <Card className="text-center py-12 mt-8">
+                    <CardHeader>
+                        <CardTitle>No Files Found</CardTitle>
+                        <CardDescription>No files have been uploaded to the "{selectedCategory}" category yet.</CardDescription>
+                    </CardHeader>
                 </Card>
-            )
-        ))
+            ))}
+          </CardContent>
+        </Card>
       )}
       
       {/* Delete Dialog */}

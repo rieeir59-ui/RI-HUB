@@ -146,7 +146,7 @@ const UploadForm = ({ category, onUploadSuccess }: { category: string, onUploadS
 
 export default function UploadFilesPage() {
     const image = PlaceHolderImages.find(p => p.id === 'upload-files');
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string>('Banks');
 
     return (
         <div className="space-y-8">
@@ -162,21 +162,21 @@ export default function UploadFilesPage() {
                     <CardDescription>Choose a category to upload files to.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {categories.map(({ name, icon: Icon }) => (
-                            <Card
-                                key={name}
-                                className={cn(
-                                    "p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-accent hover:border-primary transition-all",
-                                    selectedCategory === name ? "bg-accent border-primary ring-2 ring-primary" : ""
-                                )}
-                                onClick={() => setSelectedCategory(name)}
-                            >
-                                <Icon className="w-12 h-12 text-primary" />
-                                <p className="font-semibold text-lg">{name}</p>
-                            </Card>
-                        ))}
-                    </div>
+                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger className="w-[280px]">
+                            <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {categories.map(({ name, icon: Icon }) => (
+                                <SelectItem key={name} value={name}>
+                                    <div className="flex items-center gap-2">
+                                        <Icon className="h-4 w-4" />
+                                        <span>{name}</span>
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
 
                     {selectedCategory && (
                         <div className="mt-8">
