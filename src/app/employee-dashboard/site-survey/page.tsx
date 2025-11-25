@@ -24,14 +24,14 @@ interface jsPDFWithAutoTable extends jsPDF {
 }
 
 const SectionTable = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="mb-8">
+    <section className="mb-8">
         <h2 className="text-xl font-bold text-primary mb-3 pb-2 border-b-2 border-primary">{title}</h2>
         <Table>
             <TableBody>
                 {children}
             </TableBody>
         </Table>
-    </div>
+    </section>
 );
 
 const FormRow = ({ label, children }: { label: string; children: React.ReactNode; }) => (
@@ -147,101 +147,215 @@ export default function ProjectDataPage() {
         const form = document.getElementById('site-survey-form') as HTMLFormElement;
     
         const getInputValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.value || '';
-        const getRadioValue = (name: string) => (form.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || '';
+        const getRadioValue = (name: string) => (form.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value || 'N/A';
         const getCheckboxValue = (id: string) => (form.elements.namedItem(id) as HTMLInputElement)?.checked;
     
         const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 14;
-        let y = 15;
+        let yPos = 15;
     
+        const addSectionTitle = (title: string) => {
+            if (yPos > 260) { doc.addPage(); yPos = 20; }
+            doc.setLineWidth(0.5);
+            doc.rect(margin, yPos, pageWidth - margin * 2, 8);
+            doc.setFillColor(230, 230, 230);
+            doc.rect(margin, yPos, pageWidth - margin * 2, 8, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.text(title, margin + 2, yPos + 5.5);
+            yPos += 8;
+        };
+    
+        const drawField = (label: string, value: string) => {
+          if (yPos > 275) { doc.addPage(); yPos = 20; }
+          doc.setLineWidth(0.2);
+          doc.rect(margin, yPos, pageWidth - margin * 2, 10);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.text(label, margin + 2, yPos + 6);
+          doc.text(value, margin + 60, yPos + 6);
+          yPos += 10;
+        };
+        
+        const drawCheckboxField = (label: string, options: {id: string, label: string}[]) => {
+            if (yPos > 275) { doc.addPage(); yPos = 20; }
+            doc.setLineWidth(0.2);
+            doc.rect(margin, yPos, pageWidth - margin * 2, 10);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text(label, margin + 2, yPos + 6);
+            let xOffset = 60;
+            options.forEach(opt => {
+                doc.rect(margin + xOffset, yPos + 2.5, 5, 5);
+                if(getCheckboxValue(opt.id)) doc.text('X', margin + xOffset + 1, yPos + 6);
+                doc.text(opt.label, margin + xOffset + 7, yPos + 6);
+                xOffset += 40;
+            });
+            yPos += 10;
+        };
+        
+        const drawRadioField = (label: string, name: string, options: string[]) => {
+            if (yPos > 275) { doc.addPage(); yPos = 20; }
+            doc.setLineWidth(0.2);
+            doc.rect(margin, yPos, pageWidth - margin * 2, 10);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text(label, margin + 2, yPos + 6);
+            let xOffset = 60;
+            const selectedValue = getRadioValue(name);
+            options.forEach(opt => {
+                doc.circle(margin + xOffset + 2.5, yPos + 5, 2.5);
+                if (selectedValue === opt.toLowerCase()) doc.circle(margin + xOffset + 2.5, yPos + 5, 1.5, 'F');
+                doc.text(opt, margin + xOffset + 7, yPos + 6);
+                xOffset += 40;
+            });
+             yPos += 10;
+        }
+
         // --- HEADER ---
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
-        doc.text('IHA PROJECT MANAGEMENT', margin, y);
-        doc.text('Premises Review', pageWidth - margin, y, { align: 'right' });
-        y += 5;
+        doc.text('IHA PROJECT MANAGEMENT', margin, yPos);
+        doc.text('Premises Review', pageWidth - margin, yPos, { align: 'right' });
+        yPos += 5;
         doc.setFont('helvetica', 'normal');
-        doc.text('For Residential Project', pageWidth - margin, y, { align: 'right' });
-        y += 5;
+        doc.text('For Residential Project', pageWidth - margin, yPos, { align: 'right' });
+        yPos += 5;
         doc.setFontSize(8);
-        doc.text('This questionnaire form provides preliminary information for determining the suitability of premises or property to be acquired', margin, y);
-        y += 10;
-    
-        // --- LOCATION ---
-        const drawSection = (title: string, content: () => void) => {
-          doc.setLineWidth(0.5);
-          doc.rect(margin, y, pageWidth - margin * 2, 8);
-          doc.setFillColor(230, 230, 230);
-          doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.text(title, margin + 2, y + 5.5);
-          y += 8;
-          content();
-        };
-    
-        const drawField = (label: string, value: string, customY?: number) => {
-          const fieldY = customY || y;
-          doc.setLineWidth(0.2);
-          doc.rect(margin, fieldY, pageWidth - margin * 2, 10);
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9);
-          doc.text(label, margin + 2, fieldY + 6);
-          doc.text(value, margin + 40, fieldY + 6);
-          if(!customY) y += 10;
-        };
-    
-        drawSection('Location', () => {
-          doc.rect(margin, y, pageWidth - margin * 2, 10);
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9);
-          doc.text('Purpose', margin + 2, y + 6);
-          doc.rect(margin + 40, y + 2.5, 5, 5); // House checkbox
-          if (getCheckboxValue('purpose_house')) doc.text('X', margin + 41, y + 6);
-          doc.text('House', margin + 47, y + 6);
-          doc.rect(pageWidth - margin - 60, y + 2.5, 5, 5); // Other checkbox
-          if (getCheckboxValue('purpose_other_check')) doc.text('X', pageWidth - margin - 59, y + 6);
-          doc.text('Other: ' + getInputValue('purpose_other_text'), pageWidth - margin - 53, y + 6);
-          
-          doc.text('Date: ' + getInputValue('location_date'), pageWidth - margin - 100, y - 5);
-          y += 10;
+        doc.text('This questionnaire form provides preliminary information for determining the suitability of premises or property to be acquired', margin, yPos);
+        yPos += 10;
 
-          drawField('City', getInputValue('location_city'));
-          drawField('Region', getInputValue('location_region'));
-          drawField('Address', getInputValue('location_address'));
-        });
+        // --- SECTIONS ---
+        addSectionTitle('Location');
+        drawField('Purpose', `House: ${getCheckboxValue('purpose_house') ? 'Yes' : 'No'}, Other: ${getInputValue('purpose_other_text')}`);
+        drawField('Date', getInputValue('location_date'));
+        drawField('City', getInputValue('location_city'));
+        drawField('Region', getInputValue('location_region'));
+        drawField('Address', getInputValue('location_address'));
+        yPos += 5;
+
+        addSectionTitle('Legal File');
+        drawField('Name of Owner', getInputValue('legal_owner_name'));
+        drawRadioField('Is Completion Certificate available', 'completion_cert', ['Yes', 'No']);
+        drawRadioField('Is the property leased', 'is_leased', ['Yes', 'No']);
+        yPos += 5;
+
+        addSectionTitle('Area');
+        drawField('Maximum frontage:', getInputValue('area_frontage'));
+        drawField('Maximum Depth:', getInputValue('area_depth'));
+        drawField('Total Area in Sqft', getInputValue('area_total'));
+        drawField('Minimum clear height (ft)', getInputValue('area_height'));
+        drawField('Building plot size', getInputValue('area_plot_size'));
+        drawField('Covered Area', getInputValue('area_covered'));
+        drawField('No. of Stories / floors', getInputValue('area_stories'));
+        yPos += 5;
         
-        y += 5;
-    
-        // --- LEGAL FILE ---
-        drawSection('Legal File', () => {
-          drawField('Name of Owner', getInputValue('legal_owner_name'));
-          doc.rect(margin, y, pageWidth - margin * 2, 10);
-          doc.text('Is Completion Certificate available', margin + 2, y + 6);
-          doc.rect(margin + 80, y + 2.5, 5, 5); // Yes
-          if (getRadioValue('completion_cert') === 'yes') doc.text('X', margin + 81, y + 6);
-          doc.text('Yes', margin + 87, y + 6);
-          doc.text('As informed by Owner Representative', margin + 100, y + 6);
-          doc.rect(pageWidth - margin - 20, y + 2.5, 5, 5); // No
-          if (getRadioValue('completion_cert') === 'no') doc.text('X', pageWidth - margin - 19, y + 6);
-          doc.text('No', pageWidth - margin - 13, y + 6);
-          y += 10;
-    
-          doc.rect(margin, y, pageWidth - margin * 2, 10);
-          doc.text('Is the property leased', margin + 2, y + 6);
-          doc.rect(margin + 80, y + 2.5, 5, 5); // Yes
-          if (getRadioValue('is_leased') === 'yes') doc.text('X', margin + 81, y + 6);
-          doc.text('Yes', margin + 87, y + 6);
-          doc.text('As informed by Owner Representative', margin + 100, y + 6);
-          doc.rect(pageWidth - margin - 20, y + 2.5, 5, 5); // No
-          if (getRadioValue('is_leased') === 'no') doc.text('X', pageWidth - margin - 19, y + 6);
-          doc.text('No', pageWidth - margin - 13, y + 6);
-          y += 10;
-        });
+        addSectionTitle('Bounded As');
+        drawField('Front', getInputValue('bounded_front'));
+        drawField('Back', getInputValue('bounded_back'));
+        drawField('Right', getInputValue('bounded_right'));
+        drawField('Left', getInputValue('bounded_left'));
+        yPos += 5;
+
+        addSectionTitle('Utilities');
+        drawField('Sanctioned electrical load', getInputValue('sanctioned_load_text'));
+        drawRadioField('Type of electrical load', 'electrical_load_type', ['Commercial', 'Industrial', 'Residential']);
+        drawField('Electrical Meter', getInputValue('electrical_meter'));
+        drawRadioField('Piped water available', 'piped_water', ['Yes', 'No']);
+        drawRadioField('Underground tank', 'underground_tank', ['Yes', 'No']);
+        drawRadioField('Overhead tank', 'overhead_tank', ['Yes', 'No']);
+        drawField('Type of Overhead tank', getInputValue('overhead_tank_type'));
+        drawField('Type of water', getInputValue('water_type'));
+        drawRadioField('Gas Connection', 'gas_connection', ['Yes', 'No']);
+        drawRadioField('Connected to Sewerage line', 'sewerage_connection', ['Yes', 'No']);
+        yPos += 5;
+
+        addSectionTitle('Building overview');
+        drawRadioField('Independent premises', 'independent_premises', ['Yes', 'No']);
+        drawRadioField('Status', 'property_status', ['Commercial', 'Residential', 'Industrial']);
+        drawField('Other Status', getInputValue('status_other_text'));
+        drawRadioField('Type of Premises', 'premises_type', ['Residence', 'Offices', 'Godowns']);
+        drawField('Other Premises Type', getInputValue('prem_other_text'));
+        drawRadioField('Age of Premises', 'building_age', ['0-5', '5-10', '>10 years']);
+        drawRadioField('Interior of Premises', 'interior_type', ['Single Hall', 'Rooms']);
+        drawRadioField('Type of construction', 'construction_type', ['Beam-Column in RCC', 'Composite', 'Load Bearing']);
+        yPos += 5;
+        
+        doc.addPage();
+        yPos = 20;
+
+        addSectionTitle('Building Details');
+        drawRadioField('Seepage', 'seepage', ['Yes', 'No']);
+        drawField('Area of seepage', getInputValue('seepage_area'));
+        drawField('Cause of Seepage', getInputValue('seepage_cause'));
+        drawCheckboxField('Property Utilization', [
+            { id: 'util_residential', label: 'Residential' },
+            { id: 'util_commercial', label: 'Commercial' },
+            { id: 'util_dual', label: 'Dual use' },
+            { id: 'util_industrial', label: 'Industrial' },
+        ]);
+        drawField('Condition of roof waterproofing', getInputValue('roof_waterproofing'));
+        drawCheckboxField('Parking available', [
+            { id: 'parking_yes', label: 'Yes' },
+            { id: 'parking_main_road', label: 'On Main Road' },
+            { id: 'parking_no', label: 'No' },
+        ]);
+        drawRadioField('Approachable through Road', 'approachable', ['Yes', 'No']);
+        drawField('Wall masonary material', getInputValue('wall_material'));
+        drawCheckboxField('Major retainable elements', [
+            { id: 'retainable_water_tank', label: 'Water tank' },
+            { id: 'retainable_subflooring', label: 'Subflooring' },
+            { id: 'retainable_staircase', label: 'Staircase' },
+        ]);
+        drawField('Other retainable', getInputValue('retainable_other_text'));
+        drawField('Plot level from road', getInputValue('plot_level'));
+        drawRadioField('Building Control Violations', 'violations', ['Major', 'Minor', 'None']);
+        yPos += 5;
+
+        addSectionTitle('Rental Detail');
+        drawField('Acquisition', getInputValue('rental_acquisition'));
+        drawField('Expected Rental /month', getInputValue('rental_expected_rent'));
+        drawField('Expected Advance', getInputValue('rental_expected_advance'));
+        drawField('Expected period of lease', getInputValue('rental_lease_period'));
+        drawField('Annual increase in rental', getInputValue('rental_annual_increase'));
+        yPos += 5;
+
+        addSectionTitle('Survey Checklist');
+        drawField('Project', getInputValue('survey_project'));
+        drawField('Location', getInputValue('survey_location'));
+        drawField('Contract Date', getInputValue('survey_contract_date'));
+        drawField('Project Number', getInputValue('survey_project_number'));
+        drawField('Start Date', getInputValue('survey_start_date'));
+        drawField('Project Incharge', getInputValue('survey_project_incharge'));
+        yPos += 5;
+
+        const generateChecklistTable = (title: string, items: {no: number, title: string}[], prefix: string) => {
+            if (yPos > 250) { doc.addPage(); yPos = 20; }
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, margin, yPos);
+            yPos += 8;
+            doc.autoTable({
+                startY: yPos,
+                head: [['Sr.No', 'Drawing Title', 'Remarks']],
+                body: items.map(item => [item.no.toString(), item.title, getInputValue(`${prefix}_remarks_${item.no}`)]),
+                theme: 'grid',
+                headStyles: { fillColor: [230, 230, 230], textColor: 0 }
+            });
+            yPos = (doc as any).autoTable.previous.finalY + 10;
+        }
+
+        generateChecklistTable('Architectural Drawings', checklistItems, 'checklist');
+        generateChecklistTable('Structure Drawings', structureDrawingItems, 'structure');
+        generateChecklistTable('Plumbing Drawings', plumbingDrawingItems, 'plumbing');
+        generateChecklistTable('Electrification Drawings', electrificationDrawingItems, 'electrification');
 
         doc.save('site-survey.pdf');
-        toast({ title: 'Download Started', description: 'Your site survey PDF is being generated.' });
-    };
+        
+        toast({
+            title: "Download Started",
+            description: "The project data PDF is being generated.",
+        });
+    }
     
     return (
         <Card>
@@ -259,8 +373,8 @@ export default function ProjectDataPage() {
                      <SectionTable title="Location">
                         <FormRow label="Purpose">
                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-2"><Checkbox id="purpose_house" name="location_purpose" value="house" /> <Label htmlFor="purpose_house">House</Label></div>
-                              <div className="flex items-center gap-2"><Checkbox id="purpose_other_check" name="location_purpose_other" /> <Label htmlFor="purpose_other_check">Other:</Label> <Input id="purpose_other_text" name="location_purpose_other_text" /></div>
+                              <div className="flex items-center gap-2"><Checkbox id="purpose_house" name="purpose_house" /> <Label htmlFor="purpose_house">House</Label></div>
+                              <div className="flex items-center gap-2"><Checkbox id="purpose_other_check" name="purpose_other_check" /> <Label htmlFor="purpose_other_check">Other:</Label> <Input id="purpose_other_text" name="purpose_other_text" /></div>
                            </div>
                         </FormRow>
                         <FormRow label="Date"><Input type="date" id="location_date" name="location_date" className="w-fit" /></FormRow>
@@ -487,5 +601,7 @@ export default function ProjectDataPage() {
         </Card>
     );
 }
+
+    
 
     
