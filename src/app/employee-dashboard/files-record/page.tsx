@@ -27,7 +27,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +34,7 @@ import { Label } from '@/components/ui/label';
 type UploadedFile = {
     id: string;
     category: string;
+    bankName?: string;
     customName: string;
     originalName: string;
     fileType: string;
@@ -49,7 +49,7 @@ export default function FilesRecordPage() {
   const image = PlaceHolderImages.find(p => p.id === 'files-record');
   const { toast } = useToast();
   const { firestore } = useFirebase();
-  const { user: currentUser } = useCurrentUser();
+  const { user: currentUser, isUserLoading } = useCurrentUser();
 
   const [files, setFiles] = useState<Record<string, UploadedFile[]>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -63,12 +63,17 @@ export default function FilesRecordPage() {
   const [newFileName, setNewFileName] = useState('');
 
   useEffect(() => {
+    if (isUserLoading) {
+      setIsLoading(true);
+      return;
+    }
+
     if (!firestore || !currentUser) {
         setIsLoading(false);
+        setError("You must be logged in to view your files.");
         return;
     }
     
-    setIsLoading(true);
     const q = query(
         collection(firestore, "uploadedFiles"), 
         where("employeeId", "==", currentUser.record),
@@ -76,7 +81,9 @@ export default function FilesRecordPage() {
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const groupedFiles: Record<string, UploadedFile[]> = { Banks: [], Residential: [], Commercial: [], Hotels: [] };
+      const groupedFiles: Record<string, UploadedFile[]> = {};
+      categories.forEach(cat => groupedFiles[cat] = []);
+
       snapshot.forEach((doc) => {
         const file = { id: doc.id, ...doc.data() } as UploadedFile;
         if (groupedFiles[file.category]) {
@@ -92,7 +99,7 @@ export default function FilesRecordPage() {
     });
 
     return () => unsubscribe();
-  }, [firestore, currentUser]);
+  }, [firestore, currentUser, isUserLoading]);
   
   const formatBytes = (bytes: number, decimals = 2) => {
     if (bytes === 0) return '0 Bytes';
@@ -140,6 +147,7 @@ export default function FilesRecordPage() {
     }
   };
 
+  const hasAnyFiles = Object.values(files).some(arr => arr.length > 0);
 
   return (
     <div className="space-y-8">
@@ -153,6 +161,13 @@ export default function FilesRecordPage() {
         <div className="flex items-center justify-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>
       ) : error ? (
         <Card className="text-center py-8"><CardContent><p className="text-destructive">{error}</p></CardContent></Card>
+      ) : !hasAnyFiles ? (
+         <Card className="text-center py-12">
+            <CardHeader>
+                <CardTitle>No Files Found</CardTitle>
+                <CardDescription>You have not uploaded any files yet.</CardDescription>
+            </CardHeader>
+        </Card>
       ) : (
         categories.map(category => (
             files[category]?.length > 0 && (
@@ -167,20 +182,22 @@ export default function FilesRecordPage() {
                                 <thead className="text-left">
                                     <tr className="border-b">
                                         <th className="p-2">File Name</th>
+                                        {category === 'Banks' && <th className="p-2">Bank</th>}
                                         <th className="p-2">Original Name</th>
                                         <th className="p-2">Size</th>
                                         <th className="p-2">Date</th>
-                                        <th className="p-2">Actions</th>
+                                        <th className="p-2 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {files[category].map(file => (
                                         <tr key={file.id} className="border-b">
                                             <td className="p-2 font-medium">{file.customName}</td>
+                                            {category === 'Banks' && <td className="p-2">{file.bankName || 'N/A'}</td>}
                                             <td className="p-2 text-muted-foreground">{file.originalName}</td>
                                             <td className="p-2">{formatBytes(file.size)}</td>
                                             <td className="p-2">{file.createdAt.toDate().toLocaleDateString()}</td>
-                                            <td className="p-2 flex gap-1">
+                                            <td className="p-2 flex gap-1 justify-end">
                                                 <Button variant="ghost" size="icon"><Download className="h-4 w-4"/></Button>
                                                 <Button variant="ghost" size="icon" onClick={() => openEditDialog(file)}><Edit className="h-4 w-4"/></Button>
                                                 <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(file)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
