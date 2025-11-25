@@ -25,6 +25,7 @@ import {
   FileUp,
   ClipboardCheck,
   Eye,
+  Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +43,7 @@ const menuItems = [
     { href: '/dashboard/about-me', label: 'About Me', icon: User },
     { href: '/dashboard/services', label: 'Services', icon: FileText },
     { href: '/dashboard/site-visit', label: 'Site Visit', icon: Eye },
+    { href: '/dashboard/site-survey-report', label: 'Site Survey Report', icon: FileSearch },
     { href: '/dashboard/data-entry', label: 'Data Entry', icon: FileUp, roles: ['admin'] },
     { href: '/dashboard/saved-records', label: 'Saved Records', icon: Database, roles: ['admin', 'software-engineer', 'ceo'] },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['software-engineer', 'admin'] },
