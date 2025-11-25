@@ -87,7 +87,7 @@ export default function TransmittalLetterPage() {
                 [``, `Date: ${getVal('date')}`]
             ],
         });
-        yPos = (doc as any).lastAutoTable.previous.finalY + 5;
+        yPos = (doc as any).lastAutoTable.finalY + 5;
 
         doc.rect(14, yPos, 90, 25);
         doc.text("To:", 16, yPos-2);
@@ -158,7 +158,7 @@ export default function TransmittalLetterPage() {
         const head = [['Copies', 'Date', 'Rev. No.', 'Description', 'Action Code']];
         const body = items.map(item => [item.copies, item.date, item.revNo, item.description, item.actionCode]);
         (doc as any).autoTable({ head, body, startY: yPos, theme: 'striped' });
-        yPos = (doc as any).lastAutoTable.previous.finalY + 10;
+        yPos = (doc as any).lastAutoTable.finalY + 10;
         
         doc.text("Action Code:", 14, yPos);
         yPos += 5;
@@ -172,7 +172,7 @@ export default function TransmittalLetterPage() {
             ],
             styles: { fontSize: 8 },
         });
-        yPos = (doc as any).lastAutoTable.previous.finalY + 10;
+        yPos = (doc as any).lastAutoTable.finalY + 10;
         
         doc.text("Remarks:", 14, yPos);
         yPos += 5;
