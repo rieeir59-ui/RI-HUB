@@ -11,6 +11,9 @@ import { Save, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { useFirebase } from '@/firebase/provider';
+import { useCurrentUser } from '@/context/UserContext';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="mb-6">
@@ -23,9 +26,54 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 
 export default function ArchitectsFieldReportPage() {
     const { toast } = useToast();
+    const { firestore } = useFirebase();
+    const { user: currentUser } = useCurrentUser();
 
-    const handleSave = () => {
-        toast({ title: 'Record Saved', description: 'The field report has been saved.' });
+    const handleSave = async () => {
+        if (!currentUser || !firestore) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
+            return;
+        }
+
+        const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value || '';
+
+        const recordData = {
+            employeeId: currentUser.record,
+            employeeName: currentUser.name,
+            fileName: "Architect's Field Report",
+            projectName: getVal('project') || `Field Report ${getVal('report_no')}`,
+            data: [{
+                category: "Report Details",
+                items: [
+                    `Project: ${getVal('project')}`,
+                    `Contract: ${getVal('contract')}`,
+                    `Date: ${getVal('date')}`,
+                    `Weather: ${getVal('weather')}`,
+                    `Est. % of Completion: ${getVal('completion_pct')}`,
+                    `Report No.: ${getVal('report_no')}`,
+                    `Architects Project No: ${getVal('architect_project_no')}`,
+                    `Time: ${getVal('time')}`,
+                    `Temp. Range: ${getVal('temp_range')}`,
+                    `Conformance with Schedule: ${getVal('conformance')}`,
+                    `Work in Progress: ${getVal('work_in_progress')}`,
+                    `Present at Site: ${getVal('present_at_site')}`,
+                    `Observations: ${getVal('observations')}`,
+                    `Items to Verify: ${getVal('items_to_verify')}`,
+                    `Information or Action Required: ${getVal('action_required')}`,
+                    `Attachments: ${getVal('attachments')}`,
+                    `Report By: ${getVal('report_by')}`,
+                ]
+            }],
+            createdAt: serverTimestamp(),
+        };
+
+        try {
+            await addDoc(collection(firestore, 'savedRecords'), recordData);
+            toast({ title: 'Record Saved', description: 'The field report has been saved.' });
+        } catch (error) {
+            console.error("Error saving document:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the record.' });
+        }
     };
 
     const handleDownloadPdf = () => {
