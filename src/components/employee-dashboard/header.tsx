@@ -3,6 +3,8 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useCurrentUser } from "@/context/UserContext";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function Header() {
   const { user } = useCurrentUser();
@@ -20,7 +22,9 @@ export function Header() {
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <SidebarTrigger className="md:hidden" />
       <div className="flex-1">
-        {/* You can add a title here if needed */}
+        <Button asChild variant="outline">
+            <Link href="/dashboard">Back to Main Dashboard</Link>
+        </Button>
       </div>
       {user && (
          <div className="flex items-center gap-3">
