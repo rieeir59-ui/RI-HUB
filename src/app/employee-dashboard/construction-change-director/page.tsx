@@ -286,7 +286,7 @@ export default function Page() {
                 
                  <div className="border-t-2 border-b-2 py-4 space-y-4">
                     <h3 className="text-center font-bold">Proposed Adjustments</h3>
-                    <p>1. The proposed basis of adjustment to the Contract Sum or Guaranteed Maximum Price is:</p>
+                    <div>1. The proposed basis of adjustment to the Contract Sum or Guaranteed Maximum Price is:</div>
                     <RadioGroup value={formState.adjustmentType} onValueChange={(v) => handleRadioChange('adjustmentType', v)} className="pl-4 space-y-2">
                         <div className="flex items-center gap-2">
                             <RadioGroupItem value="lumpSum" id="adj_lump" />
@@ -309,7 +309,7 @@ export default function Page() {
                             <Input name="asFollows" value={formState.asFollows} onChange={handleChange} className="flex-1" />
                         </div>
                     </RadioGroup>
-                    <p>2. The Contract Time is proposed to <RadioGroup value={formState.timeChangeType} onValueChange={(v) => handleRadioChange('timeChangeType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="adjusted" id="time_adj"/><Label htmlFor="time_adj">(be adjusted)</Label></div><div className="flex items-center gap-1"><RadioGroupItem value="unchanged" id="time_unc"/><Label htmlFor="time_unc">[remain unchanged]</Label></div></RadioGroup>. The proposed adjustment, if any, is (<RadioGroup value={formState.timeAdjustmentType} onValueChange={(v) => handleRadioChange('timeAdjustmentType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="increase" id="time_inc_type"/><Label htmlFor="time_inc_type">an increase of</Label></div></RadioGroup> <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days) (a <RadioGroup value={formState.timeAdjustmentType} onValueChange={(v) => handleRadioChange('timeAdjustmentType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="decrease" id="time_dec_type" /><Label htmlFor="time_dec_type">decrease</Label></div></RadioGroup> of <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days).</p>
+                    <div>2. The Contract Time is proposed to <RadioGroup value={formState.timeChangeType} onValueChange={(v) => handleRadioChange('timeChangeType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="adjusted" id="time_adj"/><Label htmlFor="time_adj">(be adjusted)</Label></div><div className="flex items-center gap-1"><RadioGroupItem value="unchanged" id="time_unc"/><Label htmlFor="time_unc">[remain unchanged]</Label></div></RadioGroup>. The proposed adjustment, if any, is (<RadioGroup value={formState.timeAdjustmentType} onValueChange={(v) => handleRadioChange('timeAdjustmentType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="increase" id="time_inc_type"/><Label htmlFor="time_inc_type">an increase of</Label></div></RadioGroup> <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days) (a <RadioGroup value={formState.timeAdjustmentType} onValueChange={(v) => handleRadioChange('timeAdjustmentType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="decrease" id="time_dec_type" /><Label htmlFor="time_dec_type">decrease</Label></div></RadioGroup> of <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days).</div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4 text-xs text-muted-foreground">
@@ -348,4 +348,5 @@ export default function Page() {
     </div>
   );
 }
+
 
