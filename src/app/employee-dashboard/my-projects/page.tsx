@@ -23,6 +23,7 @@ import 'jspdf-autotable';
 import { useEmployees } from '@/context/EmployeeContext';
 import { type Employee } from '@/lib/employees';
 import { Suspense } from 'react';
+import { differenceInDays, parseISO } from 'date-fns';
 
 const departments: Record<string, string> = {
     'ceo': 'CEO',
@@ -102,14 +103,55 @@ function MyProjectsComponent() {
     const [rows, setRows] = useState<ProjectRow[]>([{ id: 1, projectName: '', detail: '', status: 'not-started', startDate: '', endDate: '' }]);
     const [schedule, setSchedule] = useState({ start: '', end: '' });
     const [remarks, setRemarks] = useState('');
+    const [numberOfDays, setNumberOfDays] = useState<number | null>(null);
+    const [activeFilter, setActiveFilter] = useState<'all' | 'weekly' | '15days' | 'monthly'>('all');
+
+    useEffect(() => {
+      if (schedule.start && schedule.end) {
+        const start = parseISO(schedule.start);
+        const end = parseISO(schedule.end);
+        const diff = differenceInDays(end, start);
+        setNumberOfDays(diff >= 0 ? diff + 1 : 0);
+      } else {
+        setNumberOfDays(null);
+      }
+    }, [schedule.start, schedule.end]);
+
+    const filteredRows = useMemo(() => {
+        if (activeFilter === 'all' || !schedule.start || !schedule.end) {
+            return rows;
+        }
+
+        const scheduleStart = parseISO(schedule.start);
+        const scheduleEnd = parseISO(schedule.end);
+
+        return rows.filter(row => {
+            if (!row.startDate || !row.endDate) return false;
+            const projectStart = parseISO(row.startDate);
+            const projectEnd = parseISO(row.endDate);
+            
+            let filterDays: number;
+            if (activeFilter === 'weekly') filterDays = 7;
+            else if (activeFilter === '15days') filterDays = 15;
+            else if (activeFilter === 'monthly') filterDays = 30;
+            else return true;
+
+            const filterEndDate = new Date(scheduleStart.getTime());
+            filterEndDate.setDate(scheduleStart.getDate() + filterDays -1);
+
+            // Check for overlap
+            return projectStart <= filterEndDate && projectEnd >= scheduleStart;
+        });
+    }, [rows, activeFilter, schedule.start, schedule.end]);
 
     const projectStats = useMemo(() => {
-        const total = rows.length;
-        const completed = rows.filter(p => p.status === 'completed').length;
-        const inProgress = rows.filter(p => p.status === 'in-progress').length;
-        const notStarted = rows.filter(p => p.status === 'not-started').length;
+        const source = filteredRows;
+        const total = source.length;
+        const completed = source.filter(p => p.status === 'completed').length;
+        const inProgress = source.filter(p => p.status === 'in-progress').length;
+        const notStarted = source.filter(p => p.status === 'not-started').length;
         return { total, completed, inProgress, notStarted };
-    }, [rows]);
+    }, [filteredRows]);
     
     const handleRowChange = (id: number, field: keyof ProjectRow, value: any) => {
         setRows(rows.map(row => (row.id === id ? { ...row, [field]: value } : row)));
@@ -159,7 +201,6 @@ function MyProjectsComponent() {
         const doc = new jsPDF();
         const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
         const footerText = "M/S Isbah Hassan & Associates Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522";
-
         let yPos = 20;
 
         doc.setFontSize(16);
@@ -195,12 +236,19 @@ function MyProjectsComponent() {
           doc.text(footerText, doc.internal.pageSize.getWidth() / 2, pageHeight - 10, { align: 'center' });
         }
 
+
         doc.save(`${displayUser?.name}_projects.pdf`);
         toast({ title: 'Download Started', description: 'Your project PDF is being generated.' });
     };
 
     return (
         <div className="space-y-8">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard title="Total Projects" value={projectStats.total} icon={<Briefcase className="h-4 w-4 text-muted-foreground" />} />
+                <StatCard title="Completed" value={projectStats.completed} icon={<CheckCircle2 className="h-4 w-4 text-green-500" />} />
+                <StatCard title="In Progress" value={projectStats.inProgress} icon={<Clock className="h-4 w-4 text-blue-500" />} />
+                <StatCard title="Not Started" value={projectStats.notStarted} icon={<XCircle className="h-4 w-4 text-red-500" />} />
+            </div>
             <Card>
                 <CardHeader className="flex flex-row items-center gap-4">
                     <Avatar className="h-16 w-16 border-4 border-primary">
@@ -214,11 +262,26 @@ function MyProjectsComponent() {
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
                         <Label className="font-semibold">Work Schedule</Label>
-                        <div className="flex gap-4">
-                            <Input type="date" value={schedule.start} onChange={e => setSchedule({ ...schedule, start: e.target.value })} disabled={!isOwner} />
-                            <Input type="date" value={schedule.end} onChange={e => setSchedule({ ...schedule, end: e.target.value })} disabled={!isOwner} />
+                        <div className="flex flex-wrap items-center gap-4">
+                            <Input type="date" value={schedule.start} onChange={e => setSchedule({ ...schedule, start: e.target.value })} disabled={!isOwner} className="w-auto"/>
+                            <span>to</span>
+                            <Input type="date" value={schedule.end} onChange={e => setSchedule({ ...schedule, end: e.target.value })} disabled={!isOwner} className="w-auto"/>
+                            {numberOfDays !== null && (
+                                <div className="font-medium text-primary rounded-md px-3 py-2 bg-primary/10">
+                                    {numberOfDays} days
+                                </div>
+                            )}
                         </div>
                     </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Label className="font-semibold">Filter Report:</Label>
+                        <Button variant={activeFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setActiveFilter('all')}>All</Button>
+                        <Button variant={activeFilter === 'weekly' ? 'default' : 'outline'} size="sm" onClick={() => setActiveFilter('weekly')}>Weekly</Button>
+                        <Button variant={activeFilter === '15days' ? 'default' : 'outline'} size="sm" onClick={() => setActiveFilter('15days')}>15 Days</Button>
+                        <Button variant={activeFilter === 'monthly' ? 'default' : 'outline'} size="sm" onClick={() => setActiveFilter('monthly')}>Monthly</Button>
+                    </div>
+                    
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
@@ -232,7 +295,7 @@ function MyProjectsComponent() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {rows.map(row => (
+                                {filteredRows.map(row => (
                                     <TableRow key={row.id}>
                                         <TableCell><Input value={row.projectName} onChange={e => handleRowChange(row.id, 'projectName', e.target.value)} disabled={!isOwner} /></TableCell>
                                         <TableCell><Textarea value={row.detail} onChange={e => handleRowChange(row.id, 'detail', e.target.value)} rows={1} disabled={!isOwner} /></TableCell>
@@ -256,6 +319,13 @@ function MyProjectsComponent() {
                                         {isOwner && <TableCell><Button variant="destructive" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4"/></Button></TableCell>}
                                     </TableRow>
                                 ))}
+                                 {filteredRows.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={isOwner ? 6 : 5} className="text-center h-24">
+                                            No projects match the current filter.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </div>
