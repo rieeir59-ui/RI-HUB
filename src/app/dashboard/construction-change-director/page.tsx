@@ -64,13 +64,13 @@ export default function Page() {
         timeAdjustmentType: 'increase' as 'increase' | 'decrease',
         timeAdjustmentDays: 0,
         architectBy: '',
-        architectDate: '',
         architectAddress: '',
+        architectDate: '',
         contractorBy: '',
         contractorDate: '',
         ownerBy: '',
-        ownerDate: '',
         ownerAddress: '',
+        ownerDate: '',
         distributeTo: [] as string[],
     });
 
@@ -303,28 +303,28 @@ export default function Page() {
                 
                 <div className="border-t-2 border-b-2 py-4 space-y-4">
                     <h3 className="text-center font-bold">Proposed Adjustments</h3>
-                     <p>1. The proposed basis of adjustment to the Contract Sum or Guaranteed Maximum Price is:</p>
-                     <div className="pl-4 space-y-2">
+                    <p>1. The proposed basis of adjustment to the Contract Sum or Guaranteed Maximum Price is:</p>
+                    <RadioGroup value={formState.adjustmentType} onValueChange={(v) => handleRadioChange('adjustmentType', v)} className="pl-4 space-y-2">
                         <div className="flex items-center gap-2">
-                            <RadioGroupItem value="lumpSum" id="adj_lump" checked={formState.adjustmentType === 'lumpSum'} onClick={() => handleRadioChange('adjustmentType', 'lumpSum')}/>
+                            <RadioGroupItem value="lumpSum" id="adj_lump" />
                             <Label htmlFor="adj_lump" className="flex items-center gap-2">Lump Sum (<RadioGroup value={formState.lumpSumType} onValueChange={(v) => handleRadioChange('lumpSumType', v)} className="flex"><div className="flex items-center gap-1"><RadioGroupItem value="increase" id="lump_inc"/><Label htmlFor="lump_inc">increase</Label></div><div className="flex items-center gap-1"><RadioGroupItem value="decrease" id="lump_dec"/><Label htmlFor="lump_dec">decrease</Label></div></RadioGroup>) of Rs.
                             </Label>
                             <Input type="number" name="lumpSumAmount" value={formState.lumpSumAmount} onChange={handleNumberChange} className="w-40" />
                         </div>
-                         <div className="flex items-center gap-2">
-                            <RadioGroupItem value="unitPrice" id="adj_unit" checked={formState.adjustmentType === 'unitPrice'} onClick={() => handleRadioChange('adjustmentType', 'unitPrice')}/>
+                        <div className="flex items-center gap-2">
+                            <RadioGroupItem value="unitPrice" id="adj_unit" />
                             <Label htmlFor="adj_unit">Unit Price of Rs.</Label>
                             <Input type="number" name="unitPrice" value={formState.unitPrice} onChange={handleNumberChange} className="w-32" />
                             <Label>per</Label>
                             <Input name="unitPricePer" value={formState.unitPricePer} onChange={handleChange} className="w-32" />
                         </div>
                         <div className="flex items-center gap-2">
-                            <RadioGroupItem value="asFollows" id="adj_as_follows" checked={formState.adjustmentType === 'asFollows'} onClick={() => handleRadioChange('adjustmentType', 'asFollows')}/>
+                            <RadioGroupItem value="asFollows" id="adj_as_follows" />
                             <Label htmlFor="adj_as_follows">as follows:</Label>
                             <Input name="asFollows" value={formState.asFollows} onChange={handleChange} className="flex-1" />
                         </div>
-                     </div>
-                     <p>2. The Contract Time is proposed to <RadioGroup value={formState.timeChangeType} onValueChange={(v) => handleRadioChange('timeChangeType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="adjusted" id="time_adj"/><Label htmlFor="time_adj">(be adjusted)</Label></div><div className="flex items-center gap-1"><RadioGroupItem value="unchanged" id="time_unc"/><Label htmlFor="time_unc">[remain unchanged]</Label></div></RadioGroup>. The proposed adjustment, if any, is (<RadioGroup value={formState.timeAdjustmentType} onValueChange={(v) => handleRadioChange('timeAdjustmentType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="increase" id="time_inc_type"/><Label htmlFor="time_inc_type">an increase of</Label></div></RadioGroup> <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days) (a <RadioGroup value={formState.timeAdjustmentType} onValueChange={(v) => handleRadioChange('timeAdjustmentType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="decrease" id="time_dec_type" /><Label htmlFor="time_dec_type">decrease</Label></div></RadioGroup> of <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days).</p>
+                    </RadioGroup>
+                    <p>2. The Contract Time is proposed to <RadioGroup value={formState.timeChangeType} onValueChange={(v) => handleRadioChange('timeChangeType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="adjusted" id="time_adj"/><Label htmlFor="time_adj">(be adjusted)</Label></div><div className="flex items-center gap-1"><RadioGroupItem value="unchanged" id="time_unc"/><Label htmlFor="time_unc">[remain unchanged]</Label></div></RadioGroup>. The proposed adjustment, if any, is (<RadioGroup value={formState.timeAdjustmentType} onValueChange={(v) => handleRadioChange('timeAdjustmentType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="increase" id="time_inc_type"/><Label htmlFor="time_inc_type">an increase of</Label></div></RadioGroup> <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days) (a <RadioGroup value={formState.timeAdjustmentType} onValueChange={(v) => handleRadioChange('timeAdjustmentType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="decrease" id="time_dec_type" /><Label htmlFor="time_dec_type">decrease</Label></div></RadioGroup> of <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days).</p>
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-4 text-xs text-muted-foreground">
