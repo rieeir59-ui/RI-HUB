@@ -38,13 +38,14 @@ const banks = ["MCB", "DIB", "FAYSAL", "UBL", "HBL"];
 const UploadForm = ({ category, onUploadSuccess }: { category: string, onUploadSuccess: (id: number) => void }) => {
     const [uploads, setUploads] = useState<FileUpload[]>([{ id: 1, file: null, customName: '', bankName: '' }]);
     const { toast } = useToast();
-    const { firestore } = useFirebase();
+    const { firestore, firebaseApp } = useFirebase();
     const { user: currentUser } = useCurrentUser();
+    const storage = getStorage(firebaseApp);
 
     const handleFileChange = (id: number, event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             const file = event.target.files[0];
-            setUploads(prev => prev.map(up => up.id === id ? { ...up, file } : up));
+            setUploads(prev => prev.map(up => up.id === id ? { ...up, file, customName: up.customName || file.name } : up));
         }
     };
 
@@ -76,7 +77,6 @@ const UploadForm = ({ category, onUploadSuccess }: { category: string, onUploadS
         
         toast({ title: 'Uploading...', description: `"${upload.customName}" is being uploaded.` });
         
-        const storage = getStorage();
         const storageRef = ref(storage, `uploads/${currentUser.record}/${Date.now()}-${upload.file.name}`);
         
         try {
@@ -212,4 +212,3 @@ export default function UploadFilesPage() {
         </div>
     );
 }
-
