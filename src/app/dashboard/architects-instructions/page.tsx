@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -177,9 +178,18 @@ export default function Page() {
         doc.text("Copies To:", 14, yPos);
         yPos += 7;
         doc.setFont('helvetica', 'normal');
-        formState.copiesTo.forEach(item => {
-            doc.text(`- ${item}`, 20, yPos);
-            yPos += 6;
+        
+        const copiesOptions = ['Owner', 'Architect', 'Contractor', 'Field', 'Other'];
+        let xPos = 20;
+        copiesOptions.forEach(item => {
+            doc.rect(xPos, yPos - 3, 4, 4); // Draw checkbox
+            if (formState.copiesTo.includes(item)) {
+                doc.setFont('helvetica', 'bold');
+                doc.text('✓', xPos + 0.5, yPos); // Draw checkmark
+                doc.setFont('helvetica', 'normal');
+            }
+            doc.text(item, xPos + 6, yPos);
+            xPos += 30; // Adjust spacing between checkboxes
         });
 
         // Add footer to all pages
