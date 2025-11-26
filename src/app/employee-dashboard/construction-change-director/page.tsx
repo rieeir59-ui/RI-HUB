@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -130,25 +131,25 @@ export default function Page() {
     doc.setFont('helvetica', 'normal');
     const checkboxX = 140;
     doc.rect(checkboxX, y-4, 4, 4);
-    if (formState.distributeTo.includes('Owner')) doc.text('X', checkboxX + 1, y-1);
+    if (formState.distributeTo.includes('Owner')) doc.text('✓', checkboxX + 0.5, y);
     doc.text('Owner', checkboxX + 6, y);
     y += 6;
     doc.rect(checkboxX, y-4, 4, 4);
-    if (formState.distributeTo.includes('Architect')) doc.text('X', checkboxX + 1, y-1);
+    if (formState.distributeTo.includes('Architect')) doc.text('✓', checkboxX + 0.5, y);
     doc.text('Architect', checkboxX + 6, y);
     y += 6;
     doc.rect(checkboxX, y-4, 4, 4);
-    if (formState.distributeTo.includes('Contractor')) doc.text('X', checkboxX + 1, y-1);
+    if (formState.distributeTo.includes('Contractor')) doc.text('✓', checkboxX + 0.5, y);
     doc.text('Contractor', checkboxX + 6, y);
     
     const checkboxX2 = 170;
     y -= 6;
     doc.rect(checkboxX2, y-4, 4, 4);
-    if (formState.distributeTo.includes('Field')) doc.text('X', checkboxX2 + 1, y-1);
+    if (formState.distributeTo.includes('Field')) doc.text('✓', checkboxX2 + 0.5, y);
     doc.text('Field', checkboxX2 + 6, y);
     y += 6;
     doc.rect(checkboxX2, y-4, 4, 4);
-    if (formState.distributeTo.includes('Other')) doc.text('X', checkboxX2 + 1, y-1);
+    if (formState.distributeTo.includes('Other')) doc.text('✓', checkboxX2 + 0.5, y);
     doc.text('Other', checkboxX2 + 6, y);
 
     y = 40;
@@ -165,7 +166,7 @@ export default function Page() {
         ],
         columnStyles: { 0: { cellWidth: 100 } }
     });
-    y = (doc as any).autoTable.previous.finalY + 10;
+    y = (doc as any).lastAutoTable.finalY + 10;
     
     doc.text('You are hereby directed to make the following change(s) in this Contract:', 14, y);
     y += 7;
@@ -184,17 +185,17 @@ export default function Page() {
     y += 8;
     
     doc.rect(18, y-3, 4, 4);
-    if(formState.adjustmentType === 'lumpSum') doc.text('X', 19, y);
-    doc.text(`Lump Sum (increase) [decrease] of Rs. ${formState.lumpSumAmount.toFixed(2)}`, 24, y);
+    if(formState.adjustmentType === 'lumpSum') doc.text('✓', 18.5, y);
+    doc.text(`Lump Sum (${formState.lumpSumType}) of Rs. ${formState.lumpSumAmount.toFixed(2)}`, 24, y);
     y += 8;
 
     doc.rect(18, y-3, 4, 4);
-    if(formState.adjustmentType === 'unitPrice') doc.text('X', 19, y);
+    if(formState.adjustmentType === 'unitPrice') doc.text('✓', 18.5, y);
     doc.text(`Unit Price of Rs. ${formState.unitPrice.toFixed(2)} per ${formState.unitPricePer}`, 24, y);
     y += 8;
     
     doc.rect(18, y-3, 4, 4);
-    if(formState.adjustmentType === 'asFollows') doc.text('X', 19, y);
+    if(formState.adjustmentType === 'asFollows') doc.text('✓', 18.5, y);
     doc.text(`as follows: ${formState.asFollows}`, 24, y);
     y += 15;
 
@@ -212,7 +213,7 @@ export default function Page() {
         ],
         styles: { fontSize: 8 }
     });
-    y = (doc as any).autoTable.previous.finalY + 10;
+    y = (doc as any).lastAutoTable.finalY + 10;
 
 
     doc.autoTable({
@@ -226,7 +227,7 @@ export default function Page() {
         ],
         styles: {cellPadding: 2, fontSize: 9}
     })
-    y = (doc as any).autoTable.previous.finalY + 5;
+    y = (doc as any).lastAutoTable.finalY + 5;
 
 
     doc.save('construction-change-directive.pdf');
@@ -289,7 +290,9 @@ export default function Page() {
                     <RadioGroup value={formState.adjustmentType} onValueChange={(v) => handleRadioChange('adjustmentType', v)} className="pl-4 space-y-2">
                         <div className="flex items-center gap-2">
                             <RadioGroupItem value="lumpSum" id="adj_lump" />
-                            <Label htmlFor="adj_lump" className="flex items-center gap-2">Lump Sum (<RadioGroup value={formState.lumpSumType} onValueChange={(v) => handleRadioChange('lumpSumType', v)} className="flex"><div className="flex items-center gap-1"><RadioGroupItem value="increase" id="lump_inc"/><Label htmlFor="lump_inc">increase</Label></div><div className="flex items-center gap-1"><RadioGroupItem value="decrease" id="lump_dec"/><Label htmlFor="lump_dec">decrease</Label></div></RadioGroup>) of Rs.
+                            <Label htmlFor="adj_lump" className="flex items-center gap-2">Lump Sum 
+                            <RadioGroup value={formState.lumpSumType} onValueChange={(v) => handleRadioChange('lumpSumType', v)} className="flex"><div className="flex items-center gap-1"><RadioGroupItem value="increase" id="lump_inc"/><Label htmlFor="lump_inc">(increase)</Label></div><div className="flex items-center gap-1"><RadioGroupItem value="decrease" id="lump_dec"/><Label htmlFor="lump_dec">[decrease]</Label></div></RadioGroup>
+                             of Rs.
                             </Label>
                             <Input type="number" name="lumpSumAmount" value={formState.lumpSumAmount} onChange={handleNumberChange} className="w-40" />
                         </div>
@@ -345,3 +348,4 @@ export default function Page() {
     </div>
   );
 }
+
