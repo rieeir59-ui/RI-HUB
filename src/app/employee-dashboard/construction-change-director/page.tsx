@@ -129,28 +129,35 @@ export default function Page() {
     
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const checkboxX = 140;
-    doc.rect(checkboxX, y-4, 4, 4);
-    if (formState.distributeTo.includes('Owner')) doc.text('✓', checkboxX + 0.5, y);
-    doc.text('Owner', checkboxX + 6, y);
-    y += 6;
-    doc.rect(checkboxX, y-4, 4, 4);
-    if (formState.distributeTo.includes('Architect')) doc.text('✓', checkboxX + 0.5, y);
-    doc.text('Architect', checkboxX + 6, y);
-    y += 6;
-    doc.rect(checkboxX, y-4, 4, 4);
-    if (formState.distributeTo.includes('Contractor')) doc.text('✓', checkboxX + 0.5, y);
-    doc.text('Contractor', checkboxX + 6, y);
     
-    const checkboxX2 = 170;
-    y -= 6;
-    doc.rect(checkboxX2, y-4, 4, 4);
-    if (formState.distributeTo.includes('Field')) doc.text('✓', checkboxX2 + 0.5, y);
-    doc.text('Field', checkboxX2 + 6, y);
-    y += 6;
-    doc.rect(checkboxX2, y-4, 4, 4);
-    if (formState.distributeTo.includes('Other')) doc.text('✓', checkboxX2 + 0.5, y);
-    doc.text('Other', checkboxX2 + 6, y);
+    const checkboxYStart = y - 4;
+    const distributionOptions = [
+        { label: 'Owner', x: 140 },
+        { label: 'Architect', x: 140 },
+        { label: 'Contractor', x: 140 },
+        { label: 'Field', x: 170 },
+        { label: 'Other', x: 170 },
+    ];
+
+    let yOffset = 0;
+    distributionOptions.forEach((opt, index) => {
+        if (opt.x === 140) {
+            doc.rect(opt.x, checkboxYStart + yOffset, 4, 4);
+            if (formState.distributeTo.includes(opt.label)) doc.text('✓', opt.x + 0.5, checkboxYStart + 3 + yOffset);
+            doc.text(opt.label, opt.x + 6, checkboxYStart + 3 + yOffset);
+            yOffset += 6;
+        }
+    });
+    
+    yOffset = 6; // Reset for second column
+    distributionOptions.forEach((opt, index) => {
+         if (opt.x === 170) {
+            doc.rect(opt.x, checkboxYStart + yOffset, 4, 4);
+            if (formState.distributeTo.includes(opt.label)) doc.text('✓', opt.x + 0.5, checkboxYStart + 3 + yOffset);
+            doc.text(opt.label, opt.x + 6, checkboxYStart + 3 + yOffset);
+            yOffset += 6;
+        }
+    });
 
     y = 40;
     doc.autoTable({
@@ -309,7 +316,7 @@ export default function Page() {
                             <Input name="asFollows" value={formState.asFollows} onChange={handleChange} className="flex-1" />
                         </div>
                     </RadioGroup>
-                    <div>2. The Contract Time is proposed to <RadioGroup value={formState.timeChangeType} onValueChange={(v) => handleRadioChange('timeChangeType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="adjusted" id="time_adj"/><Label htmlFor="time_adj">(be adjusted)</Label></div><div className="flex items-center gap-1"><RadioGroupItem value="unchanged" id="time_unc"/><Label htmlFor="time_unc">[remain unchanged]</Label></div></RadioGroup>. The proposed adjustment, if any, is (<RadioGroup value={formState.timeAdjustmentType} onValueChange={(v) => handleRadioChange('timeAdjustmentType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="increase" id="time_inc_type"/><Label htmlFor="time_inc_type">an increase of</Label></div></RadioGroup> <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days) (a <RadioGroup value={formState.timeAdjustmentType} onValueChange={(v) => handleRadioChange('timeAdjustmentType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="decrease" id="time_dec_type" /><Label htmlFor="time_dec_type">decrease</Label></div></RadioGroup> of <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days).</div>
+                    <div>2. The Contract Time is proposed to <RadioGroup value={formState.timeChangeType} onValueChange={(v) => handleRadioChange('timeChangeType', v)} className="inline-flex gap-2"><div className="flex items-center gap-1"><RadioGroupItem value="adjusted" id="time_adj"/><Label htmlFor="time_adj">(be adjusted)</Label></div><div className="flex items-center gap-1"><RadioGroupItem value="unchanged" id="time_unc"/><Label htmlFor="time_unc">[remain unchanged]</Label></div></RadioGroup>. The proposed adjustment, if any, is (an increase of <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days) (a decrease of <Input type="number" name="timeAdjustmentDays" value={formState.timeAdjustmentDays} onChange={handleNumberChange} className="w-20 inline-block mx-1" /> days).</div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4 text-xs text-muted-foreground">
@@ -348,5 +355,6 @@ export default function Page() {
     </div>
   );
 }
+
 
 
