@@ -3,9 +3,24 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Allow anyone to read data from any collection
     match /{document=**} {
-      allow read, write: if true;
+      allow read: if true;
+    }
+    
+    // Allow any authenticated user to write to the 'savedRecords' collection
+    match /savedRecords/{recordId} {
+      allow write: if request.auth != null;
     }
 
+    // Allow any authenticated user to write to the 'tasks' collection
+    match /tasks/{taskId} {
+      allow write: if request.auth != null;
+    }
+
+    // Allow any authenticated user to write to the 'uploadedFiles' collection
+    match /uploadedFiles/{fileId} {
+        allow write: if request.auth != null;
+    }
   }
 }
