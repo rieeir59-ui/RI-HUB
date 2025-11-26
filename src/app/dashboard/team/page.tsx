@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,6 +53,7 @@ export default function TeamPage() {
     const { employeesByDepartment } = useEmployees();
 
     const ceo = employeesByDepartment['ceo']?.[0];
+    const admin = employeesByDepartment['admin'] || [];
     const hr = employeesByDepartment['hr'] || [];
     const architects = {
         lead: (employeesByDepartment['architects'] || []).find(e => e.name.toLowerCase() === 'asad'),
@@ -87,6 +89,10 @@ export default function TeamPage() {
         <div className="border-t border-dashed border-primary/50 my-8"></div>
 
         <div className="space-y-10">
+            <DepartmentSection title="Admin" icon={<Users className="w-5 h-5" />}>
+                {admin.map(e => <TeamMemberCard key={e.record} name={e.name} role="Admin" />)}
+            </DepartmentSection>
+
             <DepartmentSection title="Human Resources" icon={<Users className="w-5 h-5" />}>
                 {hr.map(e => <TeamMemberCard key={e.record} name={e.name} role="HR" />)}
             </DepartmentSection>
