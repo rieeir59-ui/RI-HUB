@@ -1,18 +1,47 @@
 
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Allow public read access to all collections
-    match /{document=**} {
-      allow read: if true;
-    }
     
-    // Allow authenticated users to write to any collection
-    // Note: It's highly recommended to restrict write access to specific collections
-    // and validate data for production apps.
+    // Default deny all reads and writes
     match /{document=**} {
-      allow write: if request.auth != null;
+      allow read, write: if false;
+    }
+
+    // Allow authenticated users to read and write their own user profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow creating tasks if logged in, but only allow read/write by the assigned user.
+    match /tasks/{taskId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.assignedTo;
+    }
+
+    // Allow list read for tasks by any authenticated user for the dashboard view
+    match /tasks {
+        allow list: if request.auth != null;
+    }
+
+    // Allow logged-in users to manage their own uploaded files
+    match /uploadedFiles/{fileId} {
+      allow create: if request.auth != null && request.resource.data.employeeId == request.auth.uid;
+      allow read: if request.auth != null; // Allow reading file metadata for all logged-in users.
+      allow update, delete: if request.auth != null && resource.data.employeeId == request.auth.uid;
+    }
+
+    // Allow logged-in users to manage their own saved records
+    match /savedRecords/{recordId} {
+      allow create: if request.auth != null && request.resource.data.employeeId == request.auth.uid;
+      allow read, update, delete: if request.auth != null && resource.data.employeeId == request.auth.uid;
+    }
+
+    // Allow public creation of contact messages, but no reads/updates/deletes from client
+    match /contact_messages/{messageId} {
+      allow create: if true;
+      allow read, update, delete: if false;
     }
   }
 }
